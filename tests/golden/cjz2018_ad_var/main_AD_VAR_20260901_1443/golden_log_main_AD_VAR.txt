@@ -1,0 +1,12 @@
+MATLAB 25.2.0.3150157 (R2025b) Update 4
+01-Sep-2026 14:43:23
+=== RUN ERRORED ===
+Undefined function 'ar' for input arguments of type 'double'.
+
+Error in Min_Prior (line 19)
+        m = ar(Y(:,i), ar_order);
+            ^^^^^^^^^^^^^^^^^^^^
+Error in main_AD_VAR (line 46)
+[b_0, B_0, v_0, S_0] = Min_Prior(Y, lag, ar_order, kepa_1, kepa_2, kepa_3);
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Elapsed time is 3.920722 seconds.

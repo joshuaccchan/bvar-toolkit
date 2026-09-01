@@ -1,0 +1,25 @@
+MATLAB 25.2.0.3150157 (R2025b) Update 4
+01-Sep-2026 14:43:30
+
+Local minimum possible. Constraints satisfied.
+
+fmincon stopped because the size of the current step is less than
+the value of the step size tolerance and constraints are 
+satisfied to within the value of the constraint tolerance.
+
+
+Local minimum possible. Constraints satisfied.
+
+fmincon stopped because the size of the current step is less than
+the value of the step size tolerance and constraints are 
+satisfied to within the value of the constraint tolerance.
+
+
+                  | baseline | optimize kappa1-kappa3 | optimize kappa1-kappa5:
+kappa1            | 0.050    | 0.051                  | 0.041
+kappa2            | 1.0      | 3.2                    | 3.2
+kappa3            | 100.0    | 28.2                   | 24.2
+kappa4            | 1.0      | 1.0                    | 13.0
+kappa5            | 1.0      | 1.0                    | 10.3
+log-ML            | 11093    | 11216                  | 11395
+Elapsed time is 26.090744 seconds.

@@ -1,0 +1,15 @@
+MATLAB 25.2.0.3150157 (R2025b) Update 4
+01-Sep-2026 14:44:00
+Starting MCMC for VAR.... 
+MCMC done
+Computing ML for VAR using Chib.... 
+ML computation via Chib done
+Computing ML for VAR using CE.... 
+ML computation via CE done
+ 
+                                    CE          Chib
+log-ML values for VAR:              -1039.6   -1039.6
+Derivative of log-ML w.r.t. kappa1: -22.6     -22.1
+Derivative of log-ML w.r.t. kappa2: -0.01     -0.01
+Derivative of log-ML w.r.t. kappa3:  4.46      5.54
+Elapsed time is 10.816980 seconds.

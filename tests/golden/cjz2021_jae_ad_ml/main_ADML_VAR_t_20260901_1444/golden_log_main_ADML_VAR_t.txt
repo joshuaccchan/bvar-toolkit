@@ -1,0 +1,15 @@
+MATLAB 25.2.0.3150157 (R2025b) Update 4
+01-Sep-2026 14:44:28
+Starting MCMC for VAR-t.... 
+MCMC done
+Computing ML for VAR-t using Chib.... 
+=== RUN ERRORED ===
+Undefined function 'mdensity' for input arguments of type 'struct'.
+
+Error in VAR_t_Chibs_AD (line 40)
+p_b=mdensity(p_b,k);
+    ^^^^^^^^^^^^^^^
+Error in main_ADML_VAR_t (line 87)
+ML_Chibs = VAR_t_Chibs_AD(Bm,Sigm,bm,Vb,T,nu, K);
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Elapsed time is 124.875582 seconds.
