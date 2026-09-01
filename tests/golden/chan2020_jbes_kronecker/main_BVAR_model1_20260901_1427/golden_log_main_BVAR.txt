@@ -1,0 +1,4 @@
+MATLAB 25.2.0.3150157 (R2025b) Update 4
+01-Sep-2026 14:27:25
+log marginal likelihood of BVAR: -8727.1 
+Elapsed time is 1.501544 seconds.
