@@ -21,5 +21,4 @@ Import date: 2026-09-01. `.gitattributes` sets `* -text` so git stores every byt
 ## Notes
 
 - **chan2022_qe_acp**: Zip updated 2026-08-27; includes the IRredu h=1 fix applied on that date.
-- **chan_koop_yu2024_jbes_oisv**: Source zip fetched from the live website on 2026-09-01: the Dropbox master copy OISV_code.zip is corrupt (22-byte empty zip, file date 2026-02-12).
 - **Git LFS decision**: not used. Largest file is 6.2 MB (`replications/chan_koop_yu2024_jbes_oisv/legacy/results_mat/forecastingOI2-cluster.mat`), total working tree 55.3 MB - both well under GitHub limits (100 MB/file). Revisit only if a future artifact exceeds 50 MB.
