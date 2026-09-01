@@ -1,0 +1,9 @@
+function [mbeta,cbeta]=PosteriorNormal(beta,k)
+    mbeta.v=mean(beta.v)';
+    mbeta.d=mean(beta.d,3);
+    q=length(mbeta.v);
+    cbeta.v=cov(beta.v);
+    cbeta.d=d_Cov(beta.v,beta.d);
+   cbeta=dmatrix(cbeta,q,k);
+   cbeta.L=chol(cbeta.v,'lower');
+    cbeta.Ld=d_cholasky(cbeta.L,cbeta.d);
