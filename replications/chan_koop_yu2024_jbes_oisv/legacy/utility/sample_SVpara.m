@@ -1,0 +1,36 @@
+% This function samples the SV parameters mu, phi, and sig2
+
+function [mu,phi,sig2,flag_phi] = sample_SVpara(h,mu,phi,Hyper)    
+n = size(mu,1);
+[T,npr] = size(h);
+r = npr - n;
+
+    % sample sig2
+tmp_h = [h(:,1:n)-repmat(mu',T,1), h(:,n+1:end)];
+e_h = [tmp_h(1,:).*sqrt(1-phi.^2)'; tmp_h(2:end,:)-repmat(phi',T-1,1).*tmp_h(1:end-1,:)];
+sig2 = 1./gamrnd(Hyper.nuh+T/2,1./(Hyper.Sh + sum(e_h.^2)'/2));
+
+    % sample phi
+Kphi = 1./Hyper.Vphi + sum(tmp_h(1:T-1,:).^2)'./sig2;
+phi_hat = (Hyper.phi0./Hyper.Vphi + sum(tmp_h(1:T-1,:).*tmp_h(2:T,:))'./sig2)./Kphi;
+phic = phi_hat + 1./sqrt(Kphi).*randn(n+r,1);
+flag_phi = zeros(n+r,1);
+for ii = 1:n+r
+    g_phi = @(x) .5*log(1-x^2) -.5*(1-x^2)/sig2(ii)*tmp_h(1,ii)^2;
+    if abs(phic(ii))<.999
+        alpMH = exp(g_phi(phic(ii))-g_phi(phi(ii)));
+        if alpMH>rand
+            phi(ii) = phic(ii);
+            flag_phi(ii) = 1;
+        end
+    end 
+end
+
+    % sample mu
+if mu~=0
+Kmu = 1./Hyper.Vmu + ((1-phi(1:n).^2) + (T-1)*(1-phi(1:n)).^2)./sig2(1:n);
+mu_hat = (Hyper.mu0./Hyper.Vmu + (1-phi(1:n).^2)./sig2(1:n).*h(1,1:n)' ...
+   +(1-phi(1:n))./sig2(1:n).*sum(h(2:end,1:n)-repmat(phi(1:n)',T-1,1).*h(1:end-1,1:n))')./Kmu;
+mu = mu_hat + 1./sqrt(Kmu).*randn(n,1);
+end
+end
