@@ -50,6 +50,34 @@ the same seed). Bodies otherwise verbatim, including the `if mu~=0` gate in `sv_
 Passing `phi_bnd = .998` to `sv_params` does NOT reproduce the ml_varsv copy - that
 copy also differs structurally (no n+r column split; mu demeans ALL columns of h).
 
+## Canonicalized in step 5 (MAHP flagship functionization, 2026-09-01)
+
+| Core function | Canonical source (legacy) | Also canonicalizes | Verified |
+|---|---|---|---|
+| `bvt.samplers.eq_gauss` | chan2021_ijf_mahp `BVAR_MNG.m` lines 40-59 (inline "sample alp and beta" block) | the verbatim inline copies in `BVAR_NG.m` 38-57, `BVAR_Minn.m` 31-50, and `forecast_BVAR_MNG/_NG/_Minn.m` (Yt/Zt/Tt renaming only). Valp/Vbeta pre-scaling (the MNG/forecast `*2`) stays with the CALLER. | unit (`test_mahp_equivalence`: draw-for-draw isequal on all stores + terminal rng state, all three estimation models) |
+| `bvt.samplers.gig_shrinkage` | variant `'mng'` = chan2021_ijf_mahp `BVAR_MNG.m` 68-81; `'ng'` = `BVAR_NG.m` 66-78; `'minn'` = `BVAR_Minn.m` 59-62 | `'mng'` with `psi_floor=1e-16` also reproduces `forecast_BVAR_MNG.m` 70-83; `'minn'` also reproduces `forecast_BVAR_Minn.m` 65-68. `forecast_BVAR_NG.m` is NOT canonicalized (never-merge, below). The three variants are numerically different - never unify. | unit (same test) |
+| `bvt.samplers.nu_psi_ng` | chan2021_ijf_mahp `sample_nu_psi.m` (only copy; renamed) | all four call sites (BVAR_MNG/NG and forecast_BVAR_NG two-output - the forecast flag is captured but never accumulated - and forecast_BVAR_MNG one-output) | unit (same test) |
+
+New replication drivers (not core): `replications/chan2021_ijf_mahp/run_all.m`
+(functionized estimation pipeline, models MNG/NG/Minn) and `preset.m` (every
+hard-coded legacy constant with per-line citations, plus the documented
+estimation-vs-forecast divergences). The legacy clock-seed line
+(`randn('seed',sum(clock*100)); rand('seed',sum(clock*1000))`) is deliberately
+NOT reproduced in `run_all` - it is irreproducible by construction and switches
+MATLAB to the legacy v4/v5 generators; the equivalence test removes exactly that
+line (its sole patch) from tempdir copies of the legacy scripts and runs both
+pipelines from `rng(seed,'twister')`.
+
+Edits made during extraction, in full: provenance headers prepended; `eq_gauss`
+wrapped as a function with `np = size(Z,2)-1` replacing the literal `n*p`
+(identical integers) and fresh-zeros `beta`/`alp` (the legacy scripts fully
+overwrite both every sweep); `gig_shrinkage` wrapped with kappa/psi state passed
+in/out, the hard-coded `1e-10` psi floor promoted to the `psi_floor` argument
+(estimation `1e-10`, forecast-MNG `1e-16`), and the `Psi(idx)` reassembly
+(BVAR_MNG 82-83) left with the caller; `sample_nu_psi` renamed `nu_psi_ng`, body
+verbatim including its dead `count` guard. The h0 and Sigh draws (identical
+3-and-2-line inline blocks in all three scripts) stay inline in `run_all`.
+
 ## NEVER MERGE - same name, numerically different
 
 A future deduplication must not unify any of these; doing so silently changes published results.
@@ -83,6 +111,28 @@ A future deduplication must not unify any of these; doing so silently changes pu
   on this list.
 - **`macrodata_Q_2018Q4.csv`**: byte-identical between MAHP and HYB but a DIFFERENT file in
   BVAR_ACP (md5-verified). Never key a shared data folder by this filename.
+- **MAHP `forecast_BVAR_NG.m` kappa/psi block**: NOT reproduced by
+  `bvt.samplers.gig_shrinkage('ng',...)` at any psi_floor - its conditionals carry an extra
+  factor 2 (`tmpc_j = sum(beta_j.^2./(2*psi_j))`, `tmpv_j = beta_j.^2/(2*kappa)`, lines
+  72-78) pairing with its doubled Valp/Vbeta (line 43), which estimation `BVAR_NG.m` does
+  NOT double. A different parameterization of the NG prior - functionize separately if the
+  MAHP forecast pipeline is ever consolidated. Further estimation-vs-forecast divergences
+  (psi floors 1e-10 vs 1e-16, halved psi_kappa1 init scale, Minn kappa init [.04,.04,1,100]
+  vs [.4,.001,1,100]) are recorded field-by-field in
+  `replications/chan2021_ijf_mahp/preset.m` under `pr.forecast`.
 - **`Min_Prior.m`** (AD packages): dual-number `{.v,.d}` builders; AD_VAR fits AR via the System
   Identification Toolbox `ar()` (different residual variances than OLS AR(4) in AD_ML). Not
   interchangeable with each other or with the plain Minnesota builders.
+
+## Verification notes (step 5 adversarial review, 2026-09-01)
+
+- The perturbation "teeth" check passed: altering a single preset constant (sv_offset) in a
+  scratch mirror makes test_mahp_equivalence FAIL on the stored draws - the equivalence test
+  detects one-constant deviations.
+- Path nuance in test_mahp_equivalence: inside the test, the unqualified gigrnd call in
+  bvt.samplers.gig_shrinkage resolves to the tempdir copy of the LEGACY gigrnd.m, not
+  third_party/gigrnd.m. The two differ only by the provenance header (test_gigrnd covers the
+  third_party copy separately), but the guarantee silently depends on those files staying
+  code-identical - never edit one without the other.
+- The step-2 golden .mat for MAHP stores alp_hat/beta_hat/h_hat/kappa_hat only; the golden
+  nu_psi mean (0.214989) lives in the golden run log, not the .mat.
