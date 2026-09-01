@@ -1,0 +1,131 @@
+tmpyhat0 = zeros(nsims,2*n+1);  %% [point forecasts, prelike, joint den]
+tmpyhat1 = zeros(nsims,2*n+1); 
+tmpyhat2 = zeros(nsims,2*n+1); 
+tmpyhat4 = zeros(nsims,2*n+1); 
+
+%% initialize
+h = zeros(Tt,1);
+psi = -.1;
+rho = .8;
+sigh2 = .1;
+Hrho = speye(Tt) - rho*sparse(2:Tt,1:(Tt-1),ones(1,Tt-1),Tt,Tt);
+Hpsi = speye(Tt) + psi*sparse(2:Tt,1:(Tt-1),ones(1,Tt-1),Tt,Tt);
+options = optimset('Display', 'off', 'LargeScale','off') ;
+psihat = psi;
+for isim = 1:nsims + burnin
+  
+        % sample Sig and A   
+    Xtld = Hpsi\X;    
+    Ytld = Hpsi\shortYt;
+    iO_hpsi = sparse(1:Tt,1:Tt,[1/(1+psi^2)*exp(-h(1)); exp(-h(2:end))]);
+    XiO = Xtld'*iO_hpsi;
+    KA = sparse(1:k,1:k,1./VA0) + XiO*Xtld;
+    Ahat = KA\(sparse(1:k,1:k,VA0)\A0 + XiO*Ytld);
+    Shat = S0 + A0'*sparse(1:k,1:k,1./VA0)*A0 + Ytld'*iO_hpsi*Ytld ...
+        - Ahat'*KA*Ahat;
+    Shat = (Shat+Shat')/2; % adjust for rounding errors
+    Sig = iwishrnd(Shat,nu0+Tt);    
+    CSig = chol(Sig,'lower');
+    A = Ahat + (chol(KA,'lower')'\randn(k,n))*CSig'; 
+    
+        % sample h
+    U = shortYt - X*A;
+    Utld = Hpsi\U;
+    tmp = (Utld/CSig');    
+    s2_h = sum(tmp.^2,2);
+    s2_h(1) = s2_h(1)/(1+psi^2);    
+    h = sample_h(s2_h,rho,sigh2,h,n);    
+    
+        % sample sigh2
+    eh = [h(1)*sqrt(1-rho^2);  h(2:end)-rho*h(1:end-1)];    
+    sigh2 = 1/gamrnd(nuh0+Tt/2,1/(Sh0 + sum(eh.^2)/2));
+
+        % sample rho
+    Krho = 1/Vrho + sum(h(1:Tt-1).^2)/sigh2;
+    rhohat = Krho\(rho0/Vrho + h(1:Tt-1)'*h(2:Tt)/sigh2);
+    rhoc = rhohat + sqrt(Krho)'\randn;
+    grho = @(x) -.5*log(sigh2./(1-x.^2))-.5*(1-x.^2)/sigh2*h(1)^2;
+    if abs(rhoc)<.9999
+        alpMH = exp(grho(rhoc)-grho(rho));
+        if alpMH>rand
+            rho = rhoc;            
+            Hrho = speye(Tt) - rho*sparse(2:Tt,1:(Tt-1),ones(1,Tt-1),Tt,Tt);
+        end
+    end 
+    
+      %% sample psi
+    U = shortYt - X*A;
+    lp_psi = @(x) llike_CSV_MA(x,U,Sig,h) + lpri_psi(x);    
+    if (mod(isim,100)==0) || isim == 1 %% get the Hessian every 100 iterations
+        [psihat,fval,exitflag,output,grad,hess] ...
+            = fminunc(@(x)-lp_psi(x),psihat,options); 
+        [tmpCpsi,flag] = chol(hess,'lower');
+        if flag == 0
+            Kpsic = hess;
+        else 
+            Kpsic = 1/.05^2;
+        end
+    else
+        psihat = fminbnd(@(x)-lp_psi(x),-.99,.99);
+    end    
+    psic = psihat + 1/sqrt(Kpsic)*randn;
+    if abs(psic)<.99
+        alpMH =  lp_psi(psic) - lp_psi(psi) + ...
+            -.5*(psi-psihat)^2*Kpsic + .5*(psic-psihat)^2*Kpsic;
+    else
+        alpMH = -inf;
+    end
+    if alpMH > log(rand)
+        psi = psic;
+        Hpsi = speye(Tt) + psi*sparse(2:Tt,1:(Tt-1),ones(1,Tt-1),Tt,Tt);
+    end   
+       
+    if isim > burnin
+        isave = isim - burnin;
+        xtp1 = [1 reshape(shortYt(end:-1:end-p+1,:)',1,n*p)];
+        E = Hpsi\(shortYt - X*A);
+        etp1 = E(end,:)';
+        htp1 = h(end);
+        if is_last_miss % if the lastest data are missing, do one more forecast horizon
+            htp1 = rho*htp1 + sqrt(sigh2)*randn;
+            EYtp1 = xtp1*A + psi*etp1';
+            etp1 = exp(htp1/2)*CSig*randn(n,1);
+            Ytp1 = EYtp1 + etp1';
+            xtp1 = [1 Ytp1 xtp1(2:end-n)];            
+        end        
+        for tt=1:5
+            htp1 = rho*htp1 + sqrt(sigh2)*randn;
+            EYtp1 = xtp1*A + psi*etp1';
+            dSig =exp(htp1)*diag(Sig)';
+            if tt == 1
+                tmpu = CSig\(data_tpk(1,:)-EYtp1)';
+                lden_joint = -n/2*log(2*pi) -sum(diag(log(CSig))) -n/2*htp1...
+                    -.5*(tmpu'*tmpu)/exp(htp1);
+                lden = -.5*log(2*pi*dSig) - .5*(data_tpk(1,:)-EYtp1).^2./dSig;                
+                tmpyhat0(isave,:) = [EYtp1 lden lden_joint]; 
+            elseif tt == 2 && t<=T-tt
+                tmpu = CSig\(data_tpk(2,:)-EYtp1)';
+                lden_joint = -n/2*log(2*pi) -sum(diag(log(CSig))) -n/2*htp1...
+                    -.5*(tmpu'*tmpu)/exp(htp1);
+                lden = -.5*log(2*pi*dSig) - .5*(data_tpk(2,:)-EYtp1).^2./dSig;
+                tmpyhat1(isave,:) = [EYtp1 lden lden_joint]; 
+            elseif tt == 3 && t<=T-tt
+                tmpu = CSig\(data_tpk(3,:)-EYtp1)';
+                lden_joint = -n/2*log(2*pi) -sum(diag(log(CSig))) -n/2*htp1...
+                    -.5*(tmpu'*tmpu)/exp(htp1);
+                lden = -.5*log(2*pi*dSig) - .5*(data_tpk(3,:)-EYtp1).^2./dSig;                
+                tmpyhat2(isave,:) = [EYtp1 lden lden_joint]; 
+            elseif tt == 5 && t<=T-tt
+                tmpu = CSig\(data_tpk(5,:)-EYtp1)';
+                lden_joint = -n/2*log(2*pi) -sum(diag(log(CSig))) -n/2*htp1...
+                    -.5*(tmpu'*tmpu)/exp(htp1);
+                lden = -.5*log(2*pi*dSig) - .5*(data_tpk(5,:)-EYtp1).^2./dSig;                
+                tmpyhat4(isave,:) = [EYtp1 lden lden_joint];
+            end
+            etp1 = exp(htp1/2)*CSig*randn(n,1);
+            Ytp1 = EYtp1 + etp1';
+            xtp1 = [1 Ytp1 xtp1(2:end-n)];
+        end        
+        
+    end
+end
