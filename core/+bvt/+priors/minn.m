@@ -20,8 +20,8 @@
 % See:
 % Chan, J.C.C. (2020). Large Bayesian Vector Autoregressions. In: P. Fuleky (Eds),
 % Macroeconomic Forecasting in the Era of Big Data, 95-125, Springer, Cham
-% Chan, J.C.C. (2022). Comparing Stochastic Volatility Specifications for
-% Large Bayesian VARs, Journal of Econometrics, forthcoming.
+% Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for
+% Large Bayesian VARs, Journal of Econometrics, 235(2): 1419-1446.
 
 function [beta_Minn,V_Minn,Sig_hat,U_hat] = minn(p,c1,c2,c3,Y0,Yt,n0pre)
 [Tt,n] = size(Yt);

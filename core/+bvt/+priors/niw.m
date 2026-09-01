@@ -33,11 +33,11 @@
 % See:
 % Chan, J.C.C. (2020). Large Bayesian Vector Autoregressions. In: P. Fuleky (Eds),
 % Macroeconomic Forecasting in the Era of Big Data, 95-125, Springer, Cham
-% Chan, J.C.C. (2022). Comparing Stochastic Volatility Specifications for
-% Large Bayesian VARs, Journal of Econometrics, forthcoming.
-% Chan, J. C. C., L. Jacobi, and D. Zhu (2019). Efficient Selection of
+% Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for
+% Large Bayesian VARs, Journal of Econometrics, 235(2): 1419-1446.
+% Chan, J. C. C., L. Jacobi, and D. Zhu (2020). Efficient Selection of
 % Hyperparameters in Large Bayesian VARs Using Automatic Differentiation,
-% CAMA Working Paper 46/2019.
+% Journal of Forecasting, 39(6): 934-943.
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error
 % covariance structure, Journal of Business and Economic Statistics,
 % 38(1), 68-79.

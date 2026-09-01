@@ -19,8 +19,8 @@
 % tests/variant_map.md never-merge list).
 %
 % See:
-% Chan, J.C.C. (2022). Comparing Stochastic Volatility Specifications for
-% Large Bayesian VARs, Journal of Econometrics, forthcoming.
+% Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for
+% Large Bayesian VARs, Journal of Econometrics, 235(2): 1419-1446.
 
 function [h,S] = ksc_ar1_mean(ystar,h,mu,rho,sig2)
 T = length(h);

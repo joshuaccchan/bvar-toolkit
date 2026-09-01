@@ -6,8 +6,8 @@
 % space model where the log chi^2 errors are modeled as N(-1.27,4.94)
 %
 % See:
-% Chan, J.C.C. (2022). Comparing Stochastic Volatility Specifications for 
-% Large Bayesian VARs, Journal of Econometrics, forthcoming.
+% Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for 
+% Large Bayesian VARs, Journal of Econometrics, 235(2): 1419-1446.
 
 function h_hat = init_approx1N(s2,muh,rhoh,sigh2)
     ystar = log(s2);

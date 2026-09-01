@@ -5,8 +5,8 @@
 % Support function for estimating the hybrid TVP-VAR in Chan (2022)
 %
 % See:
-% Chan, J.C.C. (2022). Large Hybrid Time-Varying Parameter VARs, Journal of
-% Business and Economic Statistics, forthcoming
+% Chan, J.C.C. (2023). Large Hybrid Time-Varying Parameter VARs, Journal of
+% Business and Economic Statistics, 41(3): 890-905
 
 function Xout = surform( X )
 [r,c] = size( X );

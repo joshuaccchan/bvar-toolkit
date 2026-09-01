@@ -2,8 +2,8 @@
 % This function samples N draws from the truncated normal
 %    
 % See:
-% Chan, J.C.C. (2022). Comparing Stochastic Volatility Specifications for 
-% Large Bayesian VARs, Journal of Econometrics, forthcoming.
+% Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for 
+% Large Bayesian VARs, Journal of Econometrics, 235(2): 1419-1446.
 
 function t = tnormrnd(mu, sigma2, a, b, N)
 

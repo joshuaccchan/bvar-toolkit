@@ -16,7 +16,7 @@
 %
 % See:
 % Chan, J.C.C. (2021). Minnesota-Type Adaptive Hierarchical Priors for
-% Large Bayesian VARs, International Journal of Forecasting, forthcoming
+% Large Bayesian VARs, International Journal of Forecasting, 37(3): 1212-1226
 
 function sig2 = resid_var_ar4(Y0,Y)
 [T,n] = size(Y);

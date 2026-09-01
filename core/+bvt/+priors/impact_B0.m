@@ -17,8 +17,8 @@
 % This function constructs the prior for the impact matrix B0
 %
 % See:
-% Chan, J.C.C. (2022). Comparing Stochastic Volatility Specifications for
-% Large Bayesian VARs, Journal of Econometrics, forthcoming.
+% Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for
+% Large Bayesian VARs, Journal of Econometrics, 235(2): 1419-1446.
 
 function [beta0,Vbeta] = impact_B0(Y0,Y,kappa)
 [T,n] = size(Y);

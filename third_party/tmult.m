@@ -30,9 +30,9 @@
 %   C - PxRx... output array.
 %
 % See: 
-% Chan, J. C. C., L. Jacobi, and D. Zhu (2019). Efficient Selection of
+% Chan, J. C. C., L. Jacobi, and D. Zhu (2020). Efficient Selection of
 % Hyperparameters in Large Bayesian VARs Using Automatic Differentiation, 
-% CAMA Working Paper 46/2019
+% Journal of Forecasting, 39(6): 934-943
 
 function A = tmult(A, B, transpose)
 szB = [size(B) 1];

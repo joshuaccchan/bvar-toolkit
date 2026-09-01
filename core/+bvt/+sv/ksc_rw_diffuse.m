@@ -14,8 +14,8 @@
 % parameterized. NEVER merge with bvt.sv.ksc_rw_h0: different initial condition
 % (h_1 ~ N(0,Vh) here vs h_1 ~ N(h0,sig) there), hence different draws.
 %
-% See Chan, J.C.C. (2012) Moving average stochastic volatility models
-%     with application to inflation forecast
+% See Chan, J.C.C. (2013). Moving Average Stochastic Volatility Models
+%     with Application to Inflation Forecast, Journal of Econometrics, 176(2): 162-172
 % (c) 2012, Joshua Chan. Email: joshuacc.chan@gmail.com
 
 function [h,S] = ksc_rw_diffuse(ystar,h,omega2h,Vh)

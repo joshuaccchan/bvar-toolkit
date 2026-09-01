@@ -14,7 +14,7 @@
 %
 % See:
 % Chan, J.C.C. (2021). Minnesota-Type Adaptive Hierarchical Priors for
-% Large Bayesian VARs, International Journal of Forecasting, forthcoming
+% Large Bayesian VARs, International Journal of Forecasting, 37(3): 1212-1226
 
 function [C,idx_kappa1,idx_kappa2] = minnesota_C(n,p,sig2)
 k_beta = n^2*p+n;
