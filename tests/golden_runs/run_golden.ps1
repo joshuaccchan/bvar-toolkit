@@ -8,13 +8,17 @@ param(
     # Build copies live OUTSIDE the repo: the repo sits in Dropbox, whose sync client
     # locks freshly written files (breaks the fresh-copy step) and would pointlessly
     # sync large MCMC scratch output.
-    [string]$BuildRoot = (Join-Path $env:LOCALAPPDATA 'bvar-toolkit\golden_runs')
+    [string]$BuildRoot = (Join-Path $env:LOCALAPPDATA 'bvar-toolkit\golden_runs'),
+    # Override the patch overlay folder (default: patches/<slug>). Used for variant
+    # runs, e.g. flipping an in-script model selector; capture dirs get -Label appended.
+    [string]$PatchDir = '',
+    [string]$Label = ''
 )
 $ErrorActionPreference = 'Stop'
 $repo    = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $legacy  = Join-Path $repo "replications\$Slug\legacy"
 $buildTop = Join-Path $BuildRoot $Slug
-$patches = Join-Path $repo "tests\golden_runs\patches\$Slug"
+$patches = if ($PatchDir) { $PatchDir } else { Join-Path $repo "tests\golden_runs\patches\$Slug" }
 if (-not (Test-Path $legacy)) { throw "No legacy folder for slug '$Slug'" }
 
 # 1. Fresh build copy
@@ -54,7 +58,8 @@ if (-not $p.WaitForExit($TimeoutMinutes * 60 * 1000)) {
 Write-Host "MATLAB exit code: $($p.ExitCode)"
 
 # 5. Capture new/modified files as goldens
-$dest = Join-Path $repo "tests\golden\$Slug\${entryName}_$stamp"
+$suffix = if ($Label) { "_$Label" } else { '' }
+$dest = Join-Path $repo "tests\golden\$Slug\${entryName}${suffix}_$stamp"
 New-Item -ItemType Directory -Force $dest | Out-Null
 Get-ChildItem -Recurse -File $buildTop | Where-Object {
     (-not $before.ContainsKey($_.FullName)) -or ($_.LastWriteTimeUtc -gt $before[$_.FullName])

@@ -21,12 +21,12 @@ Toolboxes beyond base MATLAB are listed per package. "Blockers" are known issues
 |---|---|---|---|
 | `cjz2018_ad_var` | `main_AD_VAR.m` | min-hours | Needs System Identification Tbx (`ar()` in Min_Prior) + Stats Tbx + deprecated `xlsread`. 15 globals; run standalone only. |
 | `cjz2019_ad_opthyper` | `main_AD_OptHpyer.m` (sic) | hours | fmincon ML-maximization over kappa. Optimization + Stats Tbx. `main_AD_forecasting.m` calls `addpath(genpath('..'))` - climbs out of package root; run from an isolated build copy only (the harness does this). |
-| `cjz2021_jae_ad_ml` | `main_ADML_VAR.m` | hours | Stats Tbx. Legacy seed calls in VAR mains may need a patch. |
+| `cjz2021_jae_ad_ml` | `main_ADML_VAR.m` | hours | Stats Tbx. Legacy seed syntax verified working on R2025b - no patch expected. |
 | `cjz2021_jae_ad_ml` | `main_ADML_FactorModel.m` | hours | Uses `readmatrix` (R2019a+), `rng('default')` - reproducible as shipped. |
-| `chan2021_ijf_mahp` | `main_BVAR.m` | hours | 23-variable MCMC, three priors (MNG/NG/Minn selected in-script). Legacy `rand('seed',...)` calls may error on R2025b - patch to `rng` if so. |
+| `chan2021_ijf_mahp` | `main_BVAR.m` | hours | 23-variable MCMC, three priors (MNG/NG/Minn selected in-script; as-shipped default model=1 MNG, nsim=10000+1000). Legacy `randn('seed',clock)` syntax VERIFIED WORKING on R2025b - no patch; runs are clock-seeded as shipped. |
 | `chan2023_joe_mlvarsv` | `main_varsv.m` | hours | Default n=7 subset; 5 models + adaptive-IS ML each. KNOWN SUSPECT: `ml_var_arsvo_redu` (ngrid 31/32 mismatch, o_hat linear-indexing) - capture its output as-is; it is the quarantine target, and the golden documents what the shipped code produces. |
-| `chan2023_jbes_hybtvp` | `main_HYB_TVPSV.m` | hours | BLOCKED as shipped: `xlsread` with an Excel-style cell range on a .csv fails on current MATLAB. Needs a patch (replace the load line with `readmatrix` + explicit row/col slicing verified against 1959Q1-2018Q4). |
-| `chan2020_jbes_kronecker` | `main_BVAR.m` | hours | Full-sample, 8 models, 30000 draws. Legacy `randn('seed',...)` needs patching. `addpath('./realtime_forecasts')` creates path-order shadowing between root and realtime copies of sample_h/llike_CSV_MA - run models one at a time and record which copy resolved. |
+| `chan2023_jbes_hybtvp` | `main_HYB_TVPSV.m` | hours | The audit flagged the `xlsread`-with-cell-range-on-csv load as broken, but it was VERIFIED WORKING on R2025b (2026-09-01): returns exactly 238x248, matching the csv - no patch needed. |
+| `chan2020_jbes_kronecker` | `main_BVAR.m` | hours | Full-sample, 8 models, 30000 draws. Legacy `randn('seed',...)` syntax verified working on R2025b - no patch expected. `addpath('./realtime_forecasts')` creates path-order shadowing between root and realtime copies of sample_h/llike_CSV_MA - run models one at a time and record which copy resolved. |
 | `chan2020_jbes_kronecker` | `ml_*` scripts | hours | Marginal likelihoods. KNOWN BUGS to capture as-is (they are behind the published numbers): `ml_BVAR_MA.m` stale `psi`; `ml_BVAR_CSV_t_MA.m` stale `Sig` + leftover-workspace reliance. Do NOT fix in the golden run. |
 
 ## Multi-day jobs (schedule separately)
