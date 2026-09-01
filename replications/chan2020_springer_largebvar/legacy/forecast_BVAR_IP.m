@@ -1,0 +1,70 @@
+% This script produces forecasts from a 20-variable BVAR with the 
+% independent prior
+%
+% See:
+% Chan, J.C.C. (2020). Large Bayesian Vector Autoregressions. In: P. Fuleky (Eds),
+% Macroeconomic Forecasting in the Era of Big Data, 95-125, Springer, Cham
+
+Yt = reshape(shortYt',n*Tt,1);
+tmpyhat0 = zeros(nsims,2*n+1);  %% [point forecasts, prelike, joint den]
+tmpyhat1 = zeros(nsims,2*n+1); 
+
+% construct the priors 
+[beta_Minn,V_Minn,Sig_hat] = prior_Minn(p,c1,c2,c3,Y0,shortYt);
+beta0 = beta_Minn;
+iVbeta = sparse(1:n*k,1:n*k,1./V_Minn);
+S0 = diag(Sig_hat);
+nu0 = n+3;
+
+%% compute a few things
+tmpY = [Y0(end-p+1:end,:); shortYt];
+Z = zeros(Tt,n*p);
+for i=1:p
+    Z(:,(i-1)*n+1:i*n) = tmpY(p-i+1:end-i,:);
+end
+Z = [ones(Tt,1) Z];
+X = SURform2(Z,n);
+Sig = S0;
+
+for isim = 1:nsims + burnin
+           % sample beta    
+    XiSig = X'*kron(speye(Tt),Sig\speye(n));
+    Kbeta = iVbeta + XiSig*X;
+    C_Kbeta = chol(Kbeta,'lower');
+    beta_hat = C_Kbeta'\(C_Kbeta\(iVbeta*beta0 + XiSig*Yt));
+    beta = beta_hat + C_Kbeta'\randn(k*n,1);
+  
+        % sample Sig 
+    Ut = reshape(Yt - X*beta,n,Tt);
+    Sig = iwishrnd(S0+Ut*Ut',nu0+Tt);    
+    
+    if isim > burnin
+        isave = isim - burnin;
+        CSig = chol(Sig,'lower');
+        A = reshape(beta,k,n);
+        xtp1 = [1 reshape(shortYt(end:-1:end-p+1,:)',1,n*p)];
+        if is_last_miss % if the lastest data are missing, do one more forecast horizon
+            Ytp1 = xtp1*A + (CSig*randn(n,1))';
+            xtp1 = [1 Ytp1 xtp1(2:end-n)];
+        end            
+        for tt=1:2
+            EYtp1 = xtp1*A;
+            dSig = diag(Sig)';
+            if tt == 1
+                tmpu = CSig\(data_tpk(1,:)-EYtp1)';
+                lden_joint = -n/2*log(2*pi) -sum(diag(log(CSig))) -.5*(tmpu'*tmpu);
+                lden = -.5*log(2*pi*dSig) -.5*(data_tpk(1,:)-EYtp1).^2./dSig;                
+                tmpyhat0(isave,:) = [EYtp1 lden lden_joint]; 
+            elseif tt == 2 && t<=T-tt
+                tmpu = CSig\(data_tpk(2,:)-EYtp1)';
+                lden_joint = -n/2*log(2*pi) -sum(diag(log(CSig))) -.5*(tmpu'*tmpu);
+                lden = -.5*log(2*pi*dSig) -.5*(data_tpk(2,:)-EYtp1).^2./dSig;                
+                tmpyhat1(isave,:) = [EYtp1 lden lden_joint];          
+            end
+            Ytp1 = EYtp1 + (CSig*randn(n,1))';
+            xtp1 = [1 Ytp1 xtp1(2:end-n)];
+        end        
+        
+    end
+end
+
