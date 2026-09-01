@@ -1,0 +1,10 @@
+MATLAB 25.2.0.3150157 (R2025b) Update 4
+01-Sep-2026 13:13:36
+Starting MCMC for VAR-SV...
+10000 loops... 
+Estimating VAR-SV takes 112.553 seconds
+Computing the marginal likelihood of VAR-SV... 
+ML computation takes 563.288 seconds
+ 
+log marginal likelihood of VAR-SV: -6443.7 
+Elapsed time is 676.092563 seconds.

@@ -1,0 +1,12 @@
+MATLAB 25.2.0.3150157 (R2025b) Update 4
+01-Sep-2026 13:15:14
+Starting MCMC for BVAR-MNG.... 
+5000 loops... 
+10000 loops... 
+MCMC takes 153.338 seconds
+ 
+posterior mean kappa1: 0.0342584, kappa2: 0.000611084
+posterior mean nu_psi: 0.214989
+mean over (t,i) of posterior-mean stdev exp(h_hat/2): 3.44284
+norm(beta_hat): 97.8407, norm(alp_hat): 39.6896
+Elapsed time is 155.818280 seconds.
