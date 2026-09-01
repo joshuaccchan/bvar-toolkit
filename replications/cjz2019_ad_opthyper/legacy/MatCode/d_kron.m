@@ -1,0 +1,15 @@
+% Support script for Chan, Jacobi and Zhu (2019)
+%
+% See: 
+% Chan, J. C. C., L. Jacobi, and D. Zhu (2019). Efficient Selection of
+% Hyperparameters in Large Bayesian VARs Using Automatic Differentiation, 
+% CAMA Working Paper 46/2019
+function [dC] = d_kron(A, dA, B, dB)
+  [m,n] = size(A);
+  [p,q] = size(B);
+  I_n = eye(n);
+  K_qm = commutation_matrix(q, m);
+  I_p = eye(p);
+  f1 = sparse(kron(kron(I_n, K_qm), I_p));
+      dC = f1 * (sparse(kron(A(:), dB)) + sparse(kron(dA, B(:))));
+
