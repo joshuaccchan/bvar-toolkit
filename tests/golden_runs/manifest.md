@@ -10,10 +10,10 @@ Toolboxes beyond base MATLAB are listed per package. "Blockers" are known issues
 |---|---|---|---|
 | `chan_jeliazkov2009_statespace` | `TVPVAR.m` | min | 4-variable TVP-VAR via precision sampler. Stats Tbx (gamrnd, wishrnd). Scripts sit in nested `sp_code/` subfolder; must run from that folder (bare `load USdata.csv`). CAPTURED 2026-09-01: runs clean (10k sweeps, ~37 s) but prints progress only - results go to figures, so this golden certifies run-health, not numbers; add a save-posterior-means patch if numeric goldens are needed. |
 | `chan_jeliazkov2009_statespace` | `UC.m` | min | UC-SV on US CPI inflation. CAPTURED 2026-09-01: runs clean (10k sweeps, ~2 s); same figures-only caveat as TVPVAR.m. |
-| `chan2019wp_acp` | `main_BVAR_ACP.m` | min | Exact sampling + closed-form ML; no MCMC chains to wait on. |
-| `chan2022_qe_acp` | `main_ACP_jointden.m` | min-hours | Analytic log-ML on a (kappa1,kappa2) meshgrid. Uses deprecated `xlsread` (still works in R2025b, emits warning). |
+| `chan2019wp_acp` | `main_BVAR_ACP.m` | min | Exact sampling + closed-form ML; no MCMC chains to wait on. CAPTURED 2026-09-01: optimal-kappa table (symmetric vs asymmetric, log-ML -9436 vs -9201), ~2 s. |
+| `chan2022_qe_acp` | `main_ACP_jointden.m` | min-hours | Analytic log-ML on a (kappa1,kappa2) meshgrid. Uses deprecated `xlsread` (still works in R2025b, emits warning). CAPTURED 2026-09-01: runs clean, ~41 s, but output is the contour figure only (lost in -batch) - patch a savefig/save if a numeric golden is needed. |
 | `chan_koop_yu2024_jbes_oisv` | `Table3_forecasting.m` | min | Builds published Table 3 (RMSFE/ALPL) from the SHIPPED `results_mat/*.mat` cluster outputs - ideal golden, fully deterministic. CAPTURED 2026-09-01: full table with DM stars + `Table3_LaTex_cluster.xls`, ~2 s. |
-| `chan_koop_yu2024_jbes_oisv` | `Fig89_plot_varcov_first2last2.m`, `Fig10_plot_B0_fullsample.m` | min | Figure inputs from shipped fullsample .mat files. Bundled `heatmap.m` shadows the R2017a+ builtin - fine inside the package folder. |
+| `chan_koop_yu2024_jbes_oisv` | `Fig89_plot_varcov_first2last2.m`, `Fig10_plot_B0_fullsample.m` | min | Figure inputs from shipped fullsample .mat files. Bundled `heatmap.m` shadows the R2017a+ builtin - fine inside the package folder. CAPTURED 2026-09-01: Fig 8/9 .eps pair, Fig 10 heatmap .eps, and `Table2_kappa.csv` (deterministic kappa estimates). |
 
 ## Medium jobs
 

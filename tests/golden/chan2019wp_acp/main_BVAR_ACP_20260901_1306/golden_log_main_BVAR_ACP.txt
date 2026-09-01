@@ -1,0 +1,8 @@
+MATLAB 25.2.0.3150157 (R2025b) Update 4
+01-Sep-2026 13:06:51
+         | Symmetric prior | Asymmetric prior:
+kappa_1  | 0.039           | 0.406 
+kappa_2  | 0.039           | 0.009 
+log-ML   | -9436           | -9201  
+
+Elapsed time is 1.581496 seconds.
