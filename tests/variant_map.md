@@ -34,6 +34,22 @@ Edits made during extraction, in full: provenance header prepended; function ren
 the table says so (surform, surform2, init_approx1N, realtime_loaddata, heatmap_fx). Bodies
 are otherwise verbatim from the canonical source.
 
+## Canonicalized in step 4 (SV/prior core, 2026-09-01)
+
+| Core function | Canonical source (legacy) | Also canonicalizes | Verified |
+|---|---|---|---|
+| `bvt.sv.sv_params` | chan_koop_yu2024_jbes_oisv `utility/sample_SVpara.m` | (nothing else; the chan2023_joe_mlvarsv `sample_SVpara.m` is NOT canonicalized - never-merge, see below) | unit (seeded draws, 3 cases: r=0, r>0, mu gated at zero) |
+| `bvt.sv.sv0_params` | chan_koop_yu2024_jbes_oisv `utility/sample_SV0para.m` | (single copy) | unit (seeded draws) |
+
+Edits made during extraction, in full: provenance header prepended; functions renamed
+(`sample_SVpara` -> `sv_params`, `sample_SV0para` -> `sv0_params`); the hard-coded phi
+MH truncation bound promoted to an optional trailing argument `phi_bnd` DEFAULTING to
+the OISV value (`.999` in `sv_params`, `.99` in `sv0_params`), so default calls
+reproduce the OISV copies exactly (same draws, same rand/randn/gamrnd sequence under
+the same seed). Bodies otherwise verbatim, including the `if mu~=0` gate in `sv_params`.
+Passing `phi_bnd = .998` to `sv_params` does NOT reproduce the ml_varsv copy - that
+copy also differs structurally (no n+r column split; mu demeans ALL columns of h).
+
 ## NEVER MERGE - same name, numerically different
 
 A future deduplication must not unify any of these; doing so silently changes published results.
@@ -54,9 +70,17 @@ A future deduplication must not unify any of these; doing so silently changes pu
   variables plus a 1e-4 ridge - numerically different sig2, hence different Minnesota scalings.
 - **`getVtheta.m`**: HYB copy hard-codes kappa3=.2, kappa4=1 inside the body; MAHP copy takes
   them from the kappa vector.
-- **`sample_SVpara.m`**: ml_varsv copy has the `if mu ~= 0` vectorized gate (skips the whole mu
-  block if ANY element is exactly zero); OISV splits into sample_SVpara/sample_SV0para with
-  different phi truncation bounds (.998/.999/.99).
+- **`sample_SVpara.m`**: the ml_varsv and OISV copies are numerically different and must not be
+  unified (record corrected 2026-09-01 after full reads: BOTH copies carry the `if mu ~= 0`
+  vectorized gate that skips the whole mu block if ANY element of mu is exactly zero - the gate
+  is not what separates them). Real differences: (i) phi truncation bound .998 (ml_varsv) vs
+  .999 (OISV); (ii) OISV takes h with n+r columns and demeans only the first n (mu applies to
+  n series; r extra zero-mean columns share the phi/sig2 draws), ml_varsv demeans ALL columns;
+  (iii) OISV's mu block indexes phi(1:n)/sig2(1:n), ml_varsv uses full vectors. OISV
+  additionally splits the zero-mean case into `sample_SV0para.m` with bound .99. Step 4
+  canonicalized the OISV pair as `bvt.sv.sv_params` / `bvt.sv.sv0_params` (phi bound exposed
+  as an argument, defaults reproduce OISV exactly); the ml_varsv copy stays un-canonicalized
+  on this list.
 - **`macrodata_Q_2018Q4.csv`**: byte-identical between MAHP and HYB but a DIFFERENT file in
   BVAR_ACP (md5-verified). Never key a shared data folder by this filename.
 - **`Min_Prior.m`** (AD packages): dual-number `{.v,.d}` builders; AD_VAR fits AR via the System
