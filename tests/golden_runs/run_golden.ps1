@@ -17,7 +17,13 @@ param(
 $ErrorActionPreference = 'Stop'
 $repo    = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $legacy  = Join-Path $repo "replications\$Slug\legacy"
-$buildTop = Join-Path $BuildRoot $Slug
+# Unique build dir per run: reusing one dir per slug hit transient file locks
+# (lingering handles from the previous MATLAB run) that killed chained runs.
+$buildTop = Join-Path $BuildRoot ("$Slug`_" + (Get-Date -Format 'yyyyMMdd_HHmmss'))
+# best-effort cleanup of stale build dirs for this slug (never fatal)
+Get-ChildItem -Directory -Path $BuildRoot -Filter "$Slug`_*" -ErrorAction SilentlyContinue | ForEach-Object {
+    try { Remove-Item -Recurse -Force $_.FullName -ErrorAction Stop } catch {}
+}
 $patches = if ($PatchDir) { $PatchDir } else { Join-Path $repo "tests\golden_runs\patches\$Slug" }
 if (-not (Test-Path $legacy)) { throw "No legacy folder for slug '$Slug'" }
 

@@ -1,0 +1,12 @@
+MATLAB 25.2.0.3150157 (R2025b) Update 4
+01-Sep-2026 21:11:57
+Starting the recursive forecasting exercise for BVAR-SV-small....
+168 more periods to go... 
+=== RUN ERRORED ===
+Error using horzcat
+Dimensions of arrays being concatenated are not consistent.
+
+Error in main_forecasting (line 175)
+    tmpmax = max(tmpyhat0(:,[n+var_small,2*n+1]));
+                             ^
+Elapsed time is 14.044455 seconds.

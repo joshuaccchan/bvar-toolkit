@@ -1,0 +1,53 @@
+MATLAB 25.2.0.3150157 (R2025b) Update 4
+01-Sep-2026 19:43:38
+Computing impulse responses from a 6-variable VAR
+    to an one-standard-deviation financial shock...
+Out of 1 million posterior draws, 108 satisfy all the restrictions.
+Out of 2 million posterior draws, 208 satisfy all the restrictions.
+Out of 3 million posterior draws, 308 satisfy all the restrictions.
+Out of 4 million posterior draws, 419 satisfy all the restrictions.
+Out of 5 million posterior draws, 535 satisfy all the restrictions.
+Out of 6 million posterior draws, 653 satisfy all the restrictions.
+Out of 7 million posterior draws, 770 satisfy all the restrictions.
+Out of 8 million posterior draws, 869 satisfy all the restrictions.
+Out of 9 million posterior draws, 983 satisfy all the restrictions.
+Out of 10 million posterior draws, 1068 satisfy all the restrictions.
+Out of 11 million posterior draws, 1179 satisfy all the restrictions.
+Out of 12 million posterior draws, 1300 satisfy all the restrictions.
+Out of 13 million posterior draws, 1421 satisfy all the restrictions.
+Out of 14 million posterior draws, 1527 satisfy all the restrictions.
+Out of 15 million posterior draws, 1621 satisfy all the restrictions.
+Out of 16 million posterior draws, 1749 satisfy all the restrictions.
+Out of 17 million posterior draws, 1856 satisfy all the restrictions.
+Out of 18 million posterior draws, 1954 satisfy all the restrictions.
+Out of 19 million posterior draws, 2067 satisfy all the restrictions.
+Out of 20 million posterior draws, 2192 satisfy all the restrictions.
+Out of 21 million posterior draws, 2298 satisfy all the restrictions.
+Out of 22 million posterior draws, 2402 satisfy all the restrictions.
+Out of 23 million posterior draws, 2507 satisfy all the restrictions.
+Out of 24 million posterior draws, 2624 satisfy all the restrictions.
+Out of 25 million posterior draws, 2704 satisfy all the restrictions.
+Out of 26 million posterior draws, 2815 satisfy all the restrictions.
+Out of 27 million posterior draws, 2932 satisfy all the restrictions.
+Out of 28 million posterior draws, 3029 satisfy all the restrictions.
+Out of 29 million posterior draws, 3130 satisfy all the restrictions.
+Out of 30 million posterior draws, 3228 satisfy all the restrictions.
+Out of 31 million posterior draws, 3347 satisfy all the restrictions.
+Out of 32 million posterior draws, 3463 satisfy all the restrictions.
+Out of 33 million posterior draws, 3568 satisfy all the restrictions.
+Out of 34 million posterior draws, 3668 satisfy all the restrictions.
+Out of 35 million posterior draws, 3761 satisfy all the restrictions.
+Out of 36 million posterior draws, 3872 satisfy all the restrictions.
+Out of 37 million posterior draws, 3973 satisfy all the restrictions.
+Out of 38 million posterior draws, 4071 satisfy all the restrictions.
+Out of 39 million posterior draws, 4170 satisfy all the restrictions.
+Out of 40 million posterior draws, 4264 satisfy all the restrictions.
+Out of 41 million posterior draws, 4380 satisfy all the restrictions.
+Out of 42 million posterior draws, 4473 satisfy all the restrictions.
+Out of 43 million posterior draws, 4577 satisfy all the restrictions.
+Out of 44 million posterior draws, 4687 satisfy all the restrictions.
+Out of 45 million posterior draws, 4790 satisfy all the restrictions.
+Out of 46 million posterior draws, 4918 satisfy all the restrictions.
+5000 posterior draws that satisfy all the restrictions are obtained.
+The simulation took 49.0491 minutes.
+Elapsed time is 2952.510134 seconds.
