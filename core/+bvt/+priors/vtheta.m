@@ -15,6 +15,13 @@
 % (kappa(3)=.2 and kappa(4)=1 give bit-identical products to the HYB hard-coded
 % constants; verified by unit test under both settings.)
 %
+% Added 2026-09-02 (step 7, OISV family pass): the Vbeta output also
+% canonicalizes chan_koop_yu2024_jbes_oisv/legacy/utility/getVbeta.m - that
+% function is exactly the three Vbeta assignment lines below (same inputs,
+% same order, no Valp); OISV callers use `[~,Vbeta] = bvt.priors.vtheta(...)`
+% and discard Valp (NaN under the OI kappa(3) = NaN, never read). Verified
+% draw-for-draw through tests/unit/test_oisv_equivalence.m.
+%
 % This function constructs the conditional prior of the VAR coefficients
 % and the impact matrix
 %

@@ -143,6 +143,68 @@ Step-6 verification notes:
   (CSV-t/CSV-t-MA), the psi MH) live VERBATIM in the test's run_core_*
   pipelines; functionizing them belongs to the springer family pass.
 
+## Canonicalized in step 7 (OISV family pass, 2026-09-02)
+
+Full-sample estimation pipeline of chan_koop_yu2024_jbes_oisv (Chan, Koop and Yu 2024, JBES
+42(2): 825-837): main_SVAR_fullsample.m -> func_main_SVAR_v2.m -> SVARSV_MH.m ('OI') /
+CS_MH.m ('CS'). Equivalence test: `tests/unit/test_oisv_equivalence.m` runs the legacy
+scripts from tempdir copies at small nsim - SVARSV_MH with its ACTIVE clock-seed line
+(line 24) removed as the sole patch (asserted exactly-one-occurrence, not commented);
+CS_MH BYTE-VERBATIM (its clock-seed line 49 ships commented out; asserted) - OI at the
+default ordering, CS at the reversed ordering, and asserts isequal on all stores, the
+script-tail summaries, the six func_main outputs, and the terminal rng state.
+
+| Core function | Canonical source (legacy) | Also canonicalizes | Verified |
+|---|---|---|---|
+| `bvt.util.anormrnd` | chan_koop_yu2024_jbes_oisv `utility/anormrnd.m` (single copy) | both call sites (SVARSV_MH.m line 63, forecast_SVARSV_MH.m line 57) via `b0_row_sampler`. NEVER fold into `bvt.util.tnormrnd` - different density, different rng sequence. | unit (`test_anormrnd` seeded draws + `test_oisv_equivalence`) |
+| `bvt.structural.construct_Sigt` | chan_koop_yu2024_jbes_oisv `utility/construct_Sigt.m` | the private subfunction copy inside `func_main_SVAR_v2.m` lines 67-73 (comment-stripped identical, diff 2026-09-02; that copy is what the legacy func resolves at runtime) | diff + unit (`test_construct_sigt`, and end-to-end through the Sig_mean assertion in `test_oisv_equivalence`) |
+| `bvt.structural.b0_row_sampler` | SVARSV_MH.m lines 49-72 (inline row-wise "sammple B0" rotation loop; caller supplies U = Y-X*A) | forecast_SVARSV_MH.m lines 43-66 (textually identical modulo Y/X/T -> Yt/Xt/Tt) | unit (`test_oisv_equivalence`) |
+| `bvt.samplers.eq_svar_oi` | SVARSV_MH.m lines 76-87 (inline "sample alpha" block; caller computes tmpdV and keeps alpha = A(:)) | NOTHING else - the forecast fragment REWRITES this step (never-merge, below) | unit (same test) |
+| `bvt.samplers.eq_tri_cs` | CS_MH.m lines 54-72 (inline "sample B" block; caller computes tmpdV and keeps beta = reshape(B',k_beta,1); the dead `zi` assignment kept verbatim) | forecast_CS_MH.m lines 45-63 (identical modulo Yt/Xt/Tt) | unit (same test) |
+| `bvt.samplers.alp_tri_cs` | CS_MH.m lines 77-87 (inline "sample alp" count_alp loop; caller computes E = Y-XB and keeps A(A_id) = alp) | forecast_CS_MH.m lines 68-78 (identical modulo Tt) | unit (same test) |
+| `bvt.samplers.horseshoe_kappa_psi` | SVARSV_MH.m lines 102-120 (psi -> z_psi -> kappa(1:2) -> z_kappa ladder, theta = alpha) | CS_MH.m lines 102-120 (theta = beta), forecast_SVARSV_MH.m lines 96-114, forecast_CS_MH.m lines 93-111 - all four textually identical modulo the coefficient vector's name. NEVER merge with `bvt.samplers.gig_shrinkage` (MAHP normal-gamma GIG ladder - different prior family). | unit (same test) |
+| `bvt.priors.vtheta` (Vbeta output; row added, no new function) | - | chan_koop_yu2024_jbes_oisv `utility/getVbeta.m`: exactly vtheta's three Vbeta assignment lines on the same inputs; OISV callers use `[~,Vbeta] = bvt.priors.vtheta(...)` and discard Valp (NaN under the OI kappa(3) = NaN, never read) | diff + unit (same test) |
+
+Reused as-is (extracted in steps 3-4, headers already list the OISV copies): `bvt.priors.resid_var_ar4`
+(legacy get_resid_var), `bvt.priors.minnesota_C` (get_C), `bvt.sv.ksc_ar1_mean` (sample_SV),
+`bvt.sv.sv0_params` (sample_SV0para, phi bound default .99), `bvt.sv.sv_params` (sample_SVpara,
+phi bound default .999), `bvt.util.vec`, `bvt.util.build_lags` (the func_main inline lag loop),
+`third_party/EvalFore.m`, `third_party/heatmap_fx.m`. `bvt.priors.impact_B0` is NOT used by OISV
+(its inline Hyper.B0 = eye(n)/VB0 = ones(n) prior is a different object - see impact_B0's header).
+The dead OISV utilities SURform2.m / getARh_approx1N.m stay covered by their step-3 rows
+(`bvt.util.surform2`, `bvt.sv.init_approx1N`); genSV.m / gendata_SVARSV.m (simulation-study
+helpers, no callers in the shipped pipeline) are left un-canonicalized in legacy/.
+
+New replication drivers (not core): `replications/chan_koop_yu2024_jbes_oisv/run_all.m`
+(functionized full-sample pipeline, `run_all(model, flip, nsim, burnin, seed)` covering the
+four main_SVAR_fullsample configurations OI/CS x default/flipped) and `preset.m` (every
+hard-coded legacy constant with per-line citations, plus the documented forecast-fragment
+divergences under `pr.forecast`). The OI clock-seed line is deliberately NOT reproduced in
+run_all (same rationale and mechanics as the step-5 MAHP note above); CS needs no patch.
+
+Edits made during extraction, in full: provenance headers prepended; blocks wrapped as
+functions with sizes recomputed from arguments ([T,n] = size(U)/size(Y)/size(E),
+k = size(X,2), np = numel(idx_kappa1), nnp = numel(idx_kappa2) - identical integers);
+Hyper.B0/VB0/beta0/Valp passed as explicit arguments; alpha/beta unified as `theta` in
+`horseshoe_kappa_psi` (the four legacy copies differ only in that name) with the
+rng-neutral Psi reassembly left to the caller (legacy position: between the psi and z_psi
+draws; Psi is not read inside the ladder); `alp_tri_cs` returns alp preallocated
+zeros(1,k_alp) instead of the legacy dynamic growth into the same 1 x k_alp row (fully
+overwritten every sweep before any read); unqualified anormrnd/vec calls now
+bvt.util.anormrnd/bvt.util.vec (code-identical). Everything else byte-verbatim, including
+the OI sign fix B0(ii,:) = phii*sign(phii(ii)) and CS's dead `zi` line. The h loops
+(3 lines per model), the SV-parameter calls, and the chain-init draws stay inline in
+run_all. The legacy wall-clock timing displays are not reproduced.
+
+Deferred (NOT functionized in step 7): the two forecast cluster fragments
+`forecast_SVARSV_MH.m` / `forecast_CS_MH.m` and their four submain_forecasting_* drivers -
+the vintage loop `for t = T0:T-1` ships commented out (submain line 52) and `t` is a
+per-cluster-job input (README.txt), so the fragments are not runnable as shipped; their
+goldens are the shipped `legacy/results_mat/forecasting{OI1,OI2,CS1,CS2}-cluster.mat`.
+Also deferred: the evaluation/plot tails Table3_forecasting.m + get_frcst_lkhd.m +
+EvalFore.m and Fig89/Fig10 plot scripts (read results_mat only). getISden_ARSS: absent
+from this package (glob-verified 2026-09-02).
+
 ## NEVER MERGE - same name, numerically different
 
 A future deduplication must not unify any of these; doing so silently changes published results.
@@ -188,6 +250,26 @@ A future deduplication must not unify any of these; doing so silently changes pu
 - **`Min_Prior.m`** (AD packages): dual-number `{.v,.d}` builders; AD_VAR fits AR via the System
   Identification Toolbox `ar()` (different residual variances than OLS AR(4) in AD_ML). Not
   interchangeable with each other or with the plain Minnesota builders.
+- **OISV OI alpha step, estimation vs forecast**: `bvt.samplers.eq_svar_oi` reproduces ONLY
+  SVARSV_MH.m lines 76-87 (yi = vec((Y-X*A)*B0')./Lambda, Wi = kron(B0(:,ii),X)./Lambda -
+  equation-stacked, row-scaled). forecast_SVARSV_MH.m lines 69-81 REWRITE the same
+  conditional: zi = reshape(B0*(Yt-[XA cols, zeroed ii])',Tt*n,1), Wi = kron(Xt,B0(:,ii))
+  (time-interleaved stacking) with an explicit exp(-reshape(h',Tt*n,1)) weighting matrix.
+  Same posterior, different floating-point path and stacking order - functionize separately
+  if the OISV forecast fragments are ever consolidated (see
+  replications/chan_koop_yu2024_jbes_oisv/preset.m `pr.forecast.oi_alpha_rewritten`).
+- **OISV CS h step, estimation vs forecast**: CS_MH.m line 94 passes `mu(ii)` to sample_SV;
+  forecast_CS_MH.m line 85 passes `0` - the forecast h path is drawn zero-mean while
+  sample_SVpara keeps updating mu and the predictive recursion uses muh (preset
+  `pr.forecast.cs_h_mu_zero`). A forecast functionization must NOT reuse the estimation
+  call as-is.
+- **`anormrnd.m` vs `tnormrnd.m`**: anormrnd is the OISV bimodal two-component draw for the
+  first B0 rotation coordinate (one rand + one randn); tnormrnd is an inverse-cdf truncated
+  normal. Same "restricted normal draw" vibe, entirely different densities and rng
+  sequences - never unify.
+- **`horseshoe_kappa_psi` vs `gig_shrinkage`**: the OISV horseshoe ladder (inverse-gamma /
+  auxiliary z draws, kappa(1:2) global scales) and the MAHP normal-gamma (GIG) ladder are
+  different prior families with different draw sequences - never unify.
 
 ## Verification notes (step 5 adversarial review, 2026-09-01)
 
@@ -222,3 +304,32 @@ A future deduplication must not unify any of these; doing so silently changes pu
 - Complex-typing nuance (headers corrected): on R2025b diag() demotes the zero-imag
   complex diagonal to real, so real-data rows stay real on both sides; older MATLABs may
   retain the complex attribute - equivalence holds either way (byte-identical expression).
+
+## Verification notes (step 7 adversarial review, 2026-09-02)
+
+- Teeth check passed: a 1e-7 relative perturbation of one ladder constant in
+  `bvt.samplers.horseshoe_kappa_psi` makes `test_oisv_equivalence` FAIL on store_kappa;
+  suite green on revert.
+- The six "textually identical modulo renaming" claims of the step-7 table (B0 block,
+  CS B block, CS alp block, and the ladder across all four scripts) were verified
+  mechanically: comment-stripped, whitespace-normalized diffs with Yt/Xt/Tt -> Y/X/T and
+  alpha/beta -> theta come back empty; the OI alpha estimation-vs-forecast diff is
+  NON-empty, confirming the never-merge entry's direction.
+- Record corrected in `bvt.sv.sv_params`'s header: the step-4 note "in the OISV CS_MH run
+  mu is initialized at zero, so mu is never updated there" was WRONG - CS_MH.m lines 34-37
+  initialize mu(ii) = mean(log(s2i)) from the data (almost surely all-nonzero), so the
+  `if mu~=0` gate passes and mu IS updated every sweep. The equivalence test's store_hpara
+  comparison (columns 1:n are the mu draws) covers it draw-for-draw.
+- Path nuance in test_oisv_equivalence (same shape as steps 5-6): the legacy side resolves
+  the tempdir copies of anormrnd/vec/sample_SV*/get_*/getVbeta/construct_Sigt, the core
+  side resolves only qualified bvt.* names - no unqualified name in any step-7 core
+  function can be shadowed by the tempdir. Both packages define a `run_all`; the test
+  pins resolution to the OISV package with a `which` assertion.
+- CS shape quirks reproduced by construction: legacy `alp` is a 1 x k_alp ROW (dynamic
+  growth) and `alp_tri_cs` returns the same row shape; `z_kappa` enters sweep 1 as a 2x1
+  column and leaves every ladder call as a 1x2 row - kept verbatim. The equivalence
+  test's isequal locks the STORES and terminal rng state (values); these internal
+  orientations are draw-irrelevant (orientation-agnostic indexing) and are not
+  independently asserted. Also: the test pairs OI-with-default and CS-with-flipped
+  ordering; the cross pairings are unexercised end-to-end (flip only reverses var_id
+  upstream of the model switch - negligible risk, swap the pairings once if paranoid).

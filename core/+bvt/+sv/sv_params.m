@@ -19,8 +19,11 @@
 %   r columns are zero-mean log-volatilities sharing the same phi/sig2 draws.
 % - `if mu~=0` on a vector follows MATLAB semantics: the mu block runs only if
 %   EVERY element of mu is nonzero; a single exact zero skips the whole mu draw.
-%   (In the OISV CS_MH run mu is initialized at zero, so mu is never updated
-%   there; the gate is kept verbatim to preserve that behavior.)
+%   (Header corrected 2026-09-02, step 7: CS_MH initializes mu(ii) =
+%   mean(log(s2i)) from the data - lines 34-37 - so mu is almost surely
+%   all-nonzero, the gate passes, and mu IS updated every sweep; verified
+%   draw-for-draw by tests/unit/test_oisv_equivalence.m, whose store_hpara
+%   comparison includes the mu draws. The gate is kept verbatim regardless.)
 %
 % This function samples the SV parameters mu, phi, and sig2
 
