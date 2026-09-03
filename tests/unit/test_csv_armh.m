@@ -22,6 +22,19 @@ for i = 1:nrep, [h,a] = bvt.sv.csv_armh(s2,rho,sigh2,h,n,false); Hf(:,i) = h; af
 assert(isequal(Hc,Hf) && isequal(ac,af), 'csv_armh: omitted flag differs from explicit false');
 assert(any(ac == 1) && numel(unique(Hc(1,:))) > 1, 'csv_armh: harness produced no accepted moves');
 
+% --- step-8 ht_start argument: explicit h must equal the default bitwise;
+%     a different NR start changes the proposal path (kron ml_BVAR_CSV's
+%     inline reduced-run h step = ht_start h_mean + forced first accept,
+%     verified end-to-end by test_kron_equivalence model 3) ---
+rng(42, 'twister'); h = h0; Hs = zeros(T,nrep); as = zeros(nrep,1);
+for i = 1:nrep, [h,a] = bvt.sv.csv_armh(s2,rho,sigh2,h,n,false,h); Hs(:,i) = h; as(i) = a; end
+assert(isequal(Hc,Hs) && isequal(ac,as), 'csv_armh: ht_start = h differs from the default');
+rng(42, 'twister');
+h_alt = bvt.sv.csv_armh(s2,rho,sigh2,h0,n,true,zeros(T,1));
+rng(42, 'twister');
+h_def = bvt.sv.csv_armh(s2,rho,sigh2,h0,n,true);
+assert(~isequal(h_alt,h_def), 'csv_armh: a different ht_start should change the accepted path');
+
 % --- legacy comparisons, one folder on the path at a time ---
 legs = { fullfile(root,'replications','chan2023_joe_mlvarsv','legacy','utility'),  'sample_CSV'; ...
          fullfile(root,'replications','chan2020_jbes_kronecker','legacy'),          'sample_h'; ...

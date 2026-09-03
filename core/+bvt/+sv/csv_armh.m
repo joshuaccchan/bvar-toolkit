@@ -19,6 +19,18 @@
 % behavior; true = always move to the proposal, as ml_varsv's VAR_CSV.m does at
 % initialization and during early burn-in iterations).
 %
+% Second parameterization added 2026-09-02 (step 8, Kronecker family pass):
+% ht_start (optional, default h = the legacy sample_h/sample_CSV behavior) -
+% the Newton-Raphson mode-search starting point. The inline h step of the
+% marginal-likelihood reduced run in chan2020_jbes_kronecker/legacy/
+% ml_BVAR_CSV.m (lines 51-88) is byte-equivalent to this body EXCEPT that it
+% starts the NR search at the posterior mean path h_mean instead of the
+% current h (its line 52: ht = h_mean) and force-accepts on the reduced run's
+% first sweep; csv_armh(s2,rho,sigh2,h,n,isim==1,h_mean) reproduces it
+% bitwise, including the rng call sequence (log(rand) is evaluated before the
+% short-circuit ||, exactly as in the legacy `if alpMH > log(rand) || isim == 1`).
+% Default calls are unchanged bit-for-bit.
+%
 % Inputs:  s2    - T x 1, sum over the n series of squared (orthogonalized,
 %                  lambda-scaled) errors at each t
 %          rho   - AR(1) coefficient of h
@@ -33,15 +45,18 @@
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large
 % Bayesian VARs, Journal of Econometrics, 235(2), 1419-1446.
 
-function [h,is_accept] = csv_armh(s2,rho,sigh2,h,n,is_ForcedAccept)
+function [h,is_accept] = csv_armh(s2,rho,sigh2,h,n,is_ForcedAccept,ht_start)
 if nargin < 6
     is_ForcedAccept = false;
+end
+if nargin < 7
+    ht_start = h;
 end
 is_accept = 0;
 T = size(s2,1);
 Hrho = speye(T) - rho*sparse(2:T,1:(T-1),ones(1,T-1),T,T);
 HiSH = Hrho'*sparse(1:T,1:T,[(1-rho^2)/sigh2; 1/sigh2*ones(T-1,1)])*Hrho;
-errh = 1; ht = h;
+errh = 1; ht = ht_start;
 while errh> 1e-3
     eht = exp(ht);
     sieht = s2./eht;

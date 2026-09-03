@@ -205,6 +205,126 @@ Also deferred: the evaluation/plot tails Table3_forecasting.m + get_frcst_lkhd.m
 EvalFore.m and Fig89/Fig10 plot scripts (read results_mat only). getISden_ARSS: absent
 from this package (glob-verified 2026-09-02).
 
+## Canonicalized in step 8 (Kronecker family pass, part 1: estimation + marginal likelihood, 2026-09-02)
+
+Full-sample estimation + marginal-likelihood pipeline of chan2020_jbes_kronecker (Chan 2020,
+JBES 38(1): 68-79): main_BVAR.m -> BVAR*.m (8 models) -> ml_BVAR_*.m (7 scripts; model 1's ML
+is the inline cp_ml block of BVAR.m). The realtime forecasting pipeline (main_forecasting.m +
+realtime_forecasts/) is part 2 - NOT canonicalized here. Equivalence test:
+`tests/unit/test_kron_equivalence.m` runs the legacy cp_ml = 1 pipeline for ALL EIGHT models
+from tempdir copies at small nsim - the seven MCMC estimation scripts with their ACTIVE
+clock-seed lines removed as the sole patch (asserted exactly-one-occurrence each, not
+commented); BVAR.m, all seven ml_*, all four intlike_* and every helper BYTE-VERBATIM
+(asserted seed-line-free) - and asserts isequal on all stores, counters, script-tail
+summaries, every ML piece (ML/llike/lpri/lpost/final store_lpost), and the terminal rng
+state. Models 4 and 8 are compared under bugcompat (below); their corrected defaults are
+additionally asserted to differ exactly where each bug lives and match everywhere else.
+
+| Core function | Canonical source (legacy) | Also canonicalizes | Verified |
+|---|---|---|---|
+| `bvt.ml.lniwpdf` | chan2020_jbes_kronecker `lniwpdf.m` (single copy) | all prior/posterior NIW ordinates in the 8 ML computations | unit (`test_kron_ml_densities` bitwise + end-to-end) |
+| `bvt.ml.linvgammpdf` | `linvgammpdf.m` (single copy) | the sigh2 ordinates (models 3/5/7/8) | unit (same tests) |
+| `bvt.ml.llike_ma` | `llike_MA.m` (root; body verbatim incl. its `chol(Sig)'` upper-transposed Cholesky) | BVAR_MA.m + ml_BVAR_MA.m psi targets. realtime_forecasts/llike_MA.m is NOT canonicalized (its function line is named llike_MA1; part 2). | unit (same tests) |
+| `bvt.ml.llike_csv_ma` | `llike_CSV_MA.m` (package ROOT copy WITH the -n/2*sum(h) term) | the psi targets of BVAR_t_MA/BVAR_CSV_MA/BVAR_CSV_t_MA and ml_BVAR_t_MA/ml_BVAR_CSV_MA/ml_BVAR_CSV_t_MA (with h := log(lam) / U pre-scaled by sqrt(lam) in the t models, exactly as the legacy calls do). The realtime/springer reduced copies stay never-merge (below). | unit (`test_kron_ml_densities`: bitwise vs root AND asserted to differ from the realtime copy by n/2*sum(h)) + end-to-end |
+| `bvt.ml.intlike_csv` | `intlike_BVAR_CSV.m` (renamed; body verbatim) | (single copy) | unit (`test_kron_intlike` bitwise seeded, real data, + end-to-end model 3) |
+| `bvt.ml.intlike_t_csv` | `intlike_BVAR_t_CSV.m` | (single copy) | unit (same, + end-to-end model 5) |
+| `bvt.ml.intlike_csv_ma` | `intlike_BVAR_CSV_MA.m` | (single copy) | unit (same, + end-to-end model 7) |
+| `bvt.ml.intlike_csv_t_ma` | `intlike_BVAR_CSV_t_MA.m` | (single copy; carries the first-observation scale quirk - see audit notes below) | unit (same, + end-to-end model 8) |
+| `bvt.ml.kron_bvar` | BVAR.m lines 36-47 (inline cp_ml block) | (model 1; analytic, no rng) | unit (`test_kron_equivalence` model 1) |
+| `bvt.ml.kron_bvar_t` | ml_BVAR_t.m | (model 2; deterministic given stores) - CLEAN BILL | unit (same, model 2) |
+| `bvt.ml.kron_bvar_csv` | ml_BVAR_CSV.m | (model 3) - CLEAN BILL; chain-continuation leftovers made explicit (h/rho from last stored draws; countrho continues the ESTIMATION counter via est.state.countrho); its inline reduced-run h step = `bvt.sv.csv_armh(s2,rho,sigh2,h,n,isim==1,h_mean)` (NR start promoted, see below) | unit (same, model 3) |
+| `bvt.ml.kron_bvar_ma` | ml_BVAR_MA.m | (model 4) - AFFECTED: line-17 leftover-psi llike term; `'bugcompat',true` reproduces it bitwise from est.state.psi, default corrects to psi_mean | unit (same, model 4 bugcompat bitwise + corrected-differs-only-in-llike teeth) |
+| `bvt.ml.kron_bvar_t_csv` | ml_BVAR_t_CSV.m | (model 5) - CLEAN BILL; reduced-run rho bound .999 vs estimation .9999 kept verbatim | unit (same, model 5) |
+| `bvt.ml.kron_bvar_t_ma` | ml_BVAR_t_MA.m | (model 6) - CLEAN BILL; optimizer warm start est.state.psihat made explicit; tmpden(psiidx)-centered den_psi normalization kept verbatim | unit (same, model 6) |
+| `bvt.ml.kron_bvar_csv_ma` | ml_BVAR_CSV_MA.m | (model 7) - CLEAN BILL; its per-draw Hpsi rebuild is the pattern model 8 violates; dead `ht = h_mean` line kept as dead assignment | unit (same, model 7) |
+| `bvt.ml.kron_bvar_csv_t_ma` | ml_BVAR_CSV_t_MA.m | (model 8) - AFFECTED twice: frozen leftover Hpsi/psi ordinate loop (lines 42-44) and leftover last-draw Sig in the reduced-run psi target (line 108); `'bugcompat',true` reproduces both bitwise from est.state.psi/est.state.Sig, default corrects (per-draw Hpsi; Sig_mean) | unit (same, model 8 bugcompat bitwise + corrected teeth: llike unchanged, lpost(1) moves, lpost(2:3) unchanged, ML moves) |
+
+Core reuse inside the functionized estimation (`replications/chan2020_jbes_kronecker/run_all.m`):
+`bvt.priors.niw('kron_script')` (construct_prior_A + the callers' S0/nu0), `bvt.util.build_lags`
+(the inline X loop), `bvt.sv.csv_armh` (root sample_h; all estimation h steps and the ml reduced
+runs of models 5/7/8), `bvt.sv.nu_studentt` (root sample_nu; normpdf-form MH ratio - decisions
+verified identical, step-4 note), `bvt.ml.llike_ma`/`llike_csv_ma` (the estimation psi-MH
+targets). The (Sig,A) joint draw, lam, sigh2, rho-MH and psi-MH blocks have no core counterpart
+and live verbatim in run_all's per-model subfunctions (as in the step-6 note, functionizing
+them further belongs to the springer family pass, which shares their structure).
+
+Edits made during extraction, in full: provenance headers; scripts wrapped as functions with
+data/priors/stores passed explicitly and sizes recomputed from arguments (identical integers);
+`bvt.sv.csv_armh` gained an optional 7th argument `ht_start` (default h = previous behavior
+bit-for-bit; ml_BVAR_CSV's inline reduced-run h step is its body with ht_start = h_mean and
+is_ForcedAccept = (isim==1) - the only executable differences); leftover-workspace reads of
+the legacy ml scripts became explicit `est.state.*` arguments (final chain draws
+Sig/A/h/lam/rho/sigh2/psi/nu, final psi-MH mode psihat, counters - captured by run_all after
+the last sweep; the legacy leftovers equal the last stored draws wherever both exist, and
+Hpsi/Hrho are rebuilt from the corresponding scalar, bitwise identical since the legacy only
+ever updates matrix and scalar together); `options = optimset('Display','off','LargeScale','off')`
+reconstructed inside the ml functions (identical struct); the legacy clock-seed lines dropped
+from run_all (mechanics as steps 5/7); figures and wall-clock displays not reproduced. Dead
+Hrho rebuilds: `run_all` KEEPS all four estimation-side rebuilds verbatim (models 3/5/7/8,
+annotated `%#ok<NASGU>`) - the fidelity-safe choice, and necessary for model 3, whose rebuild
+IS consumed downstream when the coupled `cp_ml=1` pipeline hands its leftover Hrho to
+ml_BVAR_CSV.m line 51; the ml-side rebuilds in models 5/7/8 (nothing reads Hrho there -
+`bvt.sv.csv_armh` and `sample_h` rebuild it from rho internally) are not reproduced. The dead
+`ht = h_mean` line of ml_BVAR_CSV_MA kept. R (IS
+draws) and nsims2 (reduced-run length) exposed as options DEFAULTING to the legacy hard-coded
+values (cited in preset.m). Everything else byte-verbatim, including the m6-specific
+tmpden(psiidx)-centered psi-density normalization, model 8's +/-.999 psigrid, and the
+rho-truncation zoo recorded in preset.m `pr.rho_mh_bnd_est` / `pr.rho_mh_bnd_ml`.
+
+### Step-8 bug audit (2026-09-02) - all findings, including clean bills
+
+Verified line-by-line from source; the two AFFECTED scripts reproduce bitwise under bugcompat
+and are corrected by default (corrected = consistent evaluation point across ordinate pieces;
+method quirks shared by both modes are listed as quirks, not corrected):
+
+- **ml_BVAR_MA.m line 17 (defect, model 4)**: `-.5*(s2(1)/(1+psi^2) + sum(s2(2:end)))` uses
+  the loop variable `psi` left over from BVAR_MA.m (the final chain draw = store_psi(nsims))
+  where `psi_mean` is intended (lines 11/16 use psi_mean). The published BVAR-MA log-ML
+  depends on the random final chain state through this one llike term.
+- **ml_BVAR_CSV_t_MA.m lines 42-44 (defect, model 8)**: the (A,Sig) ordinate loop reads
+  `Hpsi\X`, `Hpsi\shortY` and `1/(1+psi^2)` with Hpsi/psi left over from the estimation run
+  and never rebuilds them from the stored psi draws - every conditional NIW term conditions
+  on the single random final psi (ml_BVAR_CSV_MA.m lines 26-30 rebuild per draw).
+- **ml_BVAR_CSV_t_MA.m line 108 (defect, model 8)**: the reduced-run psi target is
+  `llike_CSV_MA(x,U_psi,Sig,h)` with `Sig` the final estimation DRAW (leftover) where
+  Sig_mean is intended - the same reduced run's h/lam steps condition on Sig_mean (line 78),
+  and ml_BVAR_CSV_MA.m line 83 uses Sig_mean.
+- **ml_BVAR_t.m (model 2)**: CLEAN - all ordinates at (A_mean, Sig_mean, nu_mean); no
+  leftover reads beyond stores/priors; no rng.
+- **ml_BVAR_CSV.m (model 3)**: CLEAN - consistent starred point; leftover reads are chain
+  continuation (h/rho/Hrho from the final state, which equals the last stored draws) plus the
+  countrho counter continuation; reduced-run h step NR-starts at h_mean with first-sweep
+  forced accept (unlike the later scripts, which call sample_h = NR start at current h).
+- **ml_BVAR_t_CSV.m (model 5)**: CLEAN on evaluation points. Quirk: reduced-run rho MH bound
+  .999 vs estimation .9999.
+- **ml_BVAR_t_MA.m (model 6)**: CLEAN - its llike line 19 applies s2(1)/(1+psi_mean^2)
+  correctly (the exact term model 4 gets wrong). Leftover psihat/options are optimizer
+  continuation. Quirk: den_psi normalization centered at tmpden(psiidx) instead of max.
+- **ml_BVAR_CSV_MA.m (model 7)**: CLEAN - per-draw Hpsi rebuild present; Sig_mean used in the
+  psi target. Quirk: dead `ht = h_mean;` line 61 (vestige of model 3's inline h step).
+- **intlike_BVAR_CSV_t_MA.m (QUIRK, both modes)**: deny_h receives the transformed Utld and
+  applies NO (1+psi^2) scale and NO -n/2*log(1+psi^2) constant to the first observation,
+  though the Gibbs sampler gives it variance (1+psi^2)exp(h_1)lam_1*Sig and the Gaussian
+  intlike_BVAR_CSV_MA applies both. One-observation model/ordinate mismatch inside the
+  published model-8 log-ML; a likelihood-formula property shared by both modes (documented,
+  not silently changed).
+- **BVAR_CSV_t_MA.m lam step (QUIRK, estimation + its ml reduced run)**: no (1+psi^2)
+  first-observation correction in the lam_1 draw (model 6 corrects its lam step; model 8's h
+  step corrects). Estimation and reduced run are mutually consistent; kept verbatim.
+- **rho truncation zoo (VERIFIED variance of the audit's ".999 vs .99" note)**: estimation
+  .9999 (models 3/5/7) vs .99 (model 8, BVAR_CSV_t_MA.m line 92); ml reduced runs .9999
+  (models 3/7) vs .999 (models 5/8). All rho ordinate grids span (-.999,.999) regardless.
+- **model-8 psigrid (QUIRK)**: (-.999,.999) where every other MA model uses (-.99,.99); the
+  prior truncates at +/-.99, so the extra grid points carry the -1e10 penalty (~zero mass).
+- **grid normalization (QUIRK, family-wide)**: inserting the starred value into a sorted
+  uniform grid and normalizing by nugrid(2)-nugrid(1) treats the grid as uniform though one
+  interval is split - inherent to the published method, shared by both modes everywhere.
+
+New replication drivers (not core): `replications/chan2020_jbes_kronecker/run_all.m`
+(functionized estimation, models 1-8), `run_ml.m` (estimation + ML on one stream, exposing
+'bugcompat'), and `preset.m` (every hard-coded constant with per-line citations, including
+the truncation-bound tables and the llike_CSV_MA path-hazard record).
+
 ## NEVER MERGE - same name, numerically different
 
 A future deduplication must not unify any of these; doing so silently changes published results.
@@ -216,7 +336,12 @@ A future deduplication must not unify any of these; doing so silently changes pu
   different state equations.
 - **`llike_CSV_MA.m`**: the BVAR_code ROOT copy includes the `-n/2*sum(h)` term; the large_BVAR
   and realtime_forecasts copies omit it. Interchangeable inside the psi-MH at fixed h, WRONG to
-  swap for marginal-likelihood ordinates (ml_BVAR_CSV_MA depends on the root version).
+  swap for marginal-likelihood ordinates (ml_BVAR_CSV_MA depends on the root version). Step 8
+  canonicalized the ROOT copy as `bvt.ml.llike_csv_ma` (test_kron_ml_densities asserts the
+  n/2*sum(h) gap against the realtime copy); the legacy resolution is cwd/path-order-dependent
+  after main_forecasting.m's addpath('./realtime_forecasts') - recorded in the kronecker
+  preset.m (`pr.llike_csv_ma_root_has_sumh`). The realtime/springer reduced copies stay
+  un-canonicalized for the part-2/springer forecast passes.
 - **`prior_NCP.m`**: two incompatible signatures - AD_OptHyper's 5-kappa version with lag-decay
   exponent `l^kappa2` vs ml_varsv's `(p,c1,c2,Y0,Y)` with fixed `l^2` decay.
 - **`prior_Minn.m`**: large_BVAR uses `Y0(end-p+1:end,:)`, ml_varsv uses `Y0(end-4+1:end,:)` -
@@ -270,6 +395,33 @@ A future deduplication must not unify any of these; doing so silently changes pu
 - **`horseshoe_kappa_psi` vs `gig_shrinkage`**: the OISV horseshoe ladder (inverse-gamma /
   auxiliary z draws, kappa(1:2) global scales) and the MAHP normal-gamma (GIG) ladder are
   different prior families with different draw sequences - never unify.
+
+## Verification notes (step 8 self-check, 2026-09-02)
+
+- Teeth check passed: a +1e-7 perturbation of the flat-nu lpri constant in a scratch-mirror
+  copy of `bvt.ml.kron_bvar_t` makes `test_kron_equivalence` FAIL with "model 2: ml lpri
+  differs"; the real tree was never perturbed and its suite is green.
+- All EIGHT models are covered end-to-end bitwise (estimation + ML on one stream, terminal
+  rng state included) - the fallback subset (affected paths + models 1/3/8) was not needed:
+  measured runtimes m8 ~34 s/side and m7 ~26 s/side put the whole test at ~137 s, inside the
+  ~4-minute budget (test_kron_intlike + test_kron_ml_densities add ~5 s).
+- Corrected-mode teeth INSIDE the test: model 4 corrected moves ONLY llike (lpri/lpost/
+  den_psi bitwise unchanged; llike and ML move); model 8 corrected leaves llike (the
+  intlike, drawn first at the same stream position) and lpost(2:3) bitwise unchanged while
+  lpost(1) and ML move. At the test size the model-8 ML moves -8492.1 -> -8495.8; the
+  golden-manifest published-run reference -8468.4 is the bugcompat path (manifest row:
+  "Do NOT fix in the golden run").
+- rng-decision nuance carried from step 4: the root sample_nu uses the normpdf-form MH
+  ratio while `bvt.sv.nu_studentt` uses the log-form - mathematically identical, bitwise
+  different in the acceptance scalar; decisions (and hence all draws) verified identical at
+  the test seed here and over test_nu_studentt's 500 sweeps, but a knife-edge flip at some
+  other seed is not provably impossible. Any future failure of test_kron_equivalence on
+  nu-bearing stores (models 2/5/6/8) should suspect this first.
+- Path nuance (same shape as steps 5-7): inside test_kron_equivalence the legacy side
+  resolves tempdir copies (construct_prior_A, sample_h, sample_nu, llike_MA, the ROOT
+  llike_CSV_MA - asserted - lniwpdf, linvgammpdf, intlike_*); the functionized side
+  resolves only qualified bvt.* names plus the package's run_all/run_ml/preset (resolution
+  pinned by a `which` assertion against the two other packages that define run_all).
 
 ## Verification notes (step 5 adversarial review, 2026-09-01)
 
@@ -333,3 +485,51 @@ A future deduplication must not unify any of these; doing so silently changes pu
   independently asserted. Also: the test pairs OI-with-default and CS-with-flipped
   ordering; the cross pairings are unexercised end-to-end (flip only reverses var_id
   upstream of the model switch - negligible risk, swap the pairings once if paranoid).
+
+## Verification notes (step 8 adversarial review, 2026-09-02)
+
+- Verdict EQUIVALENT. The verifier independently re-derived the bug audit from the legacy
+  sources (all 7 ml_* scripts, 7 estimation scripts, 4 intlike evaluators, both
+  llike_CSV_MA copies): all three defects confirmed at the cited lines, all six clean
+  bills confirmed, no additional defects found. Its teeth check perturbed a DIFFERENT
+  constant than the builder's (the bugcompat leftover-Sig consumption) and the equivalence
+  test failed on exactly `model 8: ml lpost differs` - proving defect 3 is materially
+  separate from defect 1.
+- **What "corrected" does and does not mean.** The legacy ordinate decomposition mixes
+  full-run marginal ordinates (e.g. p(sigh2*|Y), p(nu*|Y)) with reduced-run conditional
+  ordinates, and models 7/8 take den_rho and den_psi from ONE joint reduced run rather
+  than a conditional telescoping - so it is not an exact Chib decomposition. That
+  structural approximation is shared bitwise by legacy, bugcompat AND corrected modes in
+  all six multi-block models; correcting it was out of scope. "Corrected" here means the
+  three evaluation-point/leftover-workspace defects are fixed, not that the estimator is
+  the exact Chib construction.
+- The four intlike evaluators are executably verbatim, not byte-verbatim: differences are
+  trailing whitespace, one stray semicolon after `while errh> 10^(-3);`, and `[T n]` ->
+  `[T, n]`. Bitwise outputs and terminal rng state are asserted by `test_kron_intlike`.
+- Toolbox note: models 4/6/7/8 need the Optimization Toolbox for `fminunc` (on every
+  optimizer path); `fminbnd` is base MATLAB.
+- Grid sizes (preset `pr.ml.ngrid`): 700-point psi grids for models 2/3/4/5, 300 for
+  models 6/7, 299 for model 8.
+
+## Ranking adjudication (step 8, 2026-09-02)
+
+Full-length runs (nsims = 30000, burnin = 5000, full sample), both marginal likelihoods
+computed from the SAME chain (rng state saved after estimation and restored before each ML
+call), two seeds per affected model; log
+`tests/golden/chan2020_jbes_kronecker/ml_bugcompat_comparison_20260902/`.
+
+| Model | seed | bugcompat | corrected | delta |
+|---|---|---|---|---|
+| BVAR-MA (4) | 20260902 | -8703.3074 | -8703.4840 | -0.1766 |
+| BVAR-MA (4) | 8177 | -8703.5934 | -8703.4922 | +0.1013 |
+| BVAR-CSV-t-MA (8) | 20260902 | -8469.1532 | -8471.6073 | -2.4542 |
+| BVAR-CSV-t-MA (8) | 8177 | -8473.3639 | -8473.2296 | +0.1344 |
+| BVAR-CSV-MA (7), control | 20260902 | -8484.8318 | -8484.8318 | 0.0000 (bitwise) |
+
+**The published ranking is unaffected.** The corrections are at most 2.45 log points and
+straddle zero across seeds, while BVAR-CSV-t-MA leads the second-best model (BVAR-CSV-MA)
+by ~17.5 points and BVAR-MA sits ~24 points above BVAR and ~161 below BVAR-t. Both
+corrections are also smaller than the estimator's own seed-to-seed Monte Carlo spread
+(model 8's bugcompat ML varies by 4.2 points across the two seeds), i.e. the defects move
+these marginal likelihoods by less than the noise already inherent in reporting them. The
+model-7 control confirms the flag is a bitwise no-op where no defect exists.
