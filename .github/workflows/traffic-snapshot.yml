@@ -1,0 +1,48 @@
+# Weekly traffic snapshot: appends the repo's rolling 14-day GitHub traffic
+# stats to .github/traffic/traffic.csv. GitHub itself retains only 14 days of
+# traffic history; this builds the permanent series. Weekly sampling of a
+# 14-day window means consecutive rows overlap by ~7 days - the series tracks
+# levels, not disjoint weekly sums.
+#
+# REQUIRES the TRAFFIC_PAT secret: a fine-grained personal access token with
+# Administration:read (and Metadata:read) on this repository. The default
+# GITHUB_TOKEN cannot read traffic endpoints.
+name: Traffic snapshot
+
+on:
+  schedule:
+    - cron: '17 6 * * 1'   # Mondays 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Append traffic stats
+        env:
+          GH_TOKEN: ${{ secrets.TRAFFIC_PAT }}
+        run: |
+          set -e
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::TRAFFIC_PAT secret is not set (fine-grained PAT, Administration:read on this repo)"
+            exit 1
+          fi
+          f=.github/traffic/traffic.csv
+          mkdir -p .github/traffic
+          [ -f "$f" ] || echo "date,views_14d,unique_visitors_14d,clones_14d,unique_cloners_14d,stars,forks" > "$f"
+          v=$(gh api "repos/${GITHUB_REPOSITORY}/traffic/views")
+          c=$(gh api "repos/${GITHUB_REPOSITORY}/traffic/clones")
+          s=$(gh api "repos/${GITHUB_REPOSITORY}")
+          echo "$(date -u +%F),$(jq .count <<<"$v"),$(jq .uniques <<<"$v"),$(jq .count <<<"$c"),$(jq .uniques <<<"$c"),$(jq .stargazers_count <<<"$s"),$(jq .forks_count <<<"$s")" >> "$f"
+          tail -2 "$f"
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/traffic/traffic.csv
+          git diff --cached --quiet || git commit -m "Traffic snapshot $(date -u +%F)"
+          git push
