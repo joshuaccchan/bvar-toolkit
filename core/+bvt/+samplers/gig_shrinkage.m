@@ -1,5 +1,5 @@
 % bvt.samplers.gig_shrinkage - the kappa/psi generalized-inverse-Gaussian
-% shrinkage-update ladder of Chan (2021, IJF): draws the global shrinkage
+% hierarchical shrinkage block of Chan (2021, IJF): draws the global shrinkage
 % hyperparameters via gigrnd and, for the normal-gamma variants, the
 % coefficient-specific local scales psi_kappa1/psi_kappa2 (one gigrnd call
 % each, floored at psi_floor).
@@ -17,7 +17,7 @@
 %                     (no Minnesota C, no factor 2 - the NG prior variance is kappa*psi)
 %   variant 'minn' -> chan2021_ijf_mahp/legacy/BVAR_Minn.m lines 59-62:
 %                     kappa(1)/kappa(2) draws only, chi = sum(beta_j.^2./C_j);
-%                     no psi ladder (psi_kappa1/psi_kappa2 pass through untouched;
+%                     no psi block (psi_kappa1/psi_kappa2 pass through untouched;
 %                     callers may pass [], and nu_psi/psi_floor are not referenced).
 % Documented settings reproducing each legacy copy exactly:
 %   estimation BVAR_MNG : 'mng' with psi_floor = 1e-10 (its lines 77/80);

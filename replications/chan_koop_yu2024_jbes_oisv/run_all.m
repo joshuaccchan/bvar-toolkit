@@ -39,7 +39,7 @@
 %   bvt.samplers.eq_svar_oi         (OI per-equation VAR coefficient draw),
 %   bvt.samplers.eq_tri_cs          (CS per-equation VAR coefficient draw),
 %   bvt.samplers.alp_tri_cs         (CS free impact-element draw),
-%   bvt.samplers.horseshoe_kappa_psi (horseshoe psi/z_psi/kappa/z_kappa ladder,
+%   bvt.samplers.horseshoe_kappa_psi (horseshoe psi/z_psi/kappa/z_kappa block,
 %                                    shared verbatim by both legacy samplers),
 % with the pre-existing core reused: bvt.priors.resid_var_ar4 (legacy
 % get_resid_var), bvt.priors.minnesota_C (legacy get_C), bvt.priors.vtheta
@@ -164,7 +164,7 @@ end
 function res = mcmc_oi(Y, X, Y0, T, n, p, nsim, burnin, pr)
 % SVARSV_MH.m functionized line-for-line (the clock-seed line 24 dropped - see
 % the run_all header). Draw order per sweep: B0 -> alpha -> h -> (phi,sig2) ->
-% horseshoe ladder.
+% horseshoe block.
 k = 1+n*p;                                              % SVARSV_MH.m line 3
 k_alpha = n*k;                                          % line 4
 sig2 = bvt.priors.resid_var_ar4(Y0, Y);                 % line 5 (legacy get_resid_var)
@@ -268,7 +268,7 @@ end
 function res = mcmc_cs(Y, X, Y0, T, n, p, nsim, burnin, pr)
 % CS_MH.m functionized line-for-line (its clock-seed line 49 is already
 % commented out in the legacy script - nothing to drop). Draw order per sweep:
-% B -> alp -> h -> (mu,phi,sig2) -> horseshoe ladder.
+% B -> alp -> h -> (mu,phi,sig2) -> horseshoe block.
 k_alp = n*(n-1)/2;                                      % CS_MH.m line 3
 k_beta = n^2*p + n;                                     % line 4
 k = k_beta/n;                                           % line 5

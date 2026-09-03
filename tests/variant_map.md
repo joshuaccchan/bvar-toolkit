@@ -162,7 +162,7 @@ script-tail summaries, the six func_main outputs, and the terminal rng state.
 | `bvt.samplers.eq_svar_oi` | SVARSV_MH.m lines 76-87 (inline "sample alpha" block; caller computes tmpdV and keeps alpha = A(:)) | NOTHING else - the forecast fragment REWRITES this step (never-merge, below) | unit (same test) |
 | `bvt.samplers.eq_tri_cs` | CS_MH.m lines 54-72 (inline "sample B" block; caller computes tmpdV and keeps beta = reshape(B',k_beta,1); the dead `zi` assignment kept verbatim) | forecast_CS_MH.m lines 45-63 (identical modulo Yt/Xt/Tt) | unit (same test) |
 | `bvt.samplers.alp_tri_cs` | CS_MH.m lines 77-87 (inline "sample alp" count_alp loop; caller computes E = Y-XB and keeps A(A_id) = alp) | forecast_CS_MH.m lines 68-78 (identical modulo Tt) | unit (same test) |
-| `bvt.samplers.horseshoe_kappa_psi` | SVARSV_MH.m lines 102-120 (psi -> z_psi -> kappa(1:2) -> z_kappa ladder, theta = alpha) | CS_MH.m lines 102-120 (theta = beta), forecast_SVARSV_MH.m lines 96-114, forecast_CS_MH.m lines 93-111 - all four textually identical modulo the coefficient vector's name. NEVER merge with `bvt.samplers.gig_shrinkage` (MAHP normal-gamma GIG ladder - different prior family). | unit (same test) |
+| `bvt.samplers.horseshoe_kappa_psi` | SVARSV_MH.m lines 102-120 (psi -> z_psi -> kappa(1:2) -> z_kappa block, theta = alpha) | CS_MH.m lines 102-120 (theta = beta), forecast_SVARSV_MH.m lines 96-114, forecast_CS_MH.m lines 93-111 - all four textually identical modulo the coefficient vector's name. NEVER merge with `bvt.samplers.gig_shrinkage` (MAHP normal-gamma GIG block - different prior family). | unit (same test) |
 | `bvt.priors.vtheta` (Vbeta output; row added, no new function) | - | chan_koop_yu2024_jbes_oisv `utility/getVbeta.m`: exactly vtheta's three Vbeta assignment lines on the same inputs; OISV callers use `[~,Vbeta] = bvt.priors.vtheta(...)` and discard Valp (NaN under the OI kappa(3) = NaN, never read) | diff + unit (same test) |
 
 Reused as-is (extracted in steps 3-4, headers already list the OISV copies): `bvt.priors.resid_var_ar4`
@@ -188,7 +188,7 @@ k = size(X,2), np = numel(idx_kappa1), nnp = numel(idx_kappa2) - identical integ
 Hyper.B0/VB0/beta0/Valp passed as explicit arguments; alpha/beta unified as `theta` in
 `horseshoe_kappa_psi` (the four legacy copies differ only in that name) with the
 rng-neutral Psi reassembly left to the caller (legacy position: between the psi and z_psi
-draws; Psi is not read inside the ladder); `alp_tri_cs` returns alp preallocated
+draws; Psi is not read inside the block); `alp_tri_cs` returns alp preallocated
 zeros(1,k_alp) instead of the legacy dynamic growth into the same 1 x k_alp row (fully
 overwritten every sweep before any read); unqualified anormrnd/vec calls now
 bvt.util.anormrnd/bvt.util.vec (code-identical). Everything else byte-verbatim, including
@@ -392,8 +392,8 @@ A future deduplication must not unify any of these; doing so silently changes pu
   first B0 rotation coordinate (one rand + one randn); tnormrnd is an inverse-cdf truncated
   normal. Same "restricted normal draw" vibe, entirely different densities and rng
   sequences - never unify.
-- **`horseshoe_kappa_psi` vs `gig_shrinkage`**: the OISV horseshoe ladder (inverse-gamma /
-  auxiliary z draws, kappa(1:2) global scales) and the MAHP normal-gamma (GIG) ladder are
+- **`horseshoe_kappa_psi` vs `gig_shrinkage`**: the OISV horseshoe block (inverse-gamma /
+  auxiliary z draws, kappa(1:2) global scales) and the MAHP normal-gamma (GIG) block are
   different prior families with different draw sequences - never unify.
 
 ## Verification notes (step 8 self-check, 2026-09-02)
@@ -459,11 +459,11 @@ A future deduplication must not unify any of these; doing so silently changes pu
 
 ## Verification notes (step 7 adversarial review, 2026-09-02)
 
-- Teeth check passed: a 1e-7 relative perturbation of one ladder constant in
+- Teeth check passed: a 1e-7 relative perturbation of one hierarchical-shrinkage constant in
   `bvt.samplers.horseshoe_kappa_psi` makes `test_oisv_equivalence` FAIL on store_kappa;
   suite green on revert.
 - The six "textually identical modulo renaming" claims of the step-7 table (B0 block,
-  CS B block, CS alp block, and the ladder across all four scripts) were verified
+  CS B block, CS alp block, and the hierarchical shrinkage block across all four scripts) were verified
   mechanically: comment-stripped, whitespace-normalized diffs with Yt/Xt/Tt -> Y/X/T and
   alpha/beta -> theta come back empty; the OI alpha estimation-vs-forecast diff is
   NON-empty, confirming the never-merge entry's direction.
@@ -479,7 +479,7 @@ A future deduplication must not unify any of these; doing so silently changes pu
   pins resolution to the OISV package with a `which` assertion.
 - CS shape quirks reproduced by construction: legacy `alp` is a 1 x k_alp ROW (dynamic
   growth) and `alp_tri_cs` returns the same row shape; `z_kappa` enters sweep 1 as a 2x1
-  column and leaves every ladder call as a 1x2 row - kept verbatim. The equivalence
+  column and leaves every call to the hierarchical shrinkage block as a 1x2 row - kept verbatim. The equivalence
   test's isequal locks the STORES and terminal rng state (values); these internal
   orientations are draw-irrelevant (orientation-agnostic indexing) and are not
   independently asserted. Also: the test pairs OI-with-default and CS-with-flipped

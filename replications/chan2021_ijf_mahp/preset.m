@@ -66,7 +66,7 @@ pr.ng.kappa4      = 100;                    % BVAR_NG.m line 37: intercept scale
 
     % ---- BVAR_Minn.m (model 3: data-based Minnesota) ----
 pr.minn.kappa_init = [.04,.04,1,100];       % BVAR_Minn.m line 9 - NOT the MNG init [.4,.001,1,100]
-    % No psi ladder and no nu_psi step in this model.
+    % No psi block and no nu_psi step in this model.
 
     % ---- estimation-vs-forecast divergences (2026-09-01 audit) ----
     % DOCUMENTATION ONLY: the forecast pipeline is not functionized in this

@@ -29,7 +29,7 @@
 % are the extracted core functions
 %   bvt.samplers.eq_gauss      (per-equation coefficient draw),
 %   bvt.sv.ksc_rw_h0           (KSC auxiliary-mixture SV draw, legacy SVRW),
-%   bvt.samplers.gig_shrinkage (kappa/psi GIG ladder, variants mng/ng/minn),
+%   bvt.samplers.gig_shrinkage (kappa/psi GIG block, variants mng/ng/minn),
 %   bvt.samplers.nu_psi_ng     (normal-gamma shape MH step, legacy sample_nu_psi),
 % called in the legacy order: theta -> h -> kappa(/psi) -> nu_psi -> h0 -> Sigh.
 % The h0 and Sigh draws (identical 3-and-2-line blocks in all three legacy

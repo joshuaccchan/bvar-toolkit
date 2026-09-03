@@ -1,5 +1,5 @@
 % bvt.samplers.horseshoe_kappa_psi - one sweep of the Minnesota-type HORSESHOE
-% shrinkage ladder shared verbatim by both OISV samplers: given the current
+% hierarchical shrinkage block shared verbatim by both OISV samplers: given the current
 % coefficient vector theta (stacked k*n, intercept first per equation), draw
 % the local scales psi (inverse-gamma), their auxiliaries z_psi, the global
 % own-lag/other-lag scales kappa(1:2) (inverse-gamma), and their auxiliaries
@@ -8,7 +8,7 @@
 % intercepts in both). The caller keeps the Psi reassembly
 % (Psi(idx_kappa1) = psi_kappa1; Psi(idx_kappa2) = psi_kappa2) - legacy
 % position is between the psi and z_psi draws, but it consumes no rng and Psi
-% is not read inside the ladder, so the move is draw-neutral.
+% is not read inside the block, so the move is draw-neutral.
 %
 %   [psi_kappa1,psi_kappa2,z_psi1,z_psi2,kappa,z_kappa] = ...
 %       bvt.samplers.horseshoe_kappa_psi(theta,idx_kappa1,idx_kappa2,C, ...
@@ -33,7 +33,7 @@
 % alpha/beta renamed theta; the Psi reassembly left with the caller (see
 % above). Everything else byte-verbatim.
 % NEVER merge with bvt.samplers.gig_shrinkage: that is the MAHP normal-gamma
-% (GIG) ladder - a different prior family with a different draw sequence; see
+% (GIG) block - a different prior family with a different draw sequence; see
 % tests/variant_map.md. Draw-for-draw equivalence:
 % tests/unit/test_oisv_equivalence.m.
 %
