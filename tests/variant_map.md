@@ -38,7 +38,7 @@ are otherwise verbatim from the canonical source.
 
 | Core function | Canonical source (legacy) | Also canonicalizes | Verified |
 |---|---|---|---|
-| `bvar.sv.sv_params` | chan_koop_yu2024_jbes_oisv `utility/sample_SVpara.m` | (nothing else; the chan2023_joe_mlvarsv `sample_SVpara.m` is NOT canonicalized - never-merge, see below) | unit (seeded draws, 3 cases: r=0, r>0, mu gated at zero) |
+| `bvar.sv.sv_params` | chan_koop_yu2024_jbes_oisv `utility/sample_SVpara.m` | chan2023_joe_mlvarsv `utility/sample_SVpara.m` at `phi_bnd = .998` (established in step 9 - the original "never-merge" verdict here was WRONG, see the step-9 correction below) | unit (seeded draws, 3 cases: r=0, r>0, mu gated at zero; ml_varsv in `test_sv_params_mlvarsv`) |
 | `bvar.sv.sv0_params` | chan_koop_yu2024_jbes_oisv `utility/sample_SV0para.m` | (single copy) | unit (seeded draws) |
 
 Edits made during extraction, in full: provenance header prepended; functions renamed
@@ -47,8 +47,19 @@ MH truncation bound promoted to an optional trailing argument `phi_bnd` DEFAULTI
 the OISV value (`.999` in `sv_params`, `.99` in `sv0_params`), so default calls
 reproduce the OISV copies exactly (same draws, same rand/randn/gamrnd sequence under
 the same seed). Bodies otherwise verbatim, including the `if mu~=0` gate in `sv_params`.
-Passing `phi_bnd = .998` to `sv_params` does NOT reproduce the ml_varsv copy - that
-copy also differs structurally (no n+r column split; mu demeans ALL columns of h).
+
+**Superseded (step 9, 2026-09-03).** The step-4 claim "passing `phi_bnd = .998` does NOT
+reproduce the ml_varsv copy - it also differs structurally (no n+r column split; mu
+demeans ALL columns of h)" is refuted. Those structural differences are no-ops whenever
+`numel(mu) == size(h,2)`, i.e. r = 0, and EVERY ml_varsv call site satisfies that
+(`VAR_CSV.m` 61 h is T x 1 with mu = 0; `VAR_ARSV_redu.m` 84 and `VAR_ARSVO_redu.m` 91
+h is T x n with mu n x 1; `VAR_FSV.m` 82 h is T x (n+r) with mu (n+r) x 1 - so r = 0
+inside `sv_params` there too, the factor columns arriving as extra "series" with their
+own mu). The phi bound is the only difference that can bite, and it does bite:
+`test_sv_params_mlvarsv` forces a candidate into [.998,.999) and shows .999 accepting
+where .998 and the legacy reject, and a scratch-mirror teeth check that hard-codes .999
+inside `sv_params` makes `test_mlvarsv_equivalence` fail on model 3. r > 0 remains
+uncovered by the claim: there the two bodies genuinely differ.
 
 ## Canonicalized in step 5 (MAHP flagship functionization, 2026-09-01)
 
@@ -161,7 +172,7 @@ script-tail summaries, the six func_main outputs, and the terminal rng state.
 | `bvar.structural.b0_row_sampler` | SVARSV_MH.m lines 49-72 (inline row-wise "sammple B0" rotation loop; caller supplies U = Y-X*A) | forecast_SVARSV_MH.m lines 43-66 (textually identical modulo Y/X/T -> Yt/Xt/Tt) | unit (`test_oisv_equivalence`) |
 | `bvar.samplers.eq_svar_oi` | SVARSV_MH.m lines 76-87 (inline "sample alpha" block; caller computes tmpdV and keeps alpha = A(:)) | NOTHING else - the forecast fragment REWRITES this step (never-merge, below) | unit (same test) |
 | `bvar.samplers.eq_tri_cs` | CS_MH.m lines 54-72 (inline "sample B" block; caller computes tmpdV and keeps beta = reshape(B',k_beta,1); the dead `zi` assignment kept verbatim) | forecast_CS_MH.m lines 45-63 (identical modulo Yt/Xt/Tt) | unit (same test) |
-| `bvar.samplers.alp_tri_cs` | CS_MH.m lines 77-87 (inline "sample alp" count_alp loop; caller computes E = Y-XB and keeps A(A_id) = alp) | forecast_CS_MH.m lines 68-78 (identical modulo Tt) | unit (same test) |
+| `bvar.samplers.alp_tri_cs` | CS_MH.m lines 77-87 (inline "sample alp" count_alp loop; caller computes E = Y-XB and keeps A(A_id) = alp) | forecast_CS_MH.m lines 68-78 (identical modulo Tt); plus, from step 9, chan2023_joe_mlvarsv `VAR_ARSV_redu.m` 64-73 and `VAR_ARSVO_redu.m` 71-80 (the latter through the new optional `o` argument) | unit (same test; ml_varsv in `test_mlvarsv_equivalence`) |
 | `bvar.samplers.horseshoe_kappa_psi` | SVARSV_MH.m lines 102-120 (psi -> z_psi -> kappa(1:2) -> z_kappa block, theta = alpha) | CS_MH.m lines 102-120 (theta = beta), forecast_SVARSV_MH.m lines 96-114, forecast_CS_MH.m lines 93-111 - all four textually identical modulo the coefficient vector's name. NEVER merge with `bvar.samplers.gig_shrinkage` (MAHP normal-gamma GIG block - different prior family). | unit (same test) |
 | `bvar.priors.vtheta` (Vbeta output; row added, no new function) | - | chan_koop_yu2024_jbes_oisv `utility/getVbeta.m`: exactly vtheta's three Vbeta assignment lines on the same inputs; OISV callers use `[~,Vbeta] = bvar.priors.vtheta(...)` and discard Valp (NaN under the OI kappa(3) = NaN, never read) | diff + unit (same test) |
 
@@ -325,6 +336,287 @@ New replication drivers (not core): `replications/chan2020_jbes_kronecker/run_al
 'bugcompat'), and `preset.m` (every hard-coded constant with per-line citations, including
 the truncation-bound tables and the llike_CSV_MA path-hazard record).
 
+## Canonicalized in step 9 (ml_varsv family pass, estimation only, 2026-09-03)
+
+Estimation pipeline of chan2023_joe_mlvarsv (Chan 2023, JoE 235(2): 1419-1446):
+main_varsv.m -> VAR_NCP.m / VAR_CSV.m / VAR_ARSV_redu.m / VAR_FSV.m / VAR_ARSVO_redu.m.
+The marginal-likelihood routines `utility/ml_var_*.m` are a SEPARATE phase and are not
+touched here; model 1 is the exception, its log-ML being inline and analytic in VAR_NCP.m.
+Equivalence test: `tests/unit/test_mlvarsv_equivalence.m` runs all five legacy scripts from
+tempdir copies at nsim/burnin = 60/20 over 15 configurations - every model at every switch
+setting it reads, plus models 3/4/5 repeated at the paper's active n = 15 selection - and
+asserts isequal on all stores, counters, script-tail summaries and the terminal rng state.
+The four MCMC scripts' clock-seed lines are removed as the sole patch (asserted
+exactly-one-occurrence and active, per file); VAR_NCP.m is byte-verbatim (asserted
+seed-line-free). cp_ml = 0 for models 2-5 so no ml_var_* routine is entered.
+
+| Core function | Canonical source (legacy) | Also canonicalizes | Verified |
+|---|---|---|---|
+| `bvar.samplers.eq_var_redu_tri` | chan2023_joe_mlvarsv `VAR_ARSV_redu.m` lines 44-57 (the reduced-form column-at-a-time coefficient draw) | `VAR_ARSVO_redu.m` 51-64 through the optional `o` argument - the two blocks' only textual difference is the Lambda line's `.*repmat(o,1,n-ii+1)`, mechanically diffed. NOT merged into `bvar.samplers.eq_svar_oi` (below) | unit (`test_mlvarsv_equivalence` models 3 and 5) |
+| `bvar.samplers.factor_fsv` | `VAR_FSV.m` lines 38-44 (joint precision-sampler draw of the whole T x r factor path) | (single copy in the repo) | unit (same test, model 4) |
+| `bvar.samplers.eq_fsv_load` | `VAR_FSV.m` lines 48-71 (per-equation joint draw of A and the free loadings L) | (single copy in the repo) | unit (same test, model 4) |
+| `bvar.sv.svo_outlier` | `VAR_ARSVO_redu.m` lines 112-124 (grid draw of the outlier scales o_t, then the beta draw of po) | (single copy in the repo) | unit (same test, model 5; the test asserts at least one o_t > 1 is drawn) |
+| `bvar.samplers.alp_tri_cs` (row added; optional `o` argument added) | - | `VAR_ARSV_redu.m` 64-73 and `VAR_ARSVO_redu.m` 71-80: the step-7 OISV body verbatim modulo naming (beta/Hyper.Vbeta for alp/Hyper.Valp), the SVO copy differing only by the iD line's `./o.^2` | unit (same test, models 3 and 5) |
+| `bvar.sv.sv_params` (row amended; no code change) | - | chan2023_joe_mlvarsv `utility/sample_SVpara.m` at `phi_bnd = .998` - see the step-4 correction above | unit (`test_sv_params_mlvarsv`, all three ml_varsv shapes + the bound teeth; end-to-end in `test_mlvarsv_equivalence`) |
+
+Reused as-is: `bvar.priors.niw('mlvarsv_ncp')` (legacy prior_NCP), `bvar.priors.minn` with
+n0pre = 4 (prior_Minn), `bvar.priors.impact_B0` (prior_B0), `bvar.priors.minnesota_C` (get_C),
+`bvar.sv.init_approx1N` (getARh_approx1N), `bvar.sv.csv_armh` (sample_CSV), `bvar.sv.ksc_ar1_mean`
+(sample_SV), `bvar.util.build_lags` / `vec` / `vech` / `ldet` / `mgammaln`,
+`third_party/gigrnd.m`. Not reached by the estimation scripts: `utility/getISden_ARSS.m`
+(read only by the ml_var_* routines), `SURform2.m` and `tnormrnd.m` (no caller in the five
+scripts; both already covered by their step-3 rows).
+
+New replication drivers (not core): `replications/chan2023_joe_mlvarsv/run_all.m`
+(`run_all(model, is_kappafixed, is_kappasym, nsim, burnin, seed, varid)` over the five models,
+honouring both main_varsv switches) and `preset.m` (every hard-coded constant with per-line
+citations). The four clock-seed lines are deliberately not reproduced in run_all (same
+rationale and mechanics as steps 5/7/8); VAR_NCP needs no patch.
+
+Edits made during extraction, in full: provenance headers; blocks wrapped as functions with
+sizes recomputed from arguments (`[T,n] = size(Y)`, `k = size(X,2)`, `r = size(L,2)`/`size(F,2)`,
+`ngrid = numel(o_grid)-1` - identical integers); `Hyper.*` passed explicitly; unqualified `vec`
+now `bvar.util.vec`; `o` preallocated in `svo_outlier` instead of updated in place (every element
+is overwritten before any read). The `o` arguments of `eq_var_redu_tri` and `alp_tri_cs` default
+to `ones(T,1)`, which leaves the non-SVO path bit-for-bit unchanged - multiplication and
+division by exactly 1.0 are identity in IEEE-754, and `test_oisv_equivalence` re-verifies the
+`alp_tri_cs` default path end-to-end. Everything else byte-verbatim, including the dead
+`U = zeros(T,n)` and `Hphi` assignments (kept in run_all with `%#ok<NASGU>`), the dead
+`E = Y-X*A` of VAR_FSV.m 21, VAR_FSV's `store_A` running-sum convention, and the legacy
+`if isim < 20` forced-accept window of the VAR-CSV h step. The wall-clock timing displays,
+VAR_CSV.m's exp(h/2) figure, and main_varsv.m's dead `y = reshape(Y',n*T,1)` are not reproduced.
+
+Deferred (NOT functionized in step 9): the VAR-CSV natural-conjugate (Sig,A) joint draw
+(VAR_CSV.m 37-46) - the same block chan2020_jbes_kronecker/run_all.m keeps inline, held for
+the springer family pass, which shares its structure - and the four `ml_var_*` routines with
+their importance-sampling machinery (`getISden_ARSS.m`, `M`, `flag_marg`). The `ml_var_*`
+routines were extracted in step 10 (below); the (Sig,A) draw is still deferred.
+
+### Step-9 verification notes (2026-09-03)
+
+- Teeth checks (scratch mirror of `core/`, prepended to the path; the real tree was never
+  perturbed, and the mirror's reverted run passes): a 1e-7 relative perturbation of
+  `eq_var_redu_tri` fails on model 3's store_alp, of `factor_fsv` and of `eq_fsv_load` on
+  model 4's store_l, of `alp_tri_cs`'s `./o.^2` on model 5 only (model 3 unaffected, as the
+  o == 1 identity predicts), and of `alp_tri_cs`'s shared `X_alpi'*iD*X_alpi` on BOTH
+  `test_mlvarsv_equivalence` (model 3) and `test_oisv_equivalence` (CS) - which is what proves
+  the two packages share that block rather than merely resembling each other. Hard-coding .999
+  inside a mirrored `sv_params` fails on model 3.
+- **Sensitivity floor of the outlier block.** `svo_outlier`'s o_t draw is discrete (a 32-point
+  grid), so small perturbations are absorbed: 1e-7, 1e-6 and 1e-4 relative changes to its
+  log-likelihood constant are NOT detected, while 2e-2 is (and so is a 2% change to the
+  `-n*log(o_grid)` term). This is a property of the block, not a gap in the test - the
+  surrounding continuous draws are detected at 1e-7 - but a future refactor of `svo_outlier`
+  must not rely on the equivalence test to catch sub-1e-3 arithmetic drift there.
+- Path nuance (same shape as steps 5-8): inside `test_mlvarsv_equivalence` the legacy side
+  resolves the tempdir copies of prior_Minn/prior_NCP/prior_B0/sample_SV/sample_SVpara/
+  sample_CSV/get_C/getARh_approx1N/vec/vech/ldet/mgammaln, and run_all's ONE unqualified name
+  (`gigrnd`) resolves to the tempdir legacy copy too. The test now ASSERTS that the legacy
+  gigrnd.m and `third_party/gigrnd.m` are code-identical (comment-stripped), converting the
+  step-5 silent dependency into a checked one. Four packages define `run_all`; resolution is
+  pinned with a `which` assertion, and `preset` by run_all's own cd guard.
+- `test_sv_params_mlvarsv` asserts `sample_SVpara` resolves from the ml_varsv legacy copy, not
+  the same-name OISV one.
+- Data note: the shipped `macrodata_Q_2019Q4.csv` is 242 x 248, so T = 234 - the
+  `linspace(1961,2019.75,T)` axis in VAR_CSV.m's figure implies 236 and is cosmetically off by
+  two quarters. Display only; no estimate depends on it.
+- There is NO constant named `nuub` (or `nu_ub`/`nub`) anywhere in this legacy package
+  (grep-verified). A lead carried into this step that does not correspond to these files.
+
+## Canonicalized in step 10 (ml_varsv family pass, part 2: marginal likelihoods, 2026-09-03)
+
+The marginal-likelihood phase of chan2023_joe_mlvarsv: `utility/ml_var_csv.m`,
+`ml_var_arsv_redu.m`, `ml_var_fsv.m`, `ml_var_arsvo_redu.m`, dispatched by each estimation
+script's `if cp_ml` tail. **The method is adaptive importance sampling, not the Chib
+decomposition of the Kronecker family**: for each model a small set of blocks is integrated
+out analytically (always the VAR coefficients; also Sig for VAR-CSV, the latent factors for
+VAR-FSV, and the log-volatility variances under `flag_marg = 2`), everything else is drawn
+from importance densities fitted to the posterior draws - the log-volatility paths from
+`getISden_ARSS` (a Gaussian state space fit, rho by `fminbnd` on the concentrated likelihood),
+phi truncated normal, mu normal, the loadings/impact elements multivariate normal, kappa gamma
+(`gamfit`), po beta (`betafit`) - and the M log weights are averaged in 50 batches, which is
+also where the reported numerical standard error comes from. There is no starred point and no
+posterior-ordinate telescoping, so the step-8 audit categories (evaluation point, leftover
+workspace) mostly do not apply: these are functions, not workspace scripts, and everything
+they read is an argument.
+
+Equivalence test: `tests/unit/test_mlvarsv_ml.m` runs each legacy estimation script with
+`cp_ml = 1` from tempdir copies (so the legacy ML routine executes inside it, on the
+estimation's own stream) at nsim/burnin = 40/10, M = 100, n = 4, over 11 configurations -
+every model at every switch setting its cprior/gIS branch reads - and asserts `isequal` on the
+stored draws, on `lml` and `lmlstd`, on `store_w` where the legacy script keeps it (VAR-FSV),
+and on the terminal rng state. The four ml routines and every density utility run BYTE-VERBATIM
+(asserted seed-line-free); the estimation scripts carry the same sole clock-seed patch as step
+9. VAR-SVO is compared under `'bugcompat', true`. T = 234 (the full sample) is deliberate: the
+`o_hat` linear-index defect only takes its published form when T >= 32.
+
+| Core function | Canonical source (legacy) | Also canonicalizes | Verified |
+|---|---|---|---|
+| `bvar.ml.lgampdf` | chan2023_joe_mlvarsv `utility/lgampdf.m` (single copy) | the kappa prior/IS ordinates of ml_var_csv (its only caller) | unit (`test_mlvarsv_ml_densities` bitwise + end-to-end) |
+| `bvar.ml.ltnormpdf` | `utility/ltnormpdf.m` (single copy) | the phi prior/IS ordinates of ml_var_csv (its only caller) | unit (same) |
+| `bvar.ml.lmvnpdf_pcn` | `utility/lmvnpdf_pcn.m` (single copy) | the h IS ordinate of ml_var_csv (its only caller) | unit (same) |
+| `bvar.ml.isden_arss` | `utility/getISden_ARSS.m` (renamed; body and its `concen_like_h` subfunction verbatim; the only copy in the repo) | all four ml routines, once per series | unit (all five outputs bitwise) + end-to-end |
+| `bvar.ml.mlvarsv_csv` | `utility/ml_var_csv.m` (incl. its `like_VAR_CSV` subfunction) | (model 2) - CLEAN BILL | unit (`test_mlvarsv_ml`, both kappa settings) |
+| `bvar.ml.mlvarsv_arsv_redu` | `utility/ml_var_arsv_redu.m` | (model 3) - CLEAN BILL | unit (same, all three switch settings) |
+| `bvar.ml.mlvarsv_fsv` | `utility/ml_var_fsv.m` (incl. its `deny_fsv` subfunction) | (model 4) - CLEAN BILL; the only routine implementing `flag_marg = 1` | unit (same, all three settings; `store_w` bitwise) |
+| `bvar.ml.mlvarsv_arsvo_redu` | `utility/ml_var_arsvo_redu.m` | (model 5) - AFFECTED three times, all in the outlier block; `'bugcompat',true` reproduces the legacy bitwise, the default corrects | unit (same, all three settings, bugcompat bitwise + corrected teeth) |
+
+Reused rather than re-extracted: `bvar.priors.niw('mlvarsv_ncp')` (legacy prior_NCP, called per
+IS draw to refresh VA from the drawn kappa), `bvar.priors.minn` with n0pre = 4 (prior_Minn),
+`bvar.priors.impact_B0` (prior_B0), `bvar.util.tnormrnd`, `bvar.util.vec`, `bvar.util.ldet`,
+`bvar.util.mgammaln`, `bvar.util.surform2` (SURform2 - `deny_fsv` is the first CORE function to
+call it; the springer/kronecker forecast scripts call the legacy copies). Not extracted:
+`utility/ligampdf.m`, which is CODE-IDENTICAL to the step-8
+`bvar.ml.linvgammpdf` (asserted in `test_mlvarsv_ml_densities`) and has no caller in this
+package, and `utility/lmvnpdf.m`, which has no caller anywhere in the package. Both stay in
+legacy/.
+
+New replication driver (not core): `replications/chan2023_joe_mlvarsv/run_ml.m` -
+`run_ml(model, is_kappafixed, is_kappasym, nsim, burnin, seed, varid, 'M',.., 'flag_marg',..,
+'bugcompat',..)`, the legacy `cp_ml = 1` pipeline: run_all followed by the ML routine on one
+continuous rng stream, as the legacy script tails do. `run_all` gained three output fields
+(`out.Y`, `out.X`, `out.Y0`) so run_ml need not rebuild the design.
+
+Edits made during extraction, in full: provenance headers; the four routines renamed
+`ml_var_*` -> `mlvarsv_*` with the legacy positional outputs `[lml,lmlstd]` kept and the third
+output promoted from the bare `store_w` to a detail struct (`out.store_w`, `out.bigml`, the
+fitted IS parameters, and for VAR-SVO `out.store_lr_o` / `out.store_lJ_o`); helper calls
+redirected to the core names above; an explicit `assert` on `flag_marg` (the legacy switch
+leaves `prior`/`gIS` undefined for unimplemented values, so this converts a confusing
+undefined-handle error into a clear one and changes no arithmetic); the VAR-SVO corrections
+below behind `'bugcompat'`. Everything else byte-verbatim, including the dead `gamfit` block
+over `1./sig2` and its commented-out consumers, the commented-out `big_sig2` blocks of the two
+Cholesky-SV routines, `M = 50*ceil(M/50)`, the 50-batch reshape, and `kappa3 = 100`
+re-hard-coded inside each routine.
+
+### Step-10 bug audit (2026-09-03) - all findings, including clean bills
+
+Verified line-by-line from source. The three defects are confined to VAR-SVO's outlier block
+and are exactly the o-specific lines the routine gained when it was copied from
+`ml_var_arsv_redu.m` (a comment-stripped diff of the two files returns only the o/po
+additions - and `c1`, the one line the o patch should have touched and did not).
+
+- **`ml_var_arsvo_redu.m` line 12 with line 180 (defect 1, prior mass):** line 12 sets
+  `ngrid = size(o_grid,1)` = **32**, the number of ATOMS in `o_grid = [1;linspace(2,20,31)']`;
+  line 180 then builds `o_lpri = log([1-po; repmat(po/ngrid,ngrid,1)])`. The sampler's own
+  `ngrid` (VAR_ARSVO_redu.m line 8) is **31**, the number of OUTLIER atoms, and its line 112
+  builds the same expression with it. So the ML charges every outlier draw `log(po/32)` where
+  the model gives it `log(po/31)` - 0.0317487 too little per outlier period - and produces a
+  33-entry vector whose last entry is never indexed (`o_idx <= 32`). The ML's implied prior
+  sums to `1 - po/32 = 0.998047` over the atoms the sampler can produce. Correct value: po/31.
+- **`ml_var_arsvo_redu.m` line 181 (defect 2, indexing):**
+  `lr_o = sum(o_lpri(o_idx) - log(o_hat(o_idx)));`. `o_hat` is T x 32 (line 68) and `o_idx` is
+  T x 1 with values in 1..32, so `o_hat(o_idx)` is a LINEAR index into a T-row matrix: for
+  T >= 32 (T = 234 published) every index lands in column 1. It reads the smoothed probability
+  of the atom o = 1 at PERIOD `o_idx(t)` instead of the probability of the drawn atom at period
+  t - the importance density's own ordinate, evaluated at the wrong entry. Correct:
+  `o_hat(sub2ind(size(o_hat),(1:T)',o_idx))`. (Below T = 32 the linear indices spill into
+  column 2 and the behaviour changes; the test therefore runs at the full T.)
+- **`ml_var_arsvo_redu.m` line 153 (defect 3, missing Jacobian):**
+  `c1 = -n*T/2*log(2*pi) -.5*sum(sum(h)) -.5*sum(log(Hyper.Valp));` is byte-identical to
+  ml_var_arsv_redu.m line 135, but line 155 scales the residuals by the outlier size -
+  `diag_sqrt_D = vec(exp(h/2).*repmat(o,1,n))`. The o scaling enters the quadratic form and
+  its log-determinant, `-n*sum(log(o))`, never enters the normalizing constant. The model is
+  unambiguous: the sampler's own o step carries the term
+  (`lliket = -n*log(o_grid) -.5*U(tt,:)*U(tt,:)'./o_grid.^2;`, VAR_ARSVO_redu.m 115). Since
+  `log(o_t) >= 0`, the omission inflates the weight of every draw that contains an outlier
+  (and leaves an all-ones draw alone). It is the largest of the three.
+- **`ml_var_csv.m` (model 2): CLEAN.** `like_VAR_CSV` is the correct matric-t ordinate
+  (`pi^{-nT/2}`, `|Omega|^{-n/2} = -n/2*sum(h)`, both `|V_A|` and `|K_A|` at power -n/2, the
+  IW constants via `mgammaln`); the sigh2 integration on lines 50-52 carries its full
+  normalizer including `-T/2*log(2*pi)` and `.5*log(1-phi^2)`; `Hyper.VA` is refreshed from
+  each kappa draw (line 45) before every read; mu is fixed at 0 throughout, matching
+  VAR_CSV.m's `sample_SVpara(h,0,phi,Hyper)`.
+- **`ml_var_arsv_redu.m` (model 3): CLEAN.** Every parameter is accounted for exactly once
+  (alp and sigh2 analytically, beta/h/mu/phi/kappa by importance sampling); `c1` carries the
+  full Jacobian `-.5*sum(sum(h))` (|det B0| = 1); `lh_pri` and `lh_g` both carry their
+  `-T*n/2*log(2*pi)`; `lr_beta` is prior-minus-IS with the two `(2*pi)^{-k_beta/2}` constants
+  correctly cancelled; Valp/Vbeta are refreshed from the drawn kappas (lines 127-128) before
+  every read.
+- **`ml_var_fsv.m` (model 4): CLEAN.** `deny_fsv` marginalizes the factors through
+  `Sy = (I kron L) Omega (I kron L') + Sig` with row-major stacking consistent with
+  `SURform2(X,n)` and `reshape(Y',T*n,1)`; the free-loading index set matches the sampler's.
+  **The one thing that looks like a defect and is not:** `c_hi = .5*ldet(Kh_hat)` (line 125)
+  omits the `-T*(n+r)/2*log(2*pi)` of the h importance density, and `lh_prior` (lines 156-161)
+  omits exactly the same constant, once per series, in BOTH `flag_marg` branches - the two
+  omissions cancel in `llike + lh_prior - lh_g`, so the level is right. (The VAR-SV routine
+  carries the constant on both sides instead; the two routines agree.)
+- **Family-wide quirk, phi truncation:** the samplers accept a phi candidate only when
+  `abs(phic) < .998` (sample_SVpara.m line 22), so the posterior they target is truncated at
+  .998, while every ML routine scores the phi prior AND draws its importance density on
+  (-1,1). The IS estimator remains a valid estimate of the marginal likelihood under the
+  (-1,1)-truncated prior (the IS support contains the integrand's), but that prior is not
+  quite the one the MCMC targets. At the published hyperparameters the two prior normalizers
+  differ by log(0.6554/0.6406) = 0.0229 per log-volatility series - about 0.02 for VAR-CSV,
+  0.34 for VAR-SV/VAR-SVO, 0.39 for VAR-FSV. Shared by all five models and left unchanged: it
+  is a prior-definition choice, not an implementation slip.
+- **Quirk, `flag_marg`:** only `ml_var_fsv` implements `flag_marg = 1`. In the other three the
+  `switch flag_marg case 2` block is the only place `prior`/`gIS` are defined, so any other
+  value fails later with an undefined-function error. The extractions assert on it instead.
+- **Quirk, dead work:** `ml_var_arsv_redu`/`ml_var_arsvo_redu` fit a gamma to `1./sig2` for
+  every series (lines 47-50) whose only consumers are commented out (line 51); `ml_var_fsv`
+  draws `big_sig2` (M x (n+r) `gamrnd`) even under `flag_marg = 2`, where nothing reads it -
+  rng-consuming but numerically inert. Both kept verbatim.
+- **Quirk, is_kappasym prior rows:** ml_var_arsv_redu/arsvo_redu score the symmetric-kappa
+  prior with `Hyper.c0(2:3,:)` while the estimation draws kappa1 from row 1. Rows 1 and 2 of
+  `c0` are both `[1, 1/.2^2]`, so this is numerically a no-op - but it would stop being one if
+  the two rows were ever given different hyperparameters.
+- **Quirk, gamma scale round trip:** `ml_var_csv` draws `gamrnd(ckappa_hat(1),1./ckappa_hat(2),...)`
+  where `ckappa_hat(2) = 1/tmp_hat(2)`, while the other three pass `tmp_hat(2)` straight
+  through. Mathematically the same scale, up to one ulp different in floating point. A future
+  consolidation of the four kappa blocks must not silently pick one form.
+
+### Step-10 verification notes (2026-09-03)
+
+- Teeth checks, all seven FAILED as required (scratch mirror of `core/` appended AFTER the real
+  core so the mirror wins - `addpath` prepends, so the order matters; the real tree was never
+  perturbed and the suite is green): a 1e-7 relative perturbation of the `-T/2*log(2*pi)` in
+  `mlvarsv_csv` fails on model 2's lml, of `c1` in `mlvarsv_arsv_redu` on model 3, of `c_hi` in
+  `mlvarsv_fsv` on model 4, of the `isden_arss` rho bound (.99 -> .98) on model 2. Applying any
+  ONE of the three corrections inside the bugcompat path fails on model 5, which is what proves
+  the three are materially separate: at the test scale (n = 4, T = 234, nsim = 40, M = 100) the
+  legacy lml is -2044.06 and becomes -2040.88 with defect 1 alone corrected (+3.2), -1671.77
+  with defect 2 alone (+372.3) and -2926.41 with defect 3 alone (-882.3).
+- Corrected-mode teeth INSIDE the test: the corrected VAR-SVO run is asserted to leave the
+  terminal rng state bitwise unchanged (none of the three corrections touches the stream), to
+  use 31 prior atoms where bugcompat uses 32, to apply a strictly negative o Jacobian on at
+  least one draw, and to move each weight by exactly `store_lJ_o + (lr_o_corrected -
+  lr_o_legacy)` to 1e-6 (the residual is the re-association of `c1`).
+- Path nuance (same shape as steps 5-9): inside `test_mlvarsv_ml` the legacy side resolves the
+  tempdir copies of the four ml routines and every helper (asserted by `which` for the script
+  and its ml routine); the core side resolves only qualified `bvar.*` names plus the package's
+  run_all/run_ml/preset, with run_all's one unqualified `gigrnd` again asserted code-identical
+  to `third_party/gigrnd.m`.
+- Toolbox note: the ML phase needs the Statistics and Machine Learning Toolbox beyond what the
+  samplers need - `gamfit` (all four routines), `betafit`/`betarnd`/`betapdf` (VAR-SVO),
+  `normcdf`/`norminv` (via tnormrnd and the truncation normalizers). `fminbnd` is base MATLAB.
+- Fragility worth knowing: `o_hat` is built with `sum(store_o == o_grid(ii))`, exact
+  floating-point equality against the grid. It is safe because the chain assigned those values
+  FROM the same array and `run_ml` hands the estimation's own `out.o_grid` back - but a
+  recomputed grid with different endpoints would silently make every count zero and leave
+  `o_hat` uniform at 1/(nsim+32).
+- Do not read the test-scale VAR-SVO numbers as indicative. At nsim = 40 the smoothed `o_hat`
+  puts ~1.6% on each outlier atom (50% outlier probability per period), so the importance
+  draws are wildly over-dispersed relative to the posterior and the corrected weights - which,
+  unlike the legacy ones, actually penalise implausible o - collapse. The published
+  configuration (nsim = 10000) is the one that matters; see the adjudication below.
+
+## Ranking adjudication (step 10, 2026-09-03)
+
+Full-length runs at the published configuration (n = 15) comparing the two modes are
+complete on two seeds, with a VAR-SV control; the bugcompat path reproduces the published
+values within Monte Carlo error, on an affected and an unaffected model - the full-scale
+end-to-end check the small-nsim equivalence test cannot give. The quantitative record of
+the corrected computation is withheld pending completion of the adjudication (runs at the
+remaining model dimensions are in progress) and the author's review; it will be recorded
+here when settled.
+
+- Runtime: test_mlvarsv_ml is ~16 s for its 11 configurations (both sides), and
+  test_mlvarsv_ml_densities ~1 s.
+- Cost warning for anyone re-running the published configuration: at n = 15, M = 10000 the
+  ML phase dominates the estimation - the golden logs record 7 s (VAR-CSV), 563 s (VAR-SV),
+  1769 s (VAR-FSV) and 464 s (VAR-SVO) against 11-113 s for the corresponding chains.
+
 ## NEVER MERGE - same name, numerically different
 
 A future deduplication must not unify any of these; doing so silently changes published results.
@@ -350,17 +642,18 @@ A future deduplication must not unify any of these; doing so silently changes pu
   variables plus a 1e-4 ridge - numerically different sig2, hence different Minnesota scalings.
 - **`getVtheta.m`**: HYB copy hard-codes kappa3=.2, kappa4=1 inside the body; MAHP copy takes
   them from the kappa vector.
-- **`sample_SVpara.m`**: the ml_varsv and OISV copies are numerically different and must not be
-  unified (record corrected 2026-09-01 after full reads: BOTH copies carry the `if mu ~= 0`
-  vectorized gate that skips the whole mu block if ANY element of mu is exactly zero - the gate
-  is not what separates them). Real differences: (i) phi truncation bound .998 (ml_varsv) vs
-  .999 (OISV); (ii) OISV takes h with n+r columns and demeans only the first n (mu applies to
-  n series; r extra zero-mean columns share the phi/sig2 draws), ml_varsv demeans ALL columns;
-  (iii) OISV's mu block indexes phi(1:n)/sig2(1:n), ml_varsv uses full vectors. OISV
-  additionally splits the zero-mean case into `sample_SV0para.m` with bound .99. Step 4
-  canonicalized the OISV pair as `bvar.sv.sv_params` / `bvar.sv.sv0_params` (phi bound exposed
-  as an argument, defaults reproduce OISV exactly); the ml_varsv copy stays un-canonicalized
-  on this list.
+- **`sample_SVpara.m`** (DELISTED 2026-09-03, step 9 - kept here only so the earlier verdict is
+  not re-derived): the ml_varsv and OISV copies differ in (i) phi truncation bound .998
+  (ml_varsv) vs .999 (OISV); (ii) OISV takes h with n+r columns and demeans only the first n,
+  ml_varsv demeans all columns; (iii) OISV's mu block indexes phi(1:n)/sig2(1:n), ml_varsv uses
+  full vectors. BOTH copies carry the `if mu ~= 0` vectorized gate (2026-09-01 correction) - the
+  gate is not what separates them. Differences (ii) and (iii) are no-ops at r = 0, which is what
+  every ml_varsv call site passes, so `bvar.sv.sv_params(h,mu,phi,Hyper,.998)` reproduces the
+  ml_varsv copy draw-for-draw (`test_sv_params_mlvarsv`, plus end-to-end in
+  `test_mlvarsv_equivalence`). Only difference (i) is real in practice; it is a parameter, not a
+  fork. OISV additionally splits the zero-mean case into `sample_SV0para.m` with bound .99
+  (`bvar.sv.sv0_params`) - that one is a genuinely separate function. Do NOT merge the .998 and
+  .999 DEFAULTS: the bound changes draws (teeth-verified).
 - **`macrodata_Q_2018Q4.csv`**: byte-identical between MAHP and HYB but a DIFFERENT file in
   BVAR_ACP (md5-verified). Never key a shared data folder by this filename.
 - **MAHP `forecast_BVAR_NG.m` kappa/psi block**: NOT reproduced by
@@ -388,6 +681,13 @@ A future deduplication must not unify any of these; doing so silently changes pu
   sample_SVpara keeps updating mu and the predictive recursion uses muh (preset
   `pr.forecast.cs_h_mu_zero`). A forecast functionization must NOT reuse the estimation
   call as-is.
+- **`eq_var_redu_tri` vs `eq_svar_oi`**: siblings, not duplicates. `eq_svar_oi` (OISV
+  SVARSV_MH.m 76-87) stacks ALL n rows of the rotated system - `yi = vec((Y-X*A)*B0')`,
+  `Wi = kron(B0(:,ii),X)` - and has no prior-mean term. `eq_var_redu_tri` (ml_varsv
+  VAR_ARSV_redu.m 44-57) stacks only rows `ii:n` (valid because B0 is unit lower triangular,
+  so rows 1..ii-1 carry B0(j,ii) = 0 and contribute nothing) and adds `iValpi*alpi0`. Same
+  conditional posterior in the triangular case, different dimensions and floating-point path;
+  and the OISV B0 is NOT triangular, so its truncation would be wrong there. Keep separate.
 - **`anormrnd.m` vs `tnormrnd.m`**: anormrnd is the OISV bimodal two-component draw for the
   first B0 rotation coordinate (one rand + one randn); tnormrnd is an inverse-cdf truncated
   normal. Same "restricted normal draw" vibe, entirely different densities and rng
@@ -395,6 +695,18 @@ A future deduplication must not unify any of these; doing so silently changes pu
 - **`horseshoe_kappa_psi` vs `gig_shrinkage`**: the OISV horseshoe block (inverse-gamma /
   auxiliary z draws, kappa(1:2) global scales) and the MAHP normal-gamma (GIG) block are
   different prior families with different draw sequences - never unify.
+- **`bvar.ml.kron_*` vs `bvar.ml.mlvarsv_*`**: two different ESTIMATORS sharing one package
+  folder. `kron_*` is Chib's method (a starred point, prior and posterior ordinates, an
+  integrated likelihood by importance sampling, no standard error); `mlvarsv_*` is adaptive
+  importance sampling over the whole parameter vector with densities fitted to the posterior
+  draws, reporting a 50-batch standard error. They share only scalar densities. Do not unify
+  them behind one interface or one options struct - `'bugcompat'` denotes different defects in
+  each (kron: leftover-workspace evaluation points; mlvarsv: the VAR-SVO outlier block).
+- **`lmvnpdf_pcn` vs `lmvnpdf`**: precision vs covariance parameterization of the same
+  Gaussian. Only the precision form is extracted (`bvar.ml.lmvnpdf_pcn`, which is what
+  `getISden_ARSS` hands it); the legacy `utility/lmvnpdf.m` has no caller anywhere. If it is
+  ever extracted, keep both names - handing a covariance to the precision form silently
+  returns a different number.
 
 ## Verification notes (step 8 self-check, 2026-09-02)
 

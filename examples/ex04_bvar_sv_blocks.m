@@ -48,7 +48,8 @@
 % is what makes this script diff line by line against the legacy file.) The four
 % blocks:
 %
-%   1. A equation by equation       (the centrepiece; written out inline here)
+%   1. A equation by equation       (the centrepiece; written out inline here,
+%                                    and available as bvar.samplers.eq_var_redu_tri)
 %   2. the free elements of B0      bvar.samplers.alp_tri_cs
 %   3. the n log-volatility paths   bvar.sv.ksc_ar1_mean
 %   4. (mu, phi, sig2) per equation bvar.sv.sv_params
@@ -61,13 +62,15 @@
 % B0(1:ii-1,ii) = 0, so rows 1..ii-1 drop out exactly. Read its header next to
 % block 1 below: the two blocks differ in exactly one index range.
 %
-% TWO HONEST CAVEATS. This script ILLUSTRATES VAR_ARSV_redu; it does not
-% reproduce it bitwise, for two reasons.
-%   (a) bvar.sv.sv_params canonicalizes the OISV copy of sample_SVpara, NOT the
-%       ml_varsv copy that VAR_ARSV_redu calls. The two differ - phi truncation
-%       bound .999 vs .998, and the handling of the h columns - and are on the
-%       never-merge list in tests/variant_map.md. Same conditional, different
-%       floating-point path and different rng consumption.
+% ONE HONEST CAVEAT. This script ILLUSTRATES VAR_ARSV_redu; it does not
+% reproduce it bitwise, for one reason.
+%   (a) [RETIRED 2026-09-03.] This slot used to claim bvar.sv.sv_params could not
+%       reproduce the ml_varsv sample_SVpara because the two "handle the h
+%       columns differently". That is false: the difference is a no-op whenever
+%       numel(mu) == size(h,2), which every ml_varsv call satisfies, and the phi
+%       truncation bound is the only live difference. Block 4 below therefore
+%       passes .998 and matches the legacy draw for draw. See
+%       tests/unit/test_sv_params_mlvarsv.m.
 %   (b) The shrinkage hyperparameters kappa are held FIXED at the paper's preset
 %       values. VAR_ARSV_redu draws kappa1, kappa2 and kappa4 from
 %       generalized-inverse-Gaussian conditionals with gigrnd every sweep, which
@@ -268,6 +271,10 @@ for isim = 1:nsim + burnin
     % recomputed, because the previous equations have already been updated: this
     % is a Gibbs sweep through the equations (the columns of A), not a parallel
     % update.
+    %
+    % This loop is bvar.samplers.eq_var_redu_tri(Y,X,B0,h,A,Valp,alp0). It is
+    % written out here because it is what the script is about; call the core
+    % function in real code.
     sqrt_exph = exp(h/2);
     for ii = 1:n
         A(:,ii)  = 0;
@@ -313,9 +320,11 @@ for isim = 1:nsim + burnin
     %% ---- BLOCK 4: the SV state-equation parameters (mu, phi, sig2) ----
     %
     % sig2 conjugate inverse gamma, phi an independence-chain MH step against
-    % the stationary initial condition, mu Gaussian. See the caveat in the
-    % header: this is the OISV copy of the block, not the ml_varsv one.
-    [mu, phi, sig2, flag_phi] = bvar.sv.sv_params(h, mu, phi, Hyper);
+    % the stationary initial condition, mu Gaussian. The trailing .998 is this
+    % paper's phi truncation bound (utility/sample_SVpara.m line 22); the
+    % function defaults to the OISV .999, and that argument is the only thing
+    % separating the two legacy copies.
+    [mu, phi, sig2, flag_phi] = bvar.sv.sv_params(h, mu, phi, Hyper, .998);
     count_phi = count_phi + flag_phi;
 
     if isim > burnin
@@ -415,7 +424,8 @@ fprintf('10000 draws, drawn kappa, and the marginal likelihood that the paper is
 fprintf('actually about - is\n');
 fprintf('  replications/chan2023_joe_mlvarsv/legacy/VAR_ARSV_redu.m  (via main_varsv.m)\n');
 fprintf('Read it next: this loop is its lines 40-90 with the kappa block removed.\n');
-fprintf('That package has NOT been functionized yet - there is no run_all.m under\n');
-fprintf('replications/chan2023_joe_mlvarsv/, only the frozen legacy/ folder, so run\n');
-fprintf('it the legacy way (cd into legacy/, then main_varsv).\n');
+fprintf('To RUN it, use the functionized driver, which switches the kappa block on\n');
+fprintf('and reproduces the legacy script draw for draw:\n');
+fprintf('  run_all(''VAR-SV'')   in replications/chan2023_joe_mlvarsv/\n');
+fprintf('and run_ml(''VAR-SV'') in the same folder adds the marginal likelihood.\n');
 fprintf('Next: ex05_marginal_likelihood.\n');
