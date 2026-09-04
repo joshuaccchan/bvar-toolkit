@@ -51,16 +51,18 @@ runs; a `run_all.m` will follow. Full citations are in `provenance.md`.
 
 ## The `bvar` library
 
-A Bayesian VAR is estimated using Markov chain Monte Carlo by cycling through a handful of
-conditional draws: build the prior, draw the coefficients, draw the volatilities, draw the
-shrinkage hyperparameters, forecast. Across the twelve packages those steps were written
-out again and again — the same auxiliary-mixture volatility sampler appears in eight of
-them, under four names. `bvar` is those steps factored into one function each.
+A Bayesian VAR is estimated by Markov chain Monte Carlo. Once the prior has been
+constructed, each sweep draws the VAR coefficients, the log-volatility path and the
+shrinkage hyperparameters in turn, each conditional on the rest; forecasts and marginal
+likelihoods are computed afterwards from the stored draws. Across the twelve packages
+those steps were written out again and again — the auxiliary mixture sampler that draws
+the log-volatility path appears in eight of them, under four names. `bvar` is those steps
+factored into one function each.
 
-They are not rewrites. Each function's body comes from a specific published package, and a
-unit test runs the original code beside it and requires the same numbers — bitwise, and
-draw-for-draw under a fixed seed for anything stochastic. Calling `bvar.sv.ksc_rw_h0` runs
-the computation the paper ran.
+They are not rewrites. Each function's body is taken from a specific published package,
+and a unit test runs the original code alongside it and requires identical output — draw
+for draw, bitwise, under a fixed seed. Calling `bvar.sv.ksc_rw_h0` runs the computation
+the paper ran.
 
 | Namespace | What it is for |
 |---|---|
@@ -69,7 +71,7 @@ the computation the paper ran.
 | `bvar.samplers` | Drawing everything else in the Gibbs loop: VAR coefficients equation by equation (`eq_gauss` for the structural form, `eq_svar_oi` for the order-invariant one, `eq_tri_cs` and `alp_tri_cs` for the Cholesky benchmark) and the hierarchical shrinkage blocks (`gig_shrinkage`, `horseshoe_kappa_psi`, `nu_psi_ng`). |
 | `bvar.forecast` | Producing forecasts from a chain. `iterate` runs one draw forward and scores it, `tables` accumulates RMSFEs and log predictive likelihoods, `realtime_loaddata` assembles a real-time data vintage. |
 | `bvar.structural` | Contemporaneous structure: `construct_Sigt` builds the time-varying covariance from the impact matrix, `b0_row_sampler` draws that matrix row by row for the order-invariant model. |
-| `bvar.ml` | Marginal likelihoods, for model comparison: Chib's method for the Kronecker model family, plus the integrated-likelihood evaluators and log densities it needs. |
+| `bvar.ml` | Marginal likelihoods, for model comparison. Chib's method for the VARs with non-Gaussian, heteroscedastic and serially dependent innovations of Chan (2020), plus the integrated-likelihood evaluators and log densities it needs. |
 | `bvar.util` | The small shared pieces: `build_lags` (the lag matrix, intercept first), `diffmat` (the state-equation difference matrix that makes the precision samplers banded), `surform`/`surform2` (two different sparse expansions — see their headers), `logsumexp`, `igrnd`, and a few one-liners. |
 
 Where two legacy versions of a step turned out to differ numerically, both survive under
@@ -98,7 +100,7 @@ run tests/unit/run_unit_tests.m
 forecast metric tables and figures they print), with `tests/golden_runs/manifest.md` recording
 what was run, how long it took, and which scripts do not run as shipped.
 
-Three marginal-likelihood scripts in the Kronecker package evaluate an ordinate at a leftover
+Three marginal-likelihood scripts in the Chan (2020, JBES) package evaluate an ordinate at a leftover
 chain value where the posterior mean is intended. The core functions fix this by default and
 reproduce the published computation under `'bugcompat', true`; the corrections change the
 reported values by at most 2.45 log points and do not affect the paper's model ranking. The
