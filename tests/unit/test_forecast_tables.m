@@ -1,5 +1,5 @@
 function test_forecast_tables
-% deterministic equivalence of bvt.forecast.tables with the legacy
+% deterministic equivalence of bvar.forecast.tables with the legacy
 % accumulation + RMSFE/ALPL table code, on synthetic accumulated arrays.
 % The legacy side is NOT retyped: the exact line ranges are sliced out of the
 % two frozen legacy main_forecasting.m files at test time (content-asserted)
@@ -9,8 +9,8 @@ function test_forecast_tables
 %     both the model==1 all-variable form and the model~=1 var_core form)
 % One vintage's synthetic tmpyhat is complex-typed with zero imaginary part,
 % locking in the legacy magnitude-based max() behavior documented in
-% bvt.forecast.iterate/tables.
-root = getappdata(0, 'bvt_repo_root');
+% bvar.forecast.iterate/tables.
+root = getappdata(0, 'bvar_repo_root');
 mahp_main = fullfile(root, 'replications', 'chan2021_ijf_mahp', 'legacy', 'main_forecasting.m');
 spr_main = fullfile(root, 'replications', 'chan2020_springer_largebvar', 'legacy', 'main_forecasting.m');
 
@@ -77,12 +77,12 @@ Lyhat1 = yhat1; Lyhat4 = yhat4;
     % functionized side
 yhat1 = zeros(T-T0, 3*n+1); yhat4 = zeros(T-4-T0+1, 3*n+1);
 for t = T0:T-1
-    yhat1(t-T0+1, :) = bvt.forecast.tables('accum_row', C1{t}, Y(t+1, :));
+    yhat1(t-T0+1, :) = bvar.forecast.tables('accum_row', C1{t}, Y(t+1, :));
     if t <= T-4
-        yhat4(t-T0+1, :) = bvt.forecast.tables('accum_row', C4{t}, Y(t+4, :));
+        yhat4(t-T0+1, :) = bvar.forecast.tables('accum_row', C4{t}, Y(t+4, :));
     end
 end
-S = bvt.forecast.tables('mahp', yhat1, yhat4);
+S = bvar.forecast.tables('mahp', yhat1, yhat4);
 
 assert(isequal(Lyhat1, yhat1), 'mahp: accumulated yhat1 differs');
 assert(isequal(Lyhat4, yhat4), 'mahp: accumulated yhat4 differs');
@@ -128,13 +128,13 @@ end
     % functionized side
 yhat0 = zeros(T-T0+1, 3*n+1); yhat1 = zeros(T-1-T0+1, 3*n+1);
 for t = T0:T
-    yhat0(t-T0+1, :) = bvt.forecast.tables('accum_row', C0{t}, O0{t});
+    yhat0(t-T0+1, :) = bvar.forecast.tables('accum_row', C0{t}, O0{t});
     if t <= T-1
-        yhat1(t-T0+1, :) = bvt.forecast.tables('accum_row', C1{t}, O1{t});
+        yhat1(t-T0+1, :) = bvar.forecast.tables('accum_row', C1{t}, O1{t});
     end
 end
-S1 = bvt.forecast.tables('springer', yhat0, yhat1, []);         % model==1 form
-S2 = bvt.forecast.tables('springer', yhat0, yhat1, var_core);   % model~=1 form
+S1 = bvar.forecast.tables('springer', yhat0, yhat1, []);         % model==1 form
+S2 = bvar.forecast.tables('springer', yhat0, yhat1, var_core);   % model~=1 form
 
 assert(isequal(Lyhat0, yhat0), 'springer: accumulated yhat0 differs');
 assert(isequal(Lyhat1, yhat1), 'springer: accumulated yhat1 differs');

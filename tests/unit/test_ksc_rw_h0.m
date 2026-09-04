@@ -1,7 +1,7 @@
 function test_ksc_rw_h0
-% bvt.sv.ksc_rw_h0 must reproduce, draw-for-draw under one seed, EVERY legacy
+% bvar.sv.ksc_rw_h0 must reproduce, draw-for-draw under one seed, EVERY legacy
 % copy it canonicalizes: springer/kronecker/mahp SVRW.m and HYB sample_SVRW.m.
-root = getappdata(0, 'bvt_repo_root');
+root = getappdata(0, 'bvar_repo_root');
 
 rng(41, 'twister');                          % fixed test data
 T = 137;
@@ -12,7 +12,7 @@ sig2 = 0.12;                                 % state innovation VARIANCE
 h0 = 0.4;
 
 rng(7, 'twister');
-h_core = bvt.sv.ksc_rw_h0(ystar, h_in, sig2, h0);
+h_core = bvar.sv.ksc_rw_h0(ystar, h_in, sig2, h0);
 
 copies = { ...
     {'chan2020_springer_largebvar', 'legacy'},                     'SVRW'; ...

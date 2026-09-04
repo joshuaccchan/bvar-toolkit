@@ -87,7 +87,7 @@ pr.forecast.ng_doubles_vtheta = true;       % forecast_BVAR_NG.m line 43: Valp =
 pr.forecast.ng_conditionals_carry_half = true; % forecast_BVAR_NG.m lines 72-78: tmpc_j = sum(beta_j.^2./(2*psi_j)),
                                             %   tmpv_j = beta_j.^2/(2*kappa) - the factor 2 pairs with the doubled
                                             %   Vtheta; estimation BVAR_NG has no factor 2. NEVER-MERGE:
-                                            %   bvt.samplers.gig_shrinkage('ng',...) reproduces the ESTIMATION block only.
+                                            %   bvar.samplers.gig_shrinkage('ng',...) reproduces the ESTIMATION block only.
     % Further forecast-only mechanics with no draw-sequence divergence beyond
     % the above: sig2/C are recomputed from each expanding vintage (Y0,Yt);
     % only h(end,:) is stored; forecast_BVAR_MNG calls sample_nu_psi with one

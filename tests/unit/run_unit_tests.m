@@ -5,7 +5,7 @@ thisdir = fileparts(mfilename('fullpath'));
 root = fileparts(fileparts(thisdir));
 addpath(fullfile(root, 'core'));
 addpath(fullfile(root, 'third_party'));
-setappdata(0, 'bvt_repo_root', root);
+setappdata(0, 'bvar_repo_root', root);
 
 tests = dir(fullfile(thisdir, 'test_*.m'));
 nfail = 0;

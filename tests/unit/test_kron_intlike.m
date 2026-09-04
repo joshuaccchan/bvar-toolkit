@@ -1,15 +1,15 @@
 function test_kron_intlike
 % seeded draw-for-draw bitwise equivalence of the four extracted integrated-
 % likelihood evaluators with their chan2020_jbes_kronecker legacy copies:
-%   bvt.ml.intlike_csv      = legacy intlike_BVAR_CSV.m
-%   bvt.ml.intlike_t_csv    = legacy intlike_BVAR_t_CSV.m
-%   bvt.ml.intlike_csv_ma   = legacy intlike_BVAR_CSV_MA.m
-%   bvt.ml.intlike_csv_t_ma = legacy intlike_BVAR_CSV_t_MA.m
+%   bvar.ml.intlike_csv      = legacy intlike_BVAR_CSV.m
+%   bvar.ml.intlike_t_csv    = legacy intlike_BVAR_t_CSV.m
+%   bvar.ml.intlike_csv_ma   = legacy intlike_BVAR_CSV_MA.m
+%   bvar.ml.intlike_csv_t_ma = legacy intlike_BVAR_CSV_t_MA.m
 % at a small importance-sample size R, on the REAL package data with an OLS
 % (A, Sig) evaluation point (so the Newton-Raphson / EM mode searches run
 % exactly as in production). Asserts isequal on [intlike, store_llike] and
 % on the terminal rng state (identical randn call sequence).
-root = getappdata(0, 'bvt_repo_root');
+root = getappdata(0, 'bvar_repo_root');
 leg = fullfile(root, 'replications', 'chan2020_jbes_kronecker', 'legacy');
 
     % design exactly as main_BVAR.m lines 26-31 (read-only)
@@ -36,10 +36,10 @@ assert(strncmpi(which('intlike_BVAR_CSV'), leg, numel(leg)), ...
     'intlike_BVAR_CSV must resolve from the legacy folder');
 
 cases = { ...
-    @() bvt.ml.intlike_csv(shortY,X,A,Sig,rho,sigh2,R),          @() intlike_BVAR_CSV(shortY,X,A,Sig,rho,sigh2,R),          'intlike_csv'; ...
-    @() bvt.ml.intlike_t_csv(shortY,X,A,Sig,rho,sigh2,nu,R),     @() intlike_BVAR_t_CSV(shortY,X,A,Sig,rho,sigh2,nu,R),     'intlike_t_csv'; ...
-    @() bvt.ml.intlike_csv_ma(shortY,X,A,Sig,psi,rho,sigh2,R),   @() intlike_BVAR_CSV_MA(shortY,X,A,Sig,psi,rho,sigh2,R),   'intlike_csv_ma'; ...
-    @() bvt.ml.intlike_csv_t_ma(shortY,X,A,Sig,psi,rho,sigh2,nu,R), @() intlike_BVAR_CSV_t_MA(shortY,X,A,Sig,psi,rho,sigh2,nu,R), 'intlike_csv_t_ma'};
+    @() bvar.ml.intlike_csv(shortY,X,A,Sig,rho,sigh2,R),          @() intlike_BVAR_CSV(shortY,X,A,Sig,rho,sigh2,R),          'intlike_csv'; ...
+    @() bvar.ml.intlike_t_csv(shortY,X,A,Sig,rho,sigh2,nu,R),     @() intlike_BVAR_t_CSV(shortY,X,A,Sig,rho,sigh2,nu,R),     'intlike_t_csv'; ...
+    @() bvar.ml.intlike_csv_ma(shortY,X,A,Sig,psi,rho,sigh2,R),   @() intlike_BVAR_CSV_MA(shortY,X,A,Sig,psi,rho,sigh2,R),   'intlike_csv_ma'; ...
+    @() bvar.ml.intlike_csv_t_ma(shortY,X,A,Sig,psi,rho,sigh2,nu,R), @() intlike_BVAR_CSV_t_MA(shortY,X,A,Sig,psi,rho,sigh2,nu,R), 'intlike_csv_t_ma'};
 
 for kc = 1:size(cases, 1)
     rng(seed, 'twister');

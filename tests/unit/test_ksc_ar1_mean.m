@@ -1,7 +1,7 @@
 function test_ksc_ar1_mean
-% bvt.sv.ksc_ar1_mean must reproduce, draw-for-draw under one seed, BOTH legacy
+% bvar.sv.ksc_ar1_mean must reproduce, draw-for-draw under one seed, BOTH legacy
 % sample_SV.m copies it canonicalizes (ml_varsv and OISV) - path AND indicators.
-root = getappdata(0, 'bvt_repo_root');
+root = getappdata(0, 'bvar_repo_root');
 
 rng(43, 'twister');                          % fixed test data
 T = 173;
@@ -11,7 +11,7 @@ h_in = -1 + 0.2*randn(T,1);
 mu = -1.2; rho = 0.95; sig2 = 0.15;
 
 rng(9, 'twister');
-[h_core, S_core] = bvt.sv.ksc_ar1_mean(ystar, h_in, mu, rho, sig2);
+[h_core, S_core] = bvar.sv.ksc_ar1_mean(ystar, h_in, mu, rho, sig2);
 
 copies = { ...
     {'chan2023_joe_mlvarsv', 'legacy', 'utility'}; ...

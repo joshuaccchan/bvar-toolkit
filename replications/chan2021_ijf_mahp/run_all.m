@@ -27,10 +27,10 @@
 % All constants come from preset.m in this folder (each field cites its legacy
 % source line); the data file is read from legacy/ READ-ONLY; the Gibbs blocks
 % are the extracted core functions
-%   bvt.samplers.eq_gauss      (per-equation coefficient draw),
-%   bvt.sv.ksc_rw_h0           (KSC auxiliary-mixture SV draw, legacy SVRW),
-%   bvt.samplers.gig_shrinkage (kappa/psi GIG block, variants mng/ng/minn),
-%   bvt.samplers.nu_psi_ng     (normal-gamma shape MH step, legacy sample_nu_psi),
+%   bvar.samplers.eq_gauss      (per-equation coefficient draw),
+%   bvar.sv.ksc_rw_h0           (KSC auxiliary-mixture SV draw, legacy SVRW),
+%   bvar.samplers.gig_shrinkage (kappa/psi GIG block, variants mng/ng/minn),
+%   bvar.samplers.nu_psi_ng     (normal-gamma shape MH step, legacy sample_nu_psi),
 % called in the legacy order: theta -> h -> kappa(/psi) -> nu_psi -> h0 -> Sigh.
 % The h0 and Sigh draws (identical 3-and-2-line blocks in all three legacy
 % scripts) remain inline below.
@@ -47,8 +47,8 @@
 function out = run_all(model, nsim, burnin, seed)
 thisdir = fileparts(mfilename('fullpath'));
 
-    % make bvt.* and gigrnd resolvable when called standalone
-if isempty(which('bvt.priors.vtheta')) || isempty(which('gigrnd'))
+    % make bvar.* and gigrnd resolvable when called standalone
+if isempty(which('bvar.priors.vtheta')) || isempty(which('gigrnd'))
     root = fileparts(fileparts(thisdir));
     addpath(fullfile(root, 'core'));
     addpath(fullfile(root, 'third_party'));
@@ -81,11 +81,11 @@ Y0 = data(1:pr.n0, pr.var_id);
 Y  = data(pr.n0+1:end, pr.var_id);
 [T, n] = size(Y);
 p = pr.p;
-[~, Z] = bvt.util.build_lags([Y0(end-p+1:end, :); Y], p);   % identical to the legacy inline construction
+[~, Z] = bvar.util.build_lags([Y0(end-p+1:end, :); Y], p);   % identical to the legacy inline construction
 k_beta = n^2*p + n;                                         % main_BVAR.m line 36
 k_alp  = n*(n-1)/2;                                         % main_BVAR.m line 37
-sig2 = bvt.priors.resid_var_ar4(Y0, Y);                     % legacy get_resid_var, main_BVAR.m line 38
-[C, idx_kappa1, idx_kappa2] = bvt.priors.minnesota_C(n, p, sig2);   % legacy get_C, main_BVAR.m line 39
+sig2 = bvar.priors.resid_var_ar4(Y0, Y);                     % legacy get_resid_var, main_BVAR.m line 38
+[C, idx_kappa1, idx_kappa2] = bvar.priors.minnesota_C(n, p, sig2);   % legacy get_C, main_BVAR.m line 39
 
     % priors [main_BVAR.m lines 42-46, via preset]
 ah = pr.ah; Vh = pr.Vh;
@@ -139,41 +139,41 @@ for isim = 1:nsim + burnin
         % sample alp and beta
     switch model
         case 'MNG'      % BVAR_MNG.m lines 38-39 (incl. the *2 rescaling)
-            [Valp, Vbeta] = bvt.priors.vtheta(idx_kappa1, idx_kappa2, kappa, C.*Psi, sig2);
+            [Valp, Vbeta] = bvar.priors.vtheta(idx_kappa1, idx_kappa2, kappa, C.*Psi, sig2);
             Valp = pr.mng.vtheta_scale*Valp; Vbeta = pr.mng.vtheta_scale*Vbeta;
         case 'NG'       % BVAR_NG.m line 37 (Psi, not C.*Psi; no rescaling)
-            [Valp, Vbeta] = bvt.priors.vtheta(idx_kappa1, idx_kappa2, [kappa, kappa, pr.ng.kappa3, pr.ng.kappa4], Psi, sig2);
+            [Valp, Vbeta] = bvar.priors.vtheta(idx_kappa1, idx_kappa2, [kappa, kappa, pr.ng.kappa3, pr.ng.kappa4], Psi, sig2);
         case 'Minn'     % BVAR_Minn.m line 30
-            [Valp, Vbeta] = bvt.priors.vtheta(idx_kappa1, idx_kappa2, kappa, C, sig2);
+            [Valp, Vbeta] = bvar.priors.vtheta(idx_kappa1, idx_kappa2, kappa, C, sig2);
     end
-    [beta, alp, U] = bvt.samplers.eq_gauss(Y, Z, h, Valp, Vbeta);
+    [beta, alp, U] = bvar.samplers.eq_gauss(Y, Z, h, Valp, Vbeta);
 
         % sample h [BVAR_MNG.m lines 62-65]
     for ij = 1:n
         Ystar = log(U(:, ij).^2 + pr.sv_offset);
-        h(:, ij) = bvt.sv.ksc_rw_h0(Ystar, h(:, ij), Sigh(ij), h0(ij));
+        h(:, ij) = bvar.sv.ksc_rw_h0(Ystar, h(:, ij), Sigh(ij), h0(ij));
     end
 
         % sample kappa (and, for MNG/NG, psi then nu_psi)
     switch model
         case 'MNG'      % BVAR_MNG.m lines 68-87
-            [kappa, psi_kappa1, psi_kappa2] = bvt.samplers.gig_shrinkage('mng', ...
+            [kappa, psi_kappa1, psi_kappa2] = bvar.samplers.gig_shrinkage('mng', ...
                 beta, idx_kappa1, idx_kappa2, C, kappa, psi_kappa1, psi_kappa2, ...
                 nu_psi, c01, c02, n, p, pr.psi_floor);
             Psi(idx_kappa1) = psi_kappa1;
             Psi(idx_kappa2) = psi_kappa2;
-            [nu_psi, flag] = bvt.samplers.nu_psi_ng(psi_kappa1, psi_kappa2, nu_psi, lam0_nu_psi);
+            [nu_psi, flag] = bvar.samplers.nu_psi_ng(psi_kappa1, psi_kappa2, nu_psi, lam0_nu_psi);
             count_nu_psi = count_nu_psi + flag;
         case 'NG'       % BVAR_NG.m lines 66-84
-            [kappa, psi_kappa1, psi_kappa2] = bvt.samplers.gig_shrinkage('ng', ...
+            [kappa, psi_kappa1, psi_kappa2] = bvar.samplers.gig_shrinkage('ng', ...
                 beta, idx_kappa1, idx_kappa2, C, kappa, psi_kappa1, psi_kappa2, ...
                 nu_psi, c01, c02, n, p, pr.psi_floor);
             Psi(idx_kappa1) = psi_kappa1;
             Psi(idx_kappa2) = psi_kappa2;
-            [nu_psi, flag] = bvt.samplers.nu_psi_ng(psi_kappa1, psi_kappa2, nu_psi, lam0_nu_psi);
+            [nu_psi, flag] = bvar.samplers.nu_psi_ng(psi_kappa1, psi_kappa2, nu_psi, lam0_nu_psi);
             count_nu_psi = count_nu_psi + flag;
         case 'Minn'     % BVAR_Minn.m lines 59-62
-            kappa = bvt.samplers.gig_shrinkage('minn', ...
+            kappa = bvar.samplers.gig_shrinkage('minn', ...
                 beta, idx_kappa1, idx_kappa2, C, kappa, [], [], [], c01, c02, n, p, []);
     end
 

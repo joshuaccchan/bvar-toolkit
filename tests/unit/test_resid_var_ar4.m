@@ -4,9 +4,9 @@ rng(41, 'twister');
 n = 5;
 Y0 = randn(9, n);
 Y  = randn(60, n);
-s_core = bvt.priors.resid_var_ar4(Y0, Y);
+s_core = bvar.priors.resid_var_ar4(Y0, Y);
 
-root = getappdata(0, 'bvt_repo_root');
+root = getappdata(0, 'bvar_repo_root');
 folders = { ...
     fullfile(root, 'replications', 'chan2019wp_acp', 'legacy'); ...
     fullfile(root, 'replications', 'chan2021_ijf_mahp', 'legacy'); ...

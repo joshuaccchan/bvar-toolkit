@@ -3,9 +3,9 @@ function test_minnesota_C
 rng(43, 'twister');
 n = 5; p = 3;
 sig2 = exp(randn(n, 1));
-[C0, i10, i20] = bvt.priors.minnesota_C(n, p, sig2);
+[C0, i10, i20] = bvar.priors.minnesota_C(n, p, sig2);
 
-root = getappdata(0, 'bvt_repo_root');
+root = getappdata(0, 'bvar_repo_root');
 folders = { ...
     fullfile(root, 'replications', 'chan2021_ijf_mahp', 'legacy'); ...
     fullfile(root, 'replications', 'chan2023_jbes_hybtvp', 'legacy', 'utility'); ...

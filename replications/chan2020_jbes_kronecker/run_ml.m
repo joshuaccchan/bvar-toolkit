@@ -1,6 +1,6 @@
 % chan2020_jbes_kronecker/run_ml - the legacy cp_ml = 1 pipeline of
 % main_BVAR.m, functionized: run the estimation (run_all in this folder) and
-% then the marginal-likelihood computation (the extracted bvt.ml.kron_bvar_*
+% then the marginal-likelihood computation (the extracted bvar.ml.kron_bvar_*
 % functions) on its output, in the legacy order and on one continuous rng
 % stream - exactly what the legacy scripts do when the estimation script's
 % tail dispatches its ml_BVAR_* companion in the same workspace.
@@ -11,8 +11,8 @@
 %   model/nsim/burnin/seed - exactly as run_all (seed seeds rng ONCE, before
 %       estimation; the ML computation continues the same stream).
 %   'bugcompat' (default false) - forwarded to the two affected ML functions:
-%       model 4 (bvt.ml.kron_bvar_ma: the ml_BVAR_MA.m line-17 leftover-psi
-%       llike term) and model 8 (bvt.ml.kron_bvar_csv_t_ma: the frozen
+%       model 4 (bvar.ml.kron_bvar_ma: the ml_BVAR_MA.m line-17 leftover-psi
+%       llike term) and model 8 (bvar.ml.kron_bvar_csv_t_ma: the frozen
 %       leftover Hpsi/psi ordinate loop and the line-108 leftover-Sig psi
 %       target). true reproduces each legacy ml script bitwise from the same
 %       seed and chain, consuming run_all's out.state exactly as the legacy
@@ -51,36 +51,36 @@ out = run_all(model, nsim, burnin, seed);
 
 switch out.model
     case 1
-        [ML, detail] = bvt.ml.kron_bvar(out.shortY, out.X, out.pri, out);
+        [ML, detail] = bvar.ml.kron_bvar(out.shortY, out.X, out.pri, out);
         name = 'BVAR';
     case 2
         disp('Computing the marginal likelihood of BVAR-t... ');
-        [ML, detail] = bvt.ml.kron_bvar_t(out.shortY, out.X, out.pri, out);
+        [ML, detail] = bvar.ml.kron_bvar_t(out.shortY, out.X, out.pri, out);
         name = 'BVAR-t';
     case 3
         disp('Computing the marginal likelihood of BVAR-CSV... ');
-        [ML, detail] = bvt.ml.kron_bvar_csv(out.shortY, out.X, out.pri, out);
+        [ML, detail] = bvar.ml.kron_bvar_csv(out.shortY, out.X, out.pri, out);
         name = 'BVAR-CSV';
     case 4
         disp('Computing the marginal likelihood of BVAR-MA... ');
-        [ML, detail] = bvt.ml.kron_bvar_ma(out.shortY, out.X, out.pri, out, ...
+        [ML, detail] = bvar.ml.kron_bvar_ma(out.shortY, out.X, out.pri, out, ...
             'bugcompat', bugcompat);
         name = 'BVAR-MA';
     case 5
         disp('Computing the marginal likelihood of BVAR-t-CSV... ');
-        [ML, detail] = bvt.ml.kron_bvar_t_csv(out.shortY, out.X, out.pri, out);
+        [ML, detail] = bvar.ml.kron_bvar_t_csv(out.shortY, out.X, out.pri, out);
         name = 'BVAR-t-CSV';
     case 6
         disp('Computing the marginal likelihood of BVAR-t-MA... ');
-        [ML, detail] = bvt.ml.kron_bvar_t_ma(out.shortY, out.X, out.pri, out);
+        [ML, detail] = bvar.ml.kron_bvar_t_ma(out.shortY, out.X, out.pri, out);
         name = 'BVAR-t-MA';
     case 7
         disp('Computing the marginal likelihood of BVAR-CSV-MA... ');
-        [ML, detail] = bvt.ml.kron_bvar_csv_ma(out.shortY, out.X, out.pri, out);
+        [ML, detail] = bvar.ml.kron_bvar_csv_ma(out.shortY, out.X, out.pri, out);
         name = 'BVAR-CSV-MA';
     case 8
         disp('Computing the marginal likelihood of BVAR-CSV-t-MA... ');
-        [ML, detail] = bvt.ml.kron_bvar_csv_t_ma(out.shortY, out.X, out.pri, out, ...
+        [ML, detail] = bvar.ml.kron_bvar_csv_t_ma(out.shortY, out.X, out.pri, out, ...
             'bugcompat', bugcompat);
         name = 'BVAR-CSV-t-MA';
 end

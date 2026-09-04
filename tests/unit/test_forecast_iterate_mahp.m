@@ -1,7 +1,7 @@
 function test_forecast_iterate_mahp
 % seeded draw-for-draw equivalence of the functionized MAHP FORECAST pipeline
-% (bvt.priors.* + bvt.samplers.* + bvt.sv.ksc_rw_h0 for the estimation stage,
-% bvt.forecast.iterate('mahp_sv',...) for the per-draw forecast stage) with the
+% (bvar.priors.* + bvar.samplers.* + bvar.sv.ksc_rw_h0 for the estimation stage,
+% bvar.forecast.iterate('mahp_sv',...) for the per-draw forecast stage) with the
 % legacy workspace script forecast_BVAR_MNG.m, primed exactly as
 % chan2021_ijf_mahp main_forecasting.m primes it for one vintage t and run at
 % small nsim from a tempdir copy. Asserts isequal on every forecast quantity
@@ -19,7 +19,7 @@ function test_forecast_iterate_mahp
 % Two vintages: t = 91 (the legacy T0; both horizons evaluated) and t = T-2
 % (the tt==4 guard is OFF: tmpyhat4 must stay all-zero on both sides while the
 % simulation still consumes the same rng draws).
-root = getappdata(0, 'bvt_repo_root');
+root = getappdata(0, 'bvar_repo_root');
 leg = fullfile(root, 'replications', 'chan2021_ijf_mahp', 'legacy');
 
 tmpdir = tempname; mkdir(tmpdir);
@@ -119,7 +119,7 @@ function out = run_core(t, nsim, burnin, seed, p, Y0, Y)
 % the legacy order (constants verbatim from forecast_BVAR_MNG.m, incl. its
 % estimation-vs-forecast divergences recorded in preset.m pr.forecast: psi
 % floor 1e-16, halved psi_kappa1 init scale, doubled Valp/Vbeta), forecast
-% stage via bvt.forecast.iterate('mahp_sv',...) once per kept draw.
+% stage via bvar.forecast.iterate('mahp_sv',...) once per kept draw.
 [T, n] = size(Y);
 ah = zeros(n, 1); Vh = 10*ones(n, 1);
 nuh0 = 5*ones(n, 1); Sh0 = .01*ones(n, 1).*(nuh0-1);
@@ -128,7 +128,7 @@ c02 = [1, 1/.04^2];
 lam0_nu_psi = 1;
 Yt = Y(1:t, :);
 Tt = size(Yt, 1);
-[~, Zt] = bvt.util.build_lags([Y0(end-p+1:end, :); Yt], p);   % identical to the legacy inline construction
+[~, Zt] = bvar.util.build_lags([Y0(end-p+1:end, :); Yt], p);   % identical to the legacy inline construction
 
 rng(seed, 'twister');
     % ---- estimation stage [forecast_BVAR_MNG.m lines 8-109] ----
@@ -136,8 +136,8 @@ tmpyhat1 = zeros(nsim, 2*n+1);
 tmpyhat4 = zeros(nsim, 2*n+1);
 k_beta = n^2*p+n;
 k_alp = n*(n-1)/2;                                      %#ok<NASGU>
-sig2 = bvt.priors.resid_var_ar4(Y0, Yt);                % legacy get_resid_var
-[C, idx_kappa1, idx_kappa2] = bvt.priors.minnesota_C(n, p, sig2);   % legacy get_C
+sig2 = bvar.priors.resid_var_ar4(Y0, Yt);                % legacy get_resid_var
+[C, idx_kappa1, idx_kappa2] = bvar.priors.minnesota_C(n, p, sig2);   % legacy get_C
 
 store_kappa = zeros(nsim, 2);
 store_alp = zeros(nsim, n*(n-1)/2);
@@ -157,22 +157,22 @@ Psi(idx_kappa1) = psi_kappa1; Psi(idx_kappa2) = psi_kappa2;
 
 for isim = 1:nsim + burnin
         % sample alp and beta [lines 41-61]
-    [Valp, Vbeta] = bvt.priors.vtheta(idx_kappa1, idx_kappa2, kappa, C.*Psi, sig2);
+    [Valp, Vbeta] = bvar.priors.vtheta(idx_kappa1, idx_kappa2, kappa, C.*Psi, sig2);
     Valp = 2*Valp; Vbeta = 2*Vbeta;
-    [beta, alp, U] = bvt.samplers.eq_gauss(Yt, Zt, h, Valp, Vbeta);
+    [beta, alp, U] = bvar.samplers.eq_gauss(Yt, Zt, h, Valp, Vbeta);
         % sample h [lines 64-67]
     for ij = 1:n
         Ystar = log(U(:, ij).^2 + .0001);
-        h(:, ij) = bvt.sv.ksc_rw_h0(Ystar, h(:, ij), Sigh(ij), h0(ij));
+        h(:, ij) = bvar.sv.ksc_rw_h0(Ystar, h(:, ij), Sigh(ij), h0(ij));
     end
         % sample kappa1/kappa2 and psi [lines 70-85; forecast psi floor 1e-16]
-    [kappa, psi_kappa1, psi_kappa2] = bvt.samplers.gig_shrinkage('mng', ...
+    [kappa, psi_kappa1, psi_kappa2] = bvar.samplers.gig_shrinkage('mng', ...
         beta, idx_kappa1, idx_kappa2, C, kappa, psi_kappa1, psi_kappa2, ...
         nu_psi, c01, c02, n, p, 1e-16);
     Psi(idx_kappa1) = psi_kappa1;
     Psi(idx_kappa2) = psi_kappa2;
         % sample nu_psi [line 88; one-output call, flag discarded]
-    nu_psi = bvt.samplers.nu_psi_ng(psi_kappa1, psi_kappa2, nu_psi, lam0_nu_psi);
+    nu_psi = bvar.samplers.nu_psi_ng(psi_kappa1, psi_kappa2, nu_psi, lam0_nu_psi);
         % sample h0 [lines 91-93]
     Kh0 = sparse(1:n, 1:n, 1./Sigh + 1./Vh);
     h0_hat = Kh0\(ah./Vh + h(1, :)'./Sigh);
@@ -193,12 +193,12 @@ end
 kappa_hat = mean(store_kappa)';
 kappaCI = quantile(store_kappa, [0.25 .975]);
 
-    % ---- forecast stage [lines 112-147] via bvt.forecast.iterate ----
+    % ---- forecast stage [lines 112-147] via bvar.forecast.iterate ----
 cfg = struct('Yt', Yt, 'Y', Y, 'p', p, 't', t, 'T', T);
 for isim = 1:nsim
     draw = struct('alp', store_alp(isim, :)', 'beta', store_beta(isim, :)', ...
         'h_T', store_h_T(isim, :)', 'Sigh', store_Sigh(isim, :)');
-    fcr = bvt.forecast.iterate('mahp_sv', draw, cfg);
+    fcr = bvar.forecast.iterate('mahp_sv', draw, cfg);
     tmpyhat1(isim, :) = fcr(1, :);
     tmpyhat4(isim, :) = fcr(2, :);
 end

@@ -10,24 +10,24 @@
 % coefficients for ~200 observations, which is why a shrinkage prior is not
 % optional. This example uses n = 3 so you can read the numbers.
 %
-% THE PRIOR. Two constructors in core/+bvt/+priors/, and it is worth being
+% THE PRIOR. Two constructors in core/+bvar/+priors/, and it is worth being
 % clear about how they differ:
 %
-%   bvt.priors.minn  - the classic Minnesota prior. Each coefficient gets its
+%   bvar.priors.minn  - the classic Minnesota prior. Each coefficient gets its
 %       OWN prior variance: c1/l^2 on own lag l, c2*sig2_i/(l^2*sig2_j) on the
 %       lag of variable j in equation i, c3 on the intercept. Because the
 %       variance depends on the equation i, this prior does NOT factor as a
 %       Kronecker product, so Sig must be fixed (or drawn separately) and the
 %       posterior is not available in closed form.
 %
-%   bvt.priors.niw   - the natural-conjugate (normal-inverse-Wishart) prior:
+%   bvar.priors.niw   - the natural-conjugate (normal-inverse-Wishart) prior:
 %       A | Sig ~ MN(A0, diag(VA0), Sig),  Sig ~ IW(nu0, S0). The prior
 %       variance c1/(l^2*sig2_j) drops the equation index i, which is exactly
 %       the restriction that buys the Kronecker structure - and with it an
 %       ANALYTIC posterior from which we draw directly, no MCMC at all.
 %
 % Both scale their hyperparameters by sig2, the residual variances of
-% univariate AR(4) fits (bvt.priors.resid_var_ar4). That is what makes a
+% univariate AR(4) fits (bvar.priors.resid_var_ar4). That is what makes a
 % single scalar c1 mean the same thing for an interest rate and for GDP growth.
 %
 % DATA. Read-only from replications/chan2020_jbes_kronecker/legacy/data_Q.csv,
@@ -68,30 +68,30 @@ fprintf('        series means %s, sds %s\n', mat2str(round(mean(shortY),2)), ...
     mat2str(round(std(shortY),2)));
 
 %% ------------------------------------------------------------------
-%  2. Design matrix: bvt.util.build_lags
+%  2. Design matrix: bvar.util.build_lags
 %     Convention used everywhere in this toolkit: intercept FIRST, then the
 %     complete lag-1 block, then the lag-2 block, ...
 %  ------------------------------------------------------------------
-[Y, X] = bvt.util.build_lags([Y0(end-p+1:end,:); shortY], p);
+[Y, X] = bvar.util.build_lags([Y0(end-p+1:end,:); shortY], p);
 fprintf('\nbvt.util.build_lags -> Y is %dx%d, X is %dx%d; X(1,:) = %s\n', ...
     size(Y,1), size(Y,2), size(X,1), size(X,2), mat2str(round(X(1,1:4),2)));
 
 %% ------------------------------------------------------------------
 %  3. Priors
 %  ------------------------------------------------------------------
-sig2 = bvt.priors.resid_var_ar4(Y0, shortY);       % AR(4) residual variances
+sig2 = bvar.priors.resid_var_ar4(Y0, shortY);       % AR(4) residual variances
 fprintf('\nAR(4) residual variances sig2 (the prior''s units of measurement):\n');
 fprintf('  %s\n', mat2str(round(sig2', 3)));
 
 c1 = 0.2^2;    % overall shrinkage on the lag coefficients
 c2 = 100;      % (near-)flat prior on the intercepts
-c3 = 100;      % same, for the bvt.priors.minn call below
+c3 = 100;      % same, for the bvar.priors.minn call below
 
     % (a) natural-conjugate NIW prior - the one we actually use to sample
-[A0, VA0, nu0, S0] = bvt.priors.niw(p, [c1 c2], Y0, shortY, 'largebvar_nc');
+[A0, VA0, nu0, S0] = bvar.priors.niw(p, [c1 c2], Y0, shortY, 'largebvar_nc');
 
     % (b) the classic Minnesota prior, for comparison only
-[beta_Minn, V_Minn] = bvt.priors.minn(p, c1, c1, c3, Y0, shortY, 4);
+[beta_Minn, V_Minn] = bvar.priors.minn(p, c1, c1, c3, Y0, shortY, 4);
 
 fprintf('\nprior standard deviations on the three LAG-1 coefficients, by equation:\n');
 fprintf('  %-30s %10s %10s %10s\n', 'prior / equation', 'on y1(t-1)', 'on y2(t-1)', 'on y3(t-1)');

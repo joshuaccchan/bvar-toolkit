@@ -1,9 +1,9 @@
 function test_oisv_equivalence
 % seeded draw-for-draw equivalence of the functionized OISV full-sample
 % pipeline (replications/chan_koop_yu2024_jbes_oisv/run_all.m +
-% bvt.structural.b0_row_sampler / construct_Sigt + bvt.samplers.eq_svar_oi /
-% eq_tri_cs / alp_tri_cs / horseshoe_kappa_psi + bvt.priors.* + bvt.sv.* +
-% bvt.util.anormrnd) with the legacy workspace scripts SVARSV_MH ('OI', run at
+% bvar.structural.b0_row_sampler / construct_Sigt + bvar.samplers.eq_svar_oi /
+% eq_tri_cs / alp_tri_cs / horseshoe_kappa_psi + bvar.priors.* + bvar.sv.* +
+% bvar.util.anormrnd) with the legacy workspace scripts SVARSV_MH ('OI', run at
 % the default ordering) and CS_MH ('CS', run at the REVERSED ordering, so both
 % rev_option branches are exercised), at small nsim from a tempdir copy.
 % Asserts isequal on ALL stored draws (not just means), count_phi, the legacy
@@ -28,7 +28,7 @@ function test_oisv_equivalence
 % 5000 of main_SVAR_fullsample.m are overridden: the sampler scripts read
 % nsim/burnin from the workspace, so the harness simply assigns the small
 % values before dispatching the script.
-root = getappdata(0, 'bvt_repo_root');
+root = getappdata(0, 'bvar_repo_root');
 leg = fullfile(root, 'replications', 'chan_koop_yu2024_jbes_oisv', 'legacy');
 repdir = fullfile(root, 'replications', 'chan_koop_yu2024_jbes_oisv');
 

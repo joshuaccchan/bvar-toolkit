@@ -1,8 +1,8 @@
 function test_csv_armh
-% seeded draw-for-draw equivalence of bvt.sv.csv_armh with all four legacy copies:
+% seeded draw-for-draw equivalence of bvar.sv.csv_armh with all four legacy copies:
 % sample_CSV (ml_varsv, canonical) and the three identical sample_h copies.
 % Realistic harness: simulate a CSV path, form s2, run repeated MCMC sweeps.
-root = getappdata(0, 'bvt_repo_root');
+root = getappdata(0, 'bvar_repo_root');
 
 % --- simulate data once ---
 rng(1, 'twister');
@@ -15,10 +15,10 @@ nrep = 50;
 
 % --- core: default flag (sample_h behavior), and explicit false ---
 rng(42, 'twister'); h = h0; Hc = zeros(T,nrep); ac = zeros(nrep,1);
-for i = 1:nrep, [h,a] = bvt.sv.csv_armh(s2,rho,sigh2,h,n); Hc(:,i) = h; ac(i) = a; end
+for i = 1:nrep, [h,a] = bvar.sv.csv_armh(s2,rho,sigh2,h,n); Hc(:,i) = h; ac(i) = a; end
 sc = rng;
 rng(42, 'twister'); h = h0; Hf = zeros(T,nrep); af = zeros(nrep,1);
-for i = 1:nrep, [h,a] = bvt.sv.csv_armh(s2,rho,sigh2,h,n,false); Hf(:,i) = h; af(i) = a; end
+for i = 1:nrep, [h,a] = bvar.sv.csv_armh(s2,rho,sigh2,h,n,false); Hf(:,i) = h; af(i) = a; end
 assert(isequal(Hc,Hf) && isequal(ac,af), 'csv_armh: omitted flag differs from explicit false');
 assert(any(ac == 1) && numel(unique(Hc(1,:))) > 1, 'csv_armh: harness produced no accepted moves');
 
@@ -27,12 +27,12 @@ assert(any(ac == 1) && numel(unique(Hc(1,:))) > 1, 'csv_armh: harness produced n
 %     inline reduced-run h step = ht_start h_mean + forced first accept,
 %     verified end-to-end by test_kron_equivalence model 3) ---
 rng(42, 'twister'); h = h0; Hs = zeros(T,nrep); as = zeros(nrep,1);
-for i = 1:nrep, [h,a] = bvt.sv.csv_armh(s2,rho,sigh2,h,n,false,h); Hs(:,i) = h; as(i) = a; end
+for i = 1:nrep, [h,a] = bvar.sv.csv_armh(s2,rho,sigh2,h,n,false,h); Hs(:,i) = h; as(i) = a; end
 assert(isequal(Hc,Hs) && isequal(ac,as), 'csv_armh: ht_start = h differs from the default');
 rng(42, 'twister');
-h_alt = bvt.sv.csv_armh(s2,rho,sigh2,h0,n,true,zeros(T,1));
+h_alt = bvar.sv.csv_armh(s2,rho,sigh2,h0,n,true,zeros(T,1));
 rng(42, 'twister');
-h_def = bvt.sv.csv_armh(s2,rho,sigh2,h0,n,true);
+h_def = bvar.sv.csv_armh(s2,rho,sigh2,h0,n,true);
 assert(~isequal(h_alt,h_def), 'csv_armh: a different ht_start should change the accepted path');
 
 % --- legacy comparisons, one folder on the path at a time ---

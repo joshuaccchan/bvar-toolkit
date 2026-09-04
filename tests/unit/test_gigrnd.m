@@ -1,6 +1,6 @@
 function test_gigrnd
 % third_party/gigrnd must reproduce the legacy copy draw-for-draw under one seed
-root = getappdata(0, 'bvt_repo_root');
+root = getappdata(0, 'bvar_repo_root');
 
 rng(5, 'twister');
 y_core = gigrnd(0.5, 2, 3, 1);               % third_party copy (on path via runner)

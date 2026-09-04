@@ -17,7 +17,7 @@
 % Each piece is a density evaluated at theta*, so the accounting is exact and
 % every term is worth inspecting separately - this example prints them.
 %
-% WHAT IS IN THE TOOLKIT. core/+bvt/+ml/ holds one function per model of that
+% WHAT IS IN THE TOOLKIT. core/+bvar/+ml/ holds one function per model of that
 % paper (kron_bvar, kron_bvar_t, ..., kron_bvar_csv_t_ma), the shared density
 % pieces (lniwpdf, linvgammpdf, llike_ma, llike_csv_ma) and four
 % importance-sampling evaluators (intlike_*) for the models whose likelihood
@@ -124,7 +124,7 @@ fprintf('  out = run_ml(model, nsim, burnin, seed)   %% estimation + ML, one str
 fprintf('  out.ML          the log marginal likelihood\n');
 fprintf('  out.ml.llike / .lpri / .lpost    the three pieces above\n');
 fprintf('  out.est         the draws, if you want them\n');
-fprintf('The bvt.ml.* functions can also be called directly on stored draws;\n');
+fprintf('The bvar.ml.* functions can also be called directly on stored draws;\n');
 fprintf('their headers document the pri/est structs they expect.\n');
 
 fprintf('\nOne footnote for replication: two of the eight legacy ML scripts\n');

@@ -12,23 +12,23 @@ legacy copy in `tests/unit/` (stochastic functions compared draw-for-draw under 
 
 | Core function | Canonical source (legacy) | Also canonicalizes | Verified |
 |---|---|---|---|
-| `bvt.util.surform` | chan2023_jbes_hybtvp `utility/SURform.m` | chan_jeliazkov2009_statespace `sp_code/SURform.m` | diff + unit |
-| `bvt.util.surform2` | chan2023_joe_mlvarsv `utility/SURform2.m` | chan2020_springer_largebvar, chan2020_jbes_kronecker `realtime_forecasts/`, chan_koop_yu2024_jbes_oisv (dead there) | diff + unit |
-| `bvt.util.vec` | chan2023_joe_mlvarsv `utility/vec.m` | chan_koop_yu2024_jbes_oisv (byte-identical) | md5 + unit |
-| `bvt.util.vech` | chan2023_joe_mlvarsv `utility/vech.m` | (single copy) | unit |
-| `bvt.util.ldet` | chan2023_joe_mlvarsv `utility/ldet.m` | cjz2019_ad_opthyper | diff + unit |
-| `bvt.util.mgammaln` | chan2023_joe_mlvarsv `utility/mgammaln.m` | cjz2019_ad_opthyper | diff + unit |
-| `bvt.util.tnormrnd` | chan2023_joe_mlvarsv `utility/tnormrnd.m` | (single copy) | unit (seeded draws) |
-| `bvt.sv.init_approx1N` | chan2023_joe_mlvarsv `utility/getARh_approx1N.m` (live) | chan_koop_yu2024_jbes_oisv (dead there) | diff + unit |
-| `bvt.forecast.realtime_loaddata` | chan2020_springer_largebvar `loaddata.m` | chan2020_jbes_kronecker `realtime_forecasts/loaddata.m` | md5 (byte-identical); real-vintage isequaln verification added in step 6 (see below) |
+| `bvar.util.surform` | chan2023_jbes_hybtvp `utility/SURform.m` | chan_jeliazkov2009_statespace `sp_code/SURform.m` | diff + unit |
+| `bvar.util.surform2` | chan2023_joe_mlvarsv `utility/SURform2.m` | chan2020_springer_largebvar, chan2020_jbes_kronecker `realtime_forecasts/`, chan_koop_yu2024_jbes_oisv (dead there) | diff + unit |
+| `bvar.util.vec` | chan2023_joe_mlvarsv `utility/vec.m` | chan_koop_yu2024_jbes_oisv (byte-identical) | md5 + unit |
+| `bvar.util.vech` | chan2023_joe_mlvarsv `utility/vech.m` | (single copy) | unit |
+| `bvar.util.ldet` | chan2023_joe_mlvarsv `utility/ldet.m` | cjz2019_ad_opthyper | diff + unit |
+| `bvar.util.mgammaln` | chan2023_joe_mlvarsv `utility/mgammaln.m` | cjz2019_ad_opthyper | diff + unit |
+| `bvar.util.tnormrnd` | chan2023_joe_mlvarsv `utility/tnormrnd.m` | (single copy) | unit (seeded draws) |
+| `bvar.sv.init_approx1N` | chan2023_joe_mlvarsv `utility/getARh_approx1N.m` (live) | chan_koop_yu2024_jbes_oisv (dead there) | diff + unit |
+| `bvar.forecast.realtime_loaddata` | chan2020_springer_largebvar `loaddata.m` | chan2020_jbes_kronecker `realtime_forecasts/loaddata.m` | md5 (byte-identical); real-vintage isequaln verification added in step 6 (see below) |
 | `third_party/gigrnd.m` | chan2021_ijf_mahp `gigrnd.m` (Makalic-Schmidt 2015 / Devroye 2014) | chan2023_jbes_hybtvp, chan2023_joe_mlvarsv (all md5-identical) | md5 + unit (seeded draws) |
 | `third_party/EvalFore.m` | chan_koop_yu2024_jbes_oisv (Roque Montero 2016) | (single copy) | copy |
 | `third_party/tmult.m` | cjz2019_ad_opthyper `MatCode/tmult.m` | (single copy; needed by AD_ML's GetA) | copy |
 | `third_party/heatmap_fx.m` | chan_koop_yu2024_jbes_oisv `heatmap.m` (MathWorks FX) | RENAMED: the original shadows MATLAB's built-in `heatmap` (R2017a+) | copy + rename |
 
 New functions with no legacy counterpart (behavior fixed by unit tests only):
-`bvt.util.build_lags` (codifies the inline `Z=[1, lags]` construction repeated in every
-package - test reproduces the inline pattern exactly), `bvt.util.logsumexp`.
+`bvar.util.build_lags` (codifies the inline `Z=[1, lags]` construction repeated in every
+package - test reproduces the inline pattern exactly), `bvar.util.logsumexp`.
 
 Edits made during extraction, in full: provenance header prepended; function renamed where
 the table says so (surform, surform2, init_approx1N, realtime_loaddata, heatmap_fx). Bodies
@@ -38,8 +38,8 @@ are otherwise verbatim from the canonical source.
 
 | Core function | Canonical source (legacy) | Also canonicalizes | Verified |
 |---|---|---|---|
-| `bvt.sv.sv_params` | chan_koop_yu2024_jbes_oisv `utility/sample_SVpara.m` | (nothing else; the chan2023_joe_mlvarsv `sample_SVpara.m` is NOT canonicalized - never-merge, see below) | unit (seeded draws, 3 cases: r=0, r>0, mu gated at zero) |
-| `bvt.sv.sv0_params` | chan_koop_yu2024_jbes_oisv `utility/sample_SV0para.m` | (single copy) | unit (seeded draws) |
+| `bvar.sv.sv_params` | chan_koop_yu2024_jbes_oisv `utility/sample_SVpara.m` | (nothing else; the chan2023_joe_mlvarsv `sample_SVpara.m` is NOT canonicalized - never-merge, see below) | unit (seeded draws, 3 cases: r=0, r>0, mu gated at zero) |
+| `bvar.sv.sv0_params` | chan_koop_yu2024_jbes_oisv `utility/sample_SV0para.m` | (single copy) | unit (seeded draws) |
 
 Edits made during extraction, in full: provenance header prepended; functions renamed
 (`sample_SVpara` -> `sv_params`, `sample_SV0para` -> `sv0_params`); the hard-coded phi
@@ -54,9 +54,9 @@ copy also differs structurally (no n+r column split; mu demeans ALL columns of h
 
 | Core function | Canonical source (legacy) | Also canonicalizes | Verified |
 |---|---|---|---|
-| `bvt.samplers.eq_gauss` | chan2021_ijf_mahp `BVAR_MNG.m` lines 40-59 (inline "sample alp and beta" block) | the verbatim inline copies in `BVAR_NG.m` 38-57, `BVAR_Minn.m` 31-50, and `forecast_BVAR_MNG/_NG/_Minn.m` (Yt/Zt/Tt renaming only). Valp/Vbeta pre-scaling (the MNG/forecast `*2`) stays with the CALLER. | unit (`test_mahp_equivalence`: draw-for-draw isequal on all stores + terminal rng state, all three estimation models) |
-| `bvt.samplers.gig_shrinkage` | variant `'mng'` = chan2021_ijf_mahp `BVAR_MNG.m` 68-81; `'ng'` = `BVAR_NG.m` 66-78; `'minn'` = `BVAR_Minn.m` 59-62 | `'mng'` with `psi_floor=1e-16` also reproduces `forecast_BVAR_MNG.m` 70-83; `'minn'` also reproduces `forecast_BVAR_Minn.m` 65-68. `forecast_BVAR_NG.m` is NOT canonicalized (never-merge, below). The three variants are numerically different - never unify. | unit (same test) |
-| `bvt.samplers.nu_psi_ng` | chan2021_ijf_mahp `sample_nu_psi.m` (only copy; renamed) | all four call sites (BVAR_MNG/NG and forecast_BVAR_NG two-output - the forecast flag is captured but never accumulated - and forecast_BVAR_MNG one-output) | unit (same test) |
+| `bvar.samplers.eq_gauss` | chan2021_ijf_mahp `BVAR_MNG.m` lines 40-59 (inline "sample alp and beta" block) | the verbatim inline copies in `BVAR_NG.m` 38-57, `BVAR_Minn.m` 31-50, and `forecast_BVAR_MNG/_NG/_Minn.m` (Yt/Zt/Tt renaming only). Valp/Vbeta pre-scaling (the MNG/forecast `*2`) stays with the CALLER. | unit (`test_mahp_equivalence`: draw-for-draw isequal on all stores + terminal rng state, all three estimation models) |
+| `bvar.samplers.gig_shrinkage` | variant `'mng'` = chan2021_ijf_mahp `BVAR_MNG.m` 68-81; `'ng'` = `BVAR_NG.m` 66-78; `'minn'` = `BVAR_Minn.m` 59-62 | `'mng'` with `psi_floor=1e-16` also reproduces `forecast_BVAR_MNG.m` 70-83; `'minn'` also reproduces `forecast_BVAR_Minn.m` 65-68. `forecast_BVAR_NG.m` is NOT canonicalized (never-merge, below). The three variants are numerically different - never unify. | unit (same test) |
+| `bvar.samplers.nu_psi_ng` | chan2021_ijf_mahp `sample_nu_psi.m` (only copy; renamed) | all four call sites (BVAR_MNG/NG and forecast_BVAR_NG two-output - the forecast flag is captured but never accumulated - and forecast_BVAR_MNG one-output) | unit (same test) |
 
 New replication drivers (not core): `replications/chan2021_ijf_mahp/run_all.m`
 (functionized estimation pipeline, models MNG/NG/Minn) and `preset.m` (every
@@ -80,8 +80,8 @@ verbatim including its dead `count` guard. The h0 and Sigh draws (identical
 
 ## Canonicalized in step 6 (forecast engine, 2026-09-01)
 
-One entry point `bvt.forecast.iterate(branch, draw, cfg)` - called once per posterior
-draw - with VERBATIM named branches, plus `bvt.forecast.tables` for the accumulation /
+One entry point `bvar.forecast.iterate(branch, draw, cfg)` - called once per posterior
+draw - with VERBATIM named branches, plus `bvar.forecast.tables` for the accumulation /
 RMSFE / ALPL table tails. Equivalence tests run the legacy forecast scripts wholesale
 from tempdir copies (byte-verbatim - unlike the MAHP estimation scripts, NO forecast
 script in either package carries a clock-seed line, so the step-5 sole-patch is not
@@ -91,16 +91,16 @@ terminal rng state.
 
 | Core function (branch) | Canonical source (legacy) | Also canonicalizes | Verified |
 |---|---|---|---|
-| `bvt.forecast.iterate('mahp_sv')` | chan2021_ijf_mahp `forecast_BVAR_MNG.m` forecast-loop body (lines 112-147) | the textually identical tails of `forecast_BVAR_NG.m` (113-148) and `forecast_BVAR_Minn.m` (92-128) | unit (`test_forecast_iterate_mahp`: full MNG pipeline at vintages t=91 and t=T-2, isequal on tmpyhat1/tmpyhat4/all stores/kappa_hat/kappaCI + terminal rng state; t=T-2 exercises the tt==4 guard-off zeros path) |
-| `bvt.forecast.iterate('springer_gauss')` | chan2020_springer_largebvar `forecast_BVAR_Minn.m` lines 36-57 | `forecast_BVAR_small.m` 41-62 (caller passes `data_tpk(:,var_small)`), `forecast_BVAR_NCP.m` 40-61, `forecast_BVAR_IP.m` 45-66, `forecast_BVAR_SSVS.m` 52-73 - given caller-supplied `A`, `CSig` IN THE LEGACY STORAGE CLASS (sparse diag Minn/small, dense chol NCP/IP/SSVS) and `dSig` (`Sig_hat'` vs `diag(Sig)'`) | unit (`test_forecast_iterate_springer`, model 2 at vintages t=41 complete and t=129 missing-latest: isequal tmpyhat0/tmpyhat1 + rng state). small/NCP/IP/SSVS callers verified textually identical, not yet run end-to-end (springer family pass) |
-| `bvt.forecast.iterate('springer_csv')` | `forecast_BVAR_CSV.m` lines 67-94 | (single copy) | unit (same test, model 6 at t=129) |
-| `bvt.forecast.iterate('springer_csv_t')` | `forecast_BVAR_CSV_t.m` lines 77-106 | (single copy) | unit (same test, model 7 at t=129) |
-| `bvt.forecast.iterate('springer_csv_t_ma')` | `forecast_BVAR_CSV_t_MA.m` lines 109-142 | (single copy) | unit (same test, model 8 at t=129, incl. the fminunc/fminbnd psi-MH estimation stage) |
-| `bvt.forecast.tables('accum_row')` | chan2020_springer_largebvar `main_forecasting.m` lines 147-154 | chan2021_ijf_mahp `main_forecasting.m` lines 98-105 (same formula); storage GUARDS (t<=T-1 / t<=T-4) stay with the caller | unit (`test_forecast_tables`: legacy lines sliced from the frozen files at test time and dispatched on synthetic arrays, incl. a complex-typed zero-imag vintage locking the magnitude-max behavior) |
-| `bvt.forecast.tables('springer')` | `main_forecasting.m` lines 160-172 (both the model==1 all-variable form and the model~=1 var_core form) | (single copy) | unit (same test, both forms) |
-| `bvt.forecast.tables('mahp')` | chan2021_ijf_mahp `main_forecasting.m` lines 111-116 | (single copy) | unit (same test) |
+| `bvar.forecast.iterate('mahp_sv')` | chan2021_ijf_mahp `forecast_BVAR_MNG.m` forecast-loop body (lines 112-147) | the textually identical tails of `forecast_BVAR_NG.m` (113-148) and `forecast_BVAR_Minn.m` (92-128) | unit (`test_forecast_iterate_mahp`: full MNG pipeline at vintages t=91 and t=T-2, isequal on tmpyhat1/tmpyhat4/all stores/kappa_hat/kappaCI + terminal rng state; t=T-2 exercises the tt==4 guard-off zeros path) |
+| `bvar.forecast.iterate('springer_gauss')` | chan2020_springer_largebvar `forecast_BVAR_Minn.m` lines 36-57 | `forecast_BVAR_small.m` 41-62 (caller passes `data_tpk(:,var_small)`), `forecast_BVAR_NCP.m` 40-61, `forecast_BVAR_IP.m` 45-66, `forecast_BVAR_SSVS.m` 52-73 - given caller-supplied `A`, `CSig` IN THE LEGACY STORAGE CLASS (sparse diag Minn/small, dense chol NCP/IP/SSVS) and `dSig` (`Sig_hat'` vs `diag(Sig)'`) | unit (`test_forecast_iterate_springer`, model 2 at vintages t=41 complete and t=129 missing-latest: isequal tmpyhat0/tmpyhat1 + rng state). small/NCP/IP/SSVS callers verified textually identical, not yet run end-to-end (springer family pass) |
+| `bvar.forecast.iterate('springer_csv')` | `forecast_BVAR_CSV.m` lines 67-94 | (single copy) | unit (same test, model 6 at t=129) |
+| `bvar.forecast.iterate('springer_csv_t')` | `forecast_BVAR_CSV_t.m` lines 77-106 | (single copy) | unit (same test, model 7 at t=129) |
+| `bvar.forecast.iterate('springer_csv_t_ma')` | `forecast_BVAR_CSV_t_MA.m` lines 109-142 | (single copy) | unit (same test, model 8 at t=129, incl. the fminunc/fminbnd psi-MH estimation stage) |
+| `bvar.forecast.tables('accum_row')` | chan2020_springer_largebvar `main_forecasting.m` lines 147-154 | chan2021_ijf_mahp `main_forecasting.m` lines 98-105 (same formula); storage GUARDS (t<=T-1 / t<=T-4) stay with the caller | unit (`test_forecast_tables`: legacy lines sliced from the frozen files at test time and dispatched on synthetic arrays, incl. a complex-typed zero-imag vintage locking the magnitude-max behavior) |
+| `bvar.forecast.tables('springer')` | `main_forecasting.m` lines 160-172 (both the model==1 all-variable form and the model~=1 var_core form) | (single copy) | unit (same test, both forms) |
+| `bvar.forecast.tables('mahp')` | chan2021_ijf_mahp `main_forecasting.m` lines 111-116 | (single copy) | unit (same test) |
 
-Also verified in step 6: `bvt.forecast.realtime_loaddata` now has its first REAL-vintage
+Also verified in step 6: `bvar.forecast.realtime_loaddata` now has its first REAL-vintage
 verification - `test_forecast_iterate_springer` loads the 20 legacy vintage files
 (cached to a tempdir .mat) and asserts isequaln against the legacy `loaddata.m` copy for
 every vintage t = 41..129 (the step-3 row's "no unit test yet" caveat is retired).
@@ -133,7 +133,7 @@ Step-6 verification notes:
 - Teeth check passed: a 1e-7 relative perturbation of one constant in the
   `mahp_sv` branch makes `test_forecast_iterate_mahp` FAIL on tmpyhat1.
 - Path nuance (same as step 5): inside both forecast equivalence tests, the
-  unqualified `gigrnd` (via `bvt.samplers.gig_shrinkage`) and `llike_CSV_MA`
+  unqualified `gigrnd` (via `bvar.samplers.gig_shrinkage`) and `llike_CSV_MA`
   (via the model-8 psi-MH kept inline in the test pipeline) resolve to the
   tempdir LEGACY copies; the springer/realtime `llike_CSV_MA` omits the
   `-n/2*sum(h)` term of the BVAR_code root copy (see never-merge) - the
@@ -156,23 +156,23 @@ script-tail summaries, the six func_main outputs, and the terminal rng state.
 
 | Core function | Canonical source (legacy) | Also canonicalizes | Verified |
 |---|---|---|---|
-| `bvt.util.anormrnd` | chan_koop_yu2024_jbes_oisv `utility/anormrnd.m` (single copy) | both call sites (SVARSV_MH.m line 63, forecast_SVARSV_MH.m line 57) via `b0_row_sampler`. NEVER fold into `bvt.util.tnormrnd` - different density, different rng sequence. | unit (`test_anormrnd` seeded draws + `test_oisv_equivalence`) |
-| `bvt.structural.construct_Sigt` | chan_koop_yu2024_jbes_oisv `utility/construct_Sigt.m` | the private subfunction copy inside `func_main_SVAR_v2.m` lines 67-73 (comment-stripped identical, diff 2026-09-02; that copy is what the legacy func resolves at runtime) | diff + unit (`test_construct_sigt`, and end-to-end through the Sig_mean assertion in `test_oisv_equivalence`) |
-| `bvt.structural.b0_row_sampler` | SVARSV_MH.m lines 49-72 (inline row-wise "sammple B0" rotation loop; caller supplies U = Y-X*A) | forecast_SVARSV_MH.m lines 43-66 (textually identical modulo Y/X/T -> Yt/Xt/Tt) | unit (`test_oisv_equivalence`) |
-| `bvt.samplers.eq_svar_oi` | SVARSV_MH.m lines 76-87 (inline "sample alpha" block; caller computes tmpdV and keeps alpha = A(:)) | NOTHING else - the forecast fragment REWRITES this step (never-merge, below) | unit (same test) |
-| `bvt.samplers.eq_tri_cs` | CS_MH.m lines 54-72 (inline "sample B" block; caller computes tmpdV and keeps beta = reshape(B',k_beta,1); the dead `zi` assignment kept verbatim) | forecast_CS_MH.m lines 45-63 (identical modulo Yt/Xt/Tt) | unit (same test) |
-| `bvt.samplers.alp_tri_cs` | CS_MH.m lines 77-87 (inline "sample alp" count_alp loop; caller computes E = Y-XB and keeps A(A_id) = alp) | forecast_CS_MH.m lines 68-78 (identical modulo Tt) | unit (same test) |
-| `bvt.samplers.horseshoe_kappa_psi` | SVARSV_MH.m lines 102-120 (psi -> z_psi -> kappa(1:2) -> z_kappa block, theta = alpha) | CS_MH.m lines 102-120 (theta = beta), forecast_SVARSV_MH.m lines 96-114, forecast_CS_MH.m lines 93-111 - all four textually identical modulo the coefficient vector's name. NEVER merge with `bvt.samplers.gig_shrinkage` (MAHP normal-gamma GIG block - different prior family). | unit (same test) |
-| `bvt.priors.vtheta` (Vbeta output; row added, no new function) | - | chan_koop_yu2024_jbes_oisv `utility/getVbeta.m`: exactly vtheta's three Vbeta assignment lines on the same inputs; OISV callers use `[~,Vbeta] = bvt.priors.vtheta(...)` and discard Valp (NaN under the OI kappa(3) = NaN, never read) | diff + unit (same test) |
+| `bvar.util.anormrnd` | chan_koop_yu2024_jbes_oisv `utility/anormrnd.m` (single copy) | both call sites (SVARSV_MH.m line 63, forecast_SVARSV_MH.m line 57) via `b0_row_sampler`. NEVER fold into `bvar.util.tnormrnd` - different density, different rng sequence. | unit (`test_anormrnd` seeded draws + `test_oisv_equivalence`) |
+| `bvar.structural.construct_Sigt` | chan_koop_yu2024_jbes_oisv `utility/construct_Sigt.m` | the private subfunction copy inside `func_main_SVAR_v2.m` lines 67-73 (comment-stripped identical, diff 2026-09-02; that copy is what the legacy func resolves at runtime) | diff + unit (`test_construct_sigt`, and end-to-end through the Sig_mean assertion in `test_oisv_equivalence`) |
+| `bvar.structural.b0_row_sampler` | SVARSV_MH.m lines 49-72 (inline row-wise "sammple B0" rotation loop; caller supplies U = Y-X*A) | forecast_SVARSV_MH.m lines 43-66 (textually identical modulo Y/X/T -> Yt/Xt/Tt) | unit (`test_oisv_equivalence`) |
+| `bvar.samplers.eq_svar_oi` | SVARSV_MH.m lines 76-87 (inline "sample alpha" block; caller computes tmpdV and keeps alpha = A(:)) | NOTHING else - the forecast fragment REWRITES this step (never-merge, below) | unit (same test) |
+| `bvar.samplers.eq_tri_cs` | CS_MH.m lines 54-72 (inline "sample B" block; caller computes tmpdV and keeps beta = reshape(B',k_beta,1); the dead `zi` assignment kept verbatim) | forecast_CS_MH.m lines 45-63 (identical modulo Yt/Xt/Tt) | unit (same test) |
+| `bvar.samplers.alp_tri_cs` | CS_MH.m lines 77-87 (inline "sample alp" count_alp loop; caller computes E = Y-XB and keeps A(A_id) = alp) | forecast_CS_MH.m lines 68-78 (identical modulo Tt) | unit (same test) |
+| `bvar.samplers.horseshoe_kappa_psi` | SVARSV_MH.m lines 102-120 (psi -> z_psi -> kappa(1:2) -> z_kappa block, theta = alpha) | CS_MH.m lines 102-120 (theta = beta), forecast_SVARSV_MH.m lines 96-114, forecast_CS_MH.m lines 93-111 - all four textually identical modulo the coefficient vector's name. NEVER merge with `bvar.samplers.gig_shrinkage` (MAHP normal-gamma GIG block - different prior family). | unit (same test) |
+| `bvar.priors.vtheta` (Vbeta output; row added, no new function) | - | chan_koop_yu2024_jbes_oisv `utility/getVbeta.m`: exactly vtheta's three Vbeta assignment lines on the same inputs; OISV callers use `[~,Vbeta] = bvar.priors.vtheta(...)` and discard Valp (NaN under the OI kappa(3) = NaN, never read) | diff + unit (same test) |
 
-Reused as-is (extracted in steps 3-4, headers already list the OISV copies): `bvt.priors.resid_var_ar4`
-(legacy get_resid_var), `bvt.priors.minnesota_C` (get_C), `bvt.sv.ksc_ar1_mean` (sample_SV),
-`bvt.sv.sv0_params` (sample_SV0para, phi bound default .99), `bvt.sv.sv_params` (sample_SVpara,
-phi bound default .999), `bvt.util.vec`, `bvt.util.build_lags` (the func_main inline lag loop),
-`third_party/EvalFore.m`, `third_party/heatmap_fx.m`. `bvt.priors.impact_B0` is NOT used by OISV
+Reused as-is (extracted in steps 3-4, headers already list the OISV copies): `bvar.priors.resid_var_ar4`
+(legacy get_resid_var), `bvar.priors.minnesota_C` (get_C), `bvar.sv.ksc_ar1_mean` (sample_SV),
+`bvar.sv.sv0_params` (sample_SV0para, phi bound default .99), `bvar.sv.sv_params` (sample_SVpara,
+phi bound default .999), `bvar.util.vec`, `bvar.util.build_lags` (the func_main inline lag loop),
+`third_party/EvalFore.m`, `third_party/heatmap_fx.m`. `bvar.priors.impact_B0` is NOT used by OISV
 (its inline Hyper.B0 = eye(n)/VB0 = ones(n) prior is a different object - see impact_B0's header).
 The dead OISV utilities SURform2.m / getARh_approx1N.m stay covered by their step-3 rows
-(`bvt.util.surform2`, `bvt.sv.init_approx1N`); genSV.m / gendata_SVARSV.m (simulation-study
+(`bvar.util.surform2`, `bvar.sv.init_approx1N`); genSV.m / gendata_SVARSV.m (simulation-study
 helpers, no callers in the shipped pipeline) are left un-canonicalized in legacy/.
 
 New replication drivers (not core): `replications/chan_koop_yu2024_jbes_oisv/run_all.m`
@@ -191,7 +191,7 @@ rng-neutral Psi reassembly left to the caller (legacy position: between the psi 
 draws; Psi is not read inside the block); `alp_tri_cs` returns alp preallocated
 zeros(1,k_alp) instead of the legacy dynamic growth into the same 1 x k_alp row (fully
 overwritten every sweep before any read); unqualified anormrnd/vec calls now
-bvt.util.anormrnd/bvt.util.vec (code-identical). Everything else byte-verbatim, including
+bvar.util.anormrnd/bvar.util.vec (code-identical). Everything else byte-verbatim, including
 the OI sign fix B0(ii,:) = phii*sign(phii(ii)) and CS's dead `zi` line. The h loops
 (3 lines per model), the SV-parameter calls, and the chain-init draws stay inline in
 run_all. The legacy wall-clock timing displays are not reproduced.
@@ -222,35 +222,35 @@ additionally asserted to differ exactly where each bug lives and match everywher
 
 | Core function | Canonical source (legacy) | Also canonicalizes | Verified |
 |---|---|---|---|
-| `bvt.ml.lniwpdf` | chan2020_jbes_kronecker `lniwpdf.m` (single copy) | all prior/posterior NIW ordinates in the 8 ML computations | unit (`test_kron_ml_densities` bitwise + end-to-end) |
-| `bvt.ml.linvgammpdf` | `linvgammpdf.m` (single copy) | the sigh2 ordinates (models 3/5/7/8) | unit (same tests) |
-| `bvt.ml.llike_ma` | `llike_MA.m` (root; body verbatim incl. its `chol(Sig)'` upper-transposed Cholesky) | BVAR_MA.m + ml_BVAR_MA.m psi targets. realtime_forecasts/llike_MA.m is NOT canonicalized (its function line is named llike_MA1; part 2). | unit (same tests) |
-| `bvt.ml.llike_csv_ma` | `llike_CSV_MA.m` (package ROOT copy WITH the -n/2*sum(h) term) | the psi targets of BVAR_t_MA/BVAR_CSV_MA/BVAR_CSV_t_MA and ml_BVAR_t_MA/ml_BVAR_CSV_MA/ml_BVAR_CSV_t_MA (with h := log(lam) / U pre-scaled by sqrt(lam) in the t models, exactly as the legacy calls do). The realtime/springer reduced copies stay never-merge (below). | unit (`test_kron_ml_densities`: bitwise vs root AND asserted to differ from the realtime copy by n/2*sum(h)) + end-to-end |
-| `bvt.ml.intlike_csv` | `intlike_BVAR_CSV.m` (renamed; body verbatim) | (single copy) | unit (`test_kron_intlike` bitwise seeded, real data, + end-to-end model 3) |
-| `bvt.ml.intlike_t_csv` | `intlike_BVAR_t_CSV.m` | (single copy) | unit (same, + end-to-end model 5) |
-| `bvt.ml.intlike_csv_ma` | `intlike_BVAR_CSV_MA.m` | (single copy) | unit (same, + end-to-end model 7) |
-| `bvt.ml.intlike_csv_t_ma` | `intlike_BVAR_CSV_t_MA.m` | (single copy; carries the first-observation scale quirk - see audit notes below) | unit (same, + end-to-end model 8) |
-| `bvt.ml.kron_bvar` | BVAR.m lines 36-47 (inline cp_ml block) | (model 1; analytic, no rng) | unit (`test_kron_equivalence` model 1) |
-| `bvt.ml.kron_bvar_t` | ml_BVAR_t.m | (model 2; deterministic given stores) - CLEAN BILL | unit (same, model 2) |
-| `bvt.ml.kron_bvar_csv` | ml_BVAR_CSV.m | (model 3) - CLEAN BILL; chain-continuation leftovers made explicit (h/rho from last stored draws; countrho continues the ESTIMATION counter via est.state.countrho); its inline reduced-run h step = `bvt.sv.csv_armh(s2,rho,sigh2,h,n,isim==1,h_mean)` (NR start promoted, see below) | unit (same, model 3) |
-| `bvt.ml.kron_bvar_ma` | ml_BVAR_MA.m | (model 4) - AFFECTED: line-17 leftover-psi llike term; `'bugcompat',true` reproduces it bitwise from est.state.psi, default corrects to psi_mean | unit (same, model 4 bugcompat bitwise + corrected-differs-only-in-llike teeth) |
-| `bvt.ml.kron_bvar_t_csv` | ml_BVAR_t_CSV.m | (model 5) - CLEAN BILL; reduced-run rho bound .999 vs estimation .9999 kept verbatim | unit (same, model 5) |
-| `bvt.ml.kron_bvar_t_ma` | ml_BVAR_t_MA.m | (model 6) - CLEAN BILL; optimizer warm start est.state.psihat made explicit; tmpden(psiidx)-centered den_psi normalization kept verbatim | unit (same, model 6) |
-| `bvt.ml.kron_bvar_csv_ma` | ml_BVAR_CSV_MA.m | (model 7) - CLEAN BILL; its per-draw Hpsi rebuild is the pattern model 8 violates; dead `ht = h_mean` line kept as dead assignment | unit (same, model 7) |
-| `bvt.ml.kron_bvar_csv_t_ma` | ml_BVAR_CSV_t_MA.m | (model 8) - AFFECTED twice: frozen leftover Hpsi/psi ordinate loop (lines 42-44) and leftover last-draw Sig in the reduced-run psi target (line 108); `'bugcompat',true` reproduces both bitwise from est.state.psi/est.state.Sig, default corrects (per-draw Hpsi; Sig_mean) | unit (same, model 8 bugcompat bitwise + corrected teeth: llike unchanged, lpost(1) moves, lpost(2:3) unchanged, ML moves) |
+| `bvar.ml.lniwpdf` | chan2020_jbes_kronecker `lniwpdf.m` (single copy) | all prior/posterior NIW ordinates in the 8 ML computations | unit (`test_kron_ml_densities` bitwise + end-to-end) |
+| `bvar.ml.linvgammpdf` | `linvgammpdf.m` (single copy) | the sigh2 ordinates (models 3/5/7/8) | unit (same tests) |
+| `bvar.ml.llike_ma` | `llike_MA.m` (root; body verbatim incl. its `chol(Sig)'` upper-transposed Cholesky) | BVAR_MA.m + ml_BVAR_MA.m psi targets. realtime_forecasts/llike_MA.m is NOT canonicalized (its function line is named llike_MA1; part 2). | unit (same tests) |
+| `bvar.ml.llike_csv_ma` | `llike_CSV_MA.m` (package ROOT copy WITH the -n/2*sum(h) term) | the psi targets of BVAR_t_MA/BVAR_CSV_MA/BVAR_CSV_t_MA and ml_BVAR_t_MA/ml_BVAR_CSV_MA/ml_BVAR_CSV_t_MA (with h := log(lam) / U pre-scaled by sqrt(lam) in the t models, exactly as the legacy calls do). The realtime/springer reduced copies stay never-merge (below). | unit (`test_kron_ml_densities`: bitwise vs root AND asserted to differ from the realtime copy by n/2*sum(h)) + end-to-end |
+| `bvar.ml.intlike_csv` | `intlike_BVAR_CSV.m` (renamed; body verbatim) | (single copy) | unit (`test_kron_intlike` bitwise seeded, real data, + end-to-end model 3) |
+| `bvar.ml.intlike_t_csv` | `intlike_BVAR_t_CSV.m` | (single copy) | unit (same, + end-to-end model 5) |
+| `bvar.ml.intlike_csv_ma` | `intlike_BVAR_CSV_MA.m` | (single copy) | unit (same, + end-to-end model 7) |
+| `bvar.ml.intlike_csv_t_ma` | `intlike_BVAR_CSV_t_MA.m` | (single copy; carries the first-observation scale quirk - see audit notes below) | unit (same, + end-to-end model 8) |
+| `bvar.ml.kron_bvar` | BVAR.m lines 36-47 (inline cp_ml block) | (model 1; analytic, no rng) | unit (`test_kron_equivalence` model 1) |
+| `bvar.ml.kron_bvar_t` | ml_BVAR_t.m | (model 2; deterministic given stores) - CLEAN BILL | unit (same, model 2) |
+| `bvar.ml.kron_bvar_csv` | ml_BVAR_CSV.m | (model 3) - CLEAN BILL; chain-continuation leftovers made explicit (h/rho from last stored draws; countrho continues the ESTIMATION counter via est.state.countrho); its inline reduced-run h step = `bvar.sv.csv_armh(s2,rho,sigh2,h,n,isim==1,h_mean)` (NR start promoted, see below) | unit (same, model 3) |
+| `bvar.ml.kron_bvar_ma` | ml_BVAR_MA.m | (model 4) - AFFECTED: line-17 leftover-psi llike term; `'bugcompat',true` reproduces it bitwise from est.state.psi, default corrects to psi_mean | unit (same, model 4 bugcompat bitwise + corrected-differs-only-in-llike teeth) |
+| `bvar.ml.kron_bvar_t_csv` | ml_BVAR_t_CSV.m | (model 5) - CLEAN BILL; reduced-run rho bound .999 vs estimation .9999 kept verbatim | unit (same, model 5) |
+| `bvar.ml.kron_bvar_t_ma` | ml_BVAR_t_MA.m | (model 6) - CLEAN BILL; optimizer warm start est.state.psihat made explicit; tmpden(psiidx)-centered den_psi normalization kept verbatim | unit (same, model 6) |
+| `bvar.ml.kron_bvar_csv_ma` | ml_BVAR_CSV_MA.m | (model 7) - CLEAN BILL; its per-draw Hpsi rebuild is the pattern model 8 violates; dead `ht = h_mean` line kept as dead assignment | unit (same, model 7) |
+| `bvar.ml.kron_bvar_csv_t_ma` | ml_BVAR_CSV_t_MA.m | (model 8) - AFFECTED twice: frozen leftover Hpsi/psi ordinate loop (lines 42-44) and leftover last-draw Sig in the reduced-run psi target (line 108); `'bugcompat',true` reproduces both bitwise from est.state.psi/est.state.Sig, default corrects (per-draw Hpsi; Sig_mean) | unit (same, model 8 bugcompat bitwise + corrected teeth: llike unchanged, lpost(1) moves, lpost(2:3) unchanged, ML moves) |
 
 Core reuse inside the functionized estimation (`replications/chan2020_jbes_kronecker/run_all.m`):
-`bvt.priors.niw('kron_script')` (construct_prior_A + the callers' S0/nu0), `bvt.util.build_lags`
-(the inline X loop), `bvt.sv.csv_armh` (root sample_h; all estimation h steps and the ml reduced
-runs of models 5/7/8), `bvt.sv.nu_studentt` (root sample_nu; normpdf-form MH ratio - decisions
-verified identical, step-4 note), `bvt.ml.llike_ma`/`llike_csv_ma` (the estimation psi-MH
+`bvar.priors.niw('kron_script')` (construct_prior_A + the callers' S0/nu0), `bvar.util.build_lags`
+(the inline X loop), `bvar.sv.csv_armh` (root sample_h; all estimation h steps and the ml reduced
+runs of models 5/7/8), `bvar.sv.nu_studentt` (root sample_nu; normpdf-form MH ratio - decisions
+verified identical, step-4 note), `bvar.ml.llike_ma`/`llike_csv_ma` (the estimation psi-MH
 targets). The (Sig,A) joint draw, lam, sigh2, rho-MH and psi-MH blocks have no core counterpart
 and live verbatim in run_all's per-model subfunctions (as in the step-6 note, functionizing
 them further belongs to the springer family pass, which shares their structure).
 
 Edits made during extraction, in full: provenance headers; scripts wrapped as functions with
 data/priors/stores passed explicitly and sizes recomputed from arguments (identical integers);
-`bvt.sv.csv_armh` gained an optional 7th argument `ht_start` (default h = previous behavior
+`bvar.sv.csv_armh` gained an optional 7th argument `ht_start` (default h = previous behavior
 bit-for-bit; ml_BVAR_CSV's inline reduced-run h step is its body with ht_start = h_mean and
 is_ForcedAccept = (isim==1) - the only executable differences); leftover-workspace reads of
 the legacy ml scripts became explicit `est.state.*` arguments (final chain draws
@@ -264,7 +264,7 @@ Hrho rebuilds: `run_all` KEEPS all four estimation-side rebuilds verbatim (model
 annotated `%#ok<NASGU>`) - the fidelity-safe choice, and necessary for model 3, whose rebuild
 IS consumed downstream when the coupled `cp_ml=1` pipeline hands its leftover Hrho to
 ml_BVAR_CSV.m line 51; the ml-side rebuilds in models 5/7/8 (nothing reads Hrho there -
-`bvt.sv.csv_armh` and `sample_h` rebuild it from rho internally) are not reproduced. The dead
+`bvar.sv.csv_armh` and `sample_h` rebuild it from rho internally) are not reproduced. The dead
 `ht = h_mean` line of ml_BVAR_CSV_MA kept. R (IS
 draws) and nsims2 (reduced-run length) exposed as options DEFAULTING to the legacy hard-coded
 values (cited in preset.m). Everything else byte-verbatim, including the m6-specific
@@ -337,7 +337,7 @@ A future deduplication must not unify any of these; doing so silently changes pu
 - **`llike_CSV_MA.m`**: the BVAR_code ROOT copy includes the `-n/2*sum(h)` term; the large_BVAR
   and realtime_forecasts copies omit it. Interchangeable inside the psi-MH at fixed h, WRONG to
   swap for marginal-likelihood ordinates (ml_BVAR_CSV_MA depends on the root version). Step 8
-  canonicalized the ROOT copy as `bvt.ml.llike_csv_ma` (test_kron_ml_densities asserts the
+  canonicalized the ROOT copy as `bvar.ml.llike_csv_ma` (test_kron_ml_densities asserts the
   n/2*sum(h) gap against the realtime copy); the legacy resolution is cwd/path-order-dependent
   after main_forecasting.m's addpath('./realtime_forecasts') - recorded in the kronecker
   preset.m (`pr.llike_csv_ma_root_has_sumh`). The realtime/springer reduced copies stay
@@ -358,13 +358,13 @@ A future deduplication must not unify any of these; doing so silently changes pu
   n series; r extra zero-mean columns share the phi/sig2 draws), ml_varsv demeans ALL columns;
   (iii) OISV's mu block indexes phi(1:n)/sig2(1:n), ml_varsv uses full vectors. OISV
   additionally splits the zero-mean case into `sample_SV0para.m` with bound .99. Step 4
-  canonicalized the OISV pair as `bvt.sv.sv_params` / `bvt.sv.sv0_params` (phi bound exposed
+  canonicalized the OISV pair as `bvar.sv.sv_params` / `bvar.sv.sv0_params` (phi bound exposed
   as an argument, defaults reproduce OISV exactly); the ml_varsv copy stays un-canonicalized
   on this list.
 - **`macrodata_Q_2018Q4.csv`**: byte-identical between MAHP and HYB but a DIFFERENT file in
   BVAR_ACP (md5-verified). Never key a shared data folder by this filename.
 - **MAHP `forecast_BVAR_NG.m` kappa/psi block**: NOT reproduced by
-  `bvt.samplers.gig_shrinkage('ng',...)` at any psi_floor - its conditionals carry an extra
+  `bvar.samplers.gig_shrinkage('ng',...)` at any psi_floor - its conditionals carry an extra
   factor 2 (`tmpc_j = sum(beta_j.^2./(2*psi_j))`, `tmpv_j = beta_j.^2/(2*kappa)`, lines
   72-78) pairing with its doubled Valp/Vbeta (line 43), which estimation `BVAR_NG.m` does
   NOT double. A different parameterization of the NG prior - functionize separately if the
@@ -375,7 +375,7 @@ A future deduplication must not unify any of these; doing so silently changes pu
 - **`Min_Prior.m`** (AD packages): dual-number `{.v,.d}` builders; AD_VAR fits AR via the System
   Identification Toolbox `ar()` (different residual variances than OLS AR(4) in AD_ML). Not
   interchangeable with each other or with the plain Minnesota builders.
-- **OISV OI alpha step, estimation vs forecast**: `bvt.samplers.eq_svar_oi` reproduces ONLY
+- **OISV OI alpha step, estimation vs forecast**: `bvar.samplers.eq_svar_oi` reproduces ONLY
   SVARSV_MH.m lines 76-87 (yi = vec((Y-X*A)*B0')./Lambda, Wi = kron(B0(:,ii),X)./Lambda -
   equation-stacked, row-scaled). forecast_SVARSV_MH.m lines 69-81 REWRITE the same
   conditional: zi = reshape(B0*(Yt-[XA cols, zeroed ii])',Tt*n,1), Wi = kron(Xt,B0(:,ii))
@@ -399,7 +399,7 @@ A future deduplication must not unify any of these; doing so silently changes pu
 ## Verification notes (step 8 self-check, 2026-09-02)
 
 - Teeth check passed: a +1e-7 perturbation of the flat-nu lpri constant in a scratch-mirror
-  copy of `bvt.ml.kron_bvar_t` makes `test_kron_equivalence` FAIL with "model 2: ml lpri
+  copy of `bvar.ml.kron_bvar_t` makes `test_kron_equivalence` FAIL with "model 2: ml lpri
   differs"; the real tree was never perturbed and its suite is green.
 - All EIGHT models are covered end-to-end bitwise (estimation + ML on one stream, terminal
   rng state included) - the fallback subset (affected paths + models 1/3/8) was not needed:
@@ -412,7 +412,7 @@ A future deduplication must not unify any of these; doing so silently changes pu
   golden-manifest published-run reference -8468.4 is the bugcompat path (manifest row:
   "Do NOT fix in the golden run").
 - rng-decision nuance carried from step 4: the root sample_nu uses the normpdf-form MH
-  ratio while `bvt.sv.nu_studentt` uses the log-form - mathematically identical, bitwise
+  ratio while `bvar.sv.nu_studentt` uses the log-form - mathematically identical, bitwise
   different in the acceptance scalar; decisions (and hence all draws) verified identical at
   the test seed here and over test_nu_studentt's 500 sweeps, but a knife-edge flip at some
   other seed is not provably impossible. Any future failure of test_kron_equivalence on
@@ -420,7 +420,7 @@ A future deduplication must not unify any of these; doing so silently changes pu
 - Path nuance (same shape as steps 5-7): inside test_kron_equivalence the legacy side
   resolves tempdir copies (construct_prior_A, sample_h, sample_nu, llike_MA, the ROOT
   llike_CSV_MA - asserted - lniwpdf, linvgammpdf, intlike_*); the functionized side
-  resolves only qualified bvt.* names plus the package's run_all/run_ml/preset (resolution
+  resolves only qualified bvar.* names plus the package's run_all/run_ml/preset (resolution
   pinned by a `which` assertion against the two other packages that define run_all).
 
 ## Verification notes (step 5 adversarial review, 2026-09-01)
@@ -429,7 +429,7 @@ A future deduplication must not unify any of these; doing so silently changes pu
   scratch mirror makes test_mahp_equivalence FAIL on the stored draws - the equivalence test
   detects one-constant deviations.
 - Path nuance in test_mahp_equivalence: inside the test, the unqualified gigrnd call in
-  bvt.samplers.gig_shrinkage resolves to the tempdir copy of the LEGACY gigrnd.m, not
+  bvar.samplers.gig_shrinkage resolves to the tempdir copy of the LEGACY gigrnd.m, not
   third_party/gigrnd.m. The two differ only by the provenance header (test_gigrnd covers the
   third_party copy separately), but the guarantee silently depends on those files staying
   code-identical - never edit one without the other.
@@ -460,21 +460,21 @@ A future deduplication must not unify any of these; doing so silently changes pu
 ## Verification notes (step 7 adversarial review, 2026-09-02)
 
 - Teeth check passed: a 1e-7 relative perturbation of one hierarchical-shrinkage constant in
-  `bvt.samplers.horseshoe_kappa_psi` makes `test_oisv_equivalence` FAIL on store_kappa;
+  `bvar.samplers.horseshoe_kappa_psi` makes `test_oisv_equivalence` FAIL on store_kappa;
   suite green on revert.
 - The six "textually identical modulo renaming" claims of the step-7 table (B0 block,
   CS B block, CS alp block, and the hierarchical shrinkage block across all four scripts) were verified
   mechanically: comment-stripped, whitespace-normalized diffs with Yt/Xt/Tt -> Y/X/T and
   alpha/beta -> theta come back empty; the OI alpha estimation-vs-forecast diff is
   NON-empty, confirming the never-merge entry's direction.
-- Record corrected in `bvt.sv.sv_params`'s header: the step-4 note "in the OISV CS_MH run
+- Record corrected in `bvar.sv.sv_params`'s header: the step-4 note "in the OISV CS_MH run
   mu is initialized at zero, so mu is never updated there" was WRONG - CS_MH.m lines 34-37
   initialize mu(ii) = mean(log(s2i)) from the data (almost surely all-nonzero), so the
   `if mu~=0` gate passes and mu IS updated every sweep. The equivalence test's store_hpara
   comparison (columns 1:n are the mu draws) covers it draw-for-draw.
 - Path nuance in test_oisv_equivalence (same shape as steps 5-6): the legacy side resolves
   the tempdir copies of anormrnd/vec/sample_SV*/get_*/getVbeta/construct_Sigt, the core
-  side resolves only qualified bvt.* names - no unqualified name in any step-7 core
+  side resolves only qualified bvar.* names - no unqualified name in any step-7 core
   function can be shadowed by the tempdir. Both packages define a `run_all`; the test
   pins resolution to the OISV package with a `which` assertion.
 - CS shape quirks reproduced by construction: legacy `alp` is a 1 x k_alp ROW (dynamic

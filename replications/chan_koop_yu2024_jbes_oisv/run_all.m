@@ -34,22 +34,22 @@
 % All constants come from preset.m in this folder (each field cites its legacy
 % source line); the data file is read from legacy/ READ-ONLY; the Gibbs blocks
 % are the extracted core functions
-%   bvt.structural.b0_row_sampler   (OI row-wise B0 rotation draw, using
-%                                    bvt.util.anormrnd for the first coordinate),
-%   bvt.samplers.eq_svar_oi         (OI per-equation VAR coefficient draw),
-%   bvt.samplers.eq_tri_cs          (CS per-equation VAR coefficient draw),
-%   bvt.samplers.alp_tri_cs         (CS free impact-element draw),
-%   bvt.samplers.horseshoe_kappa_psi (horseshoe psi/z_psi/kappa/z_kappa block,
+%   bvar.structural.b0_row_sampler   (OI row-wise B0 rotation draw, using
+%                                    bvar.util.anormrnd for the first coordinate),
+%   bvar.samplers.eq_svar_oi         (OI per-equation VAR coefficient draw),
+%   bvar.samplers.eq_tri_cs          (CS per-equation VAR coefficient draw),
+%   bvar.samplers.alp_tri_cs         (CS free impact-element draw),
+%   bvar.samplers.horseshoe_kappa_psi (horseshoe psi/z_psi/kappa/z_kappa block,
 %                                    shared verbatim by both legacy samplers),
-% with the pre-existing core reused: bvt.priors.resid_var_ar4 (legacy
-% get_resid_var), bvt.priors.minnesota_C (legacy get_C), bvt.priors.vtheta
+% with the pre-existing core reused: bvar.priors.resid_var_ar4 (legacy
+% get_resid_var), bvar.priors.minnesota_C (legacy get_C), bvar.priors.vtheta
 % whose Vbeta output reproduces legacy getVbeta exactly (same three assignment
 % lines on the same inputs; the Valp output is discarded - NaN under the OI
-% kappa(3) = NaN, never read), bvt.sv.ksc_ar1_mean (legacy sample_SV),
-% bvt.sv.sv0_params (legacy sample_SV0para, OI) and bvt.sv.sv_params (legacy
+% kappa(3) = NaN, never read), bvar.sv.ksc_ar1_mean (legacy sample_SV),
+% bvar.sv.sv0_params (legacy sample_SV0para, OI) and bvar.sv.sv_params (legacy
 % sample_SVpara, CS) at their OISV-canonical default phi bounds (.99 / .999),
-% bvt.util.build_lags (the inline lag construction), bvt.util.vec, and
-% bvt.structural.construct_Sigt (legacy utility/construct_Sigt.m = the private
+% bvar.util.build_lags (the inline lag construction), bvar.util.vec, and
+% bvar.structural.construct_Sigt (legacy utility/construct_Sigt.m = the private
 % duplicate inside func_main_SVAR_v2.m) for the posterior covariance paths.
 % Blocks called in the legacy order - OI: B0 -> alpha -> h -> (phi,sig2) ->
 % horseshoe; CS: B -> alp -> h -> (mu,phi,sig2) -> horseshoe.
@@ -69,8 +69,8 @@
 function out = run_all(model, flip, nsim, burnin, seed)
 thisdir = fileparts(mfilename('fullpath'));
 
-    % make bvt.* resolvable when called standalone
-if isempty(which('bvt.structural.b0_row_sampler'))
+    % make bvar.* resolvable when called standalone
+if isempty(which('bvar.structural.b0_row_sampler'))
     root = fileparts(fileparts(thisdir));
     addpath(fullfile(root, 'core'));
 end
@@ -106,7 +106,7 @@ end
 Y0 = data(1:pr.n0, var_id);             % save the first 24 obs as the initial conditions
 Y  = data(pr.n0+1:end, var_id);
 [T, n] = size(Y);
-[~, X] = bvt.util.build_lags([Y0(end-p+1:end, :); Y], p);   % identical to the legacy inline construction
+[~, X] = bvar.util.build_lags([Y0(end-p+1:end, :); Y], p);   % identical to the legacy inline construction
 
     % MCMC [func_main_SVAR_v2.m lines 33-63]
 switch model
@@ -121,7 +121,7 @@ switch model
         for isim = 1:nsim
             B0 = reshape(res.store_B0(isim, :), n, n)'; % stacked by rows
             h = squeeze(res.store_h(isim, :, :));
-            store_Sig = store_Sig + bvt.structural.construct_Sigt(h, B0);
+            store_Sig = store_Sig + bvar.structural.construct_Sigt(h, B0);
         end
         Sig_mean = store_Sig/nsim; Sig_median = zeros(T, n, n);
     case 'CS'
@@ -138,7 +138,7 @@ switch model
             h = squeeze(res.store_h(isim, :, :));
             alp = squeeze(res.store_alp(isim, :))';
             A = eye(n); A(A_id) = alp;
-            store_Sig = store_Sig + bvt.structural.construct_Sigt(h, A);
+            store_Sig = store_Sig + bvar.structural.construct_Sigt(h, A);
         end
         Sig_mean = store_Sig/nsim; Sig_median = zeros(T, n, n);
 end
@@ -167,8 +167,8 @@ function res = mcmc_oi(Y, X, Y0, T, n, p, nsim, burnin, pr)
 % horseshoe block.
 k = 1+n*p;                                              % SVARSV_MH.m line 3
 k_alpha = n*k;                                          % line 4
-sig2 = bvt.priors.resid_var_ar4(Y0, Y);                 % line 5 (legacy get_resid_var)
-[C, idx_kappa1, idx_kappa2] = bvt.priors.minnesota_C(n, p, sig2);   % line 6 (legacy get_C)
+sig2 = bvar.priors.resid_var_ar4(Y0, Y);                 % line 5 (legacy get_resid_var)
+[C, idx_kappa1, idx_kappa2] = bvar.priors.minnesota_C(n, p, sig2);   % line 6 (legacy get_C)
 
     % priors [SVARSV_MH.m lines 9-11, via preset]
 Hyper.nuh = pr.oi.nuh; Hyper.Sh = pr.oi.Sh;
@@ -206,31 +206,31 @@ Psi = ones(k*n, 1);
 Psi(idx_kappa1) = psi_kappa1; Psi(idx_kappa2) = psi_kappa2;
 
 for isim = 1:nsim + burnin
-        % sample B0 [lines 48-72 -> bvt.structural.b0_row_sampler]
+        % sample B0 [lines 48-72 -> bvar.structural.b0_row_sampler]
     U = Y-X*A;
-    B0 = bvt.structural.b0_row_sampler(U, h, B0, Hyper.B0, Hyper.VB0);
+    B0 = bvar.structural.b0_row_sampler(U, h, B0, Hyper.B0, Hyper.VB0);
 
-        % sample alpha [lines 75-88 -> bvt.samplers.eq_svar_oi;
-        % legacy getVbeta = the Vbeta output of bvt.priors.vtheta]
-    [~, tmpdV] = bvt.priors.vtheta(idx_kappa1, idx_kappa2, kappa, C.*Psi, sig2);
-    A = bvt.samplers.eq_svar_oi(Y, X, B0, h, A, tmpdV);
+        % sample alpha [lines 75-88 -> bvar.samplers.eq_svar_oi;
+        % legacy getVbeta = the Vbeta output of bvar.priors.vtheta]
+    [~, tmpdV] = bvar.priors.vtheta(idx_kappa1, idx_kappa2, kappa, C.*Psi, sig2);
+    A = bvar.samplers.eq_svar_oi(Y, X, B0, h, A, tmpdV);
     alpha = A(:);
 
         % sample h [lines 90-95]
     E = (Y - X*A)*B0';
     for ii = 1:n
         ystar = log(E(:, ii).^2 + pr.sv_offset);
-        h(:, ii) = bvt.sv.ksc_ar1_mean(ystar, h(:, ii), pr.oi.h_mean_in_sv, phi(ii), sig2(ii));
+        h(:, ii) = bvar.sv.ksc_ar1_mean(ystar, h(:, ii), pr.oi.h_mean_in_sv, phi(ii), sig2(ii));
     end
 
         % sample phi and sig2 [lines 97-99; default phi bound = OISV .99]
-    [phi, sig2, flag_phi] = bvt.sv.sv0_params(h, phi, Hyper);
+    [phi, sig2, flag_phi] = bvar.sv.sv0_params(h, phi, Hyper);
     count_phi = count_phi + flag_phi;
 
         % sample psi, z_psi, kappa1/kappa2, z_kappa
-        % [lines 101-120 -> bvt.samplers.horseshoe_kappa_psi, theta = alpha]
+        % [lines 101-120 -> bvar.samplers.horseshoe_kappa_psi, theta = alpha]
     [psi_kappa1, psi_kappa2, z_psi1, z_psi2, kappa, z_kappa] = ...
-        bvt.samplers.horseshoe_kappa_psi(alpha, idx_kappa1, idx_kappa2, C, kappa, z_psi1, z_psi2, z_kappa);
+        bvar.samplers.horseshoe_kappa_psi(alpha, idx_kappa1, idx_kappa2, C, kappa, z_psi1, z_psi2, z_kappa);
     Psi(idx_kappa1) = psi_kappa1;
     Psi(idx_kappa2) = psi_kappa2;
 
@@ -274,9 +274,9 @@ k_beta = n^2*p + n;                                     % line 4
 k = k_beta/n;                                           % line 5
 
     % priors [lines 8-16, via preset]
-sig2 = bvt.priors.resid_var_ar4(Y0, Y);                 % line 8 (legacy get_resid_var)
+sig2 = bvar.priors.resid_var_ar4(Y0, Y);                 % line 8 (legacy get_resid_var)
 kappa = pr.cs.kappa_init;   % [.1,.1,1,100]: kappa(1) own lag; kappa(2) other lag; kappa(4) intercepts; kappa(3) alpha
-[C, idx_kappa1, idx_kappa2] = bvt.priors.minnesota_C(n, p, sig2);   % line 10 (legacy get_C)
+[C, idx_kappa1, idx_kappa2] = bvar.priors.minnesota_C(n, p, sig2);   % line 10 (legacy get_C)
 Hyper.beta0 = pr.cs.beta0;
 Hyper.alp0 = pr.cs.alp0; Hyper.Valp = pr.cs.Valp;
 Hyper.mu0 = pr.cs.mu0; Hyper.Vmu = pr.cs.Vmu;
@@ -313,32 +313,32 @@ Psi = ones(k*n, 1);
 Psi(idx_kappa1) = psi_kappa1; Psi(idx_kappa2) = psi_kappa2;
 
 for isim = 1:nsim + burnin
-        % sample B [lines 53-73 -> bvt.samplers.eq_tri_cs;
-        % legacy getVbeta = the Vbeta output of bvt.priors.vtheta]
-    [~, tmpdV] = bvt.priors.vtheta(idx_kappa1, idx_kappa2, kappa, C.*Psi, sig2);
-    [B, XB] = bvt.samplers.eq_tri_cs(Y, X, XB, B, A, h, tmpdV, Hyper.beta0);
+        % sample B [lines 53-73 -> bvar.samplers.eq_tri_cs;
+        % legacy getVbeta = the Vbeta output of bvar.priors.vtheta]
+    [~, tmpdV] = bvar.priors.vtheta(idx_kappa1, idx_kappa2, kappa, C.*Psi, sig2);
+    [B, XB] = bvar.samplers.eq_tri_cs(Y, X, XB, B, A, h, tmpdV, Hyper.beta0);
     beta = reshape(B', k_beta, 1);
 
-        % sample alp [lines 76-88 -> bvt.samplers.alp_tri_cs]
+        % sample alp [lines 76-88 -> bvar.samplers.alp_tri_cs]
     E = Y - XB;
-    alp = bvt.samplers.alp_tri_cs(E, h, Hyper.Valp);
+    alp = bvar.samplers.alp_tri_cs(E, h, Hyper.Valp);
     A(A_id) = alp;
 
         % sample h [lines 90-95]
     AE = E*sparse(A');
     for ii = 1:n
         ystar = log(AE(:, ii).^2 + pr.sv_offset);
-        h(:, ii) = bvt.sv.ksc_ar1_mean(ystar, h(:, ii), mu(ii), phi(ii), sig2(ii));
+        h(:, ii) = bvar.sv.ksc_ar1_mean(ystar, h(:, ii), mu(ii), phi(ii), sig2(ii));
     end
 
         % sample mu, phi and sig2 [lines 97-99; default phi bound = OISV .999]
-    [mu, phi, sig2, flag_phi] = bvt.sv.sv_params(h, mu, phi, Hyper);
+    [mu, phi, sig2, flag_phi] = bvar.sv.sv_params(h, mu, phi, Hyper);
     count_phi = count_phi + flag_phi;
 
         % sample psi, z_psi, kappa1/kappa2, z_kappa
-        % [lines 101-120 -> bvt.samplers.horseshoe_kappa_psi, theta = beta]
+        % [lines 101-120 -> bvar.samplers.horseshoe_kappa_psi, theta = beta]
     [psi_kappa1, psi_kappa2, z_psi1, z_psi2, kappa, z_kappa] = ...
-        bvt.samplers.horseshoe_kappa_psi(beta, idx_kappa1, idx_kappa2, C, kappa, z_psi1, z_psi2, z_kappa);
+        bvar.samplers.horseshoe_kappa_psi(beta, idx_kappa1, idx_kappa2, C, kappa, z_psi1, z_psi2, z_kappa);
     Psi(idx_kappa1) = psi_kappa1;
     Psi(idx_kappa2) = psi_kappa2;
 

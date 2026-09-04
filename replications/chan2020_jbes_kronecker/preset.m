@@ -31,7 +31,7 @@ pr.n0        = 4;                       % line 28: first 4 obs are the initial c
     % ---- VAR coefficient prior (construct_prior_A.m; S0/nu0 from the
     %      callers' prior blocks) ----
 pr.minn_kappa = [.2^2 100];             % construct_prior_A.m line 12: c1 = .2^2 (slopes), c2 = 100 (intercepts)
-                                        %   -> bvt.priors.niw(p, pr.minn_kappa, Y0, shortY, 'kron_script')
+                                        %   -> bvar.priors.niw(p, pr.minn_kappa, Y0, shortY, 'kron_script')
                                         %   S0 = eye(n), nu0 = n+3: set by every BVAR*.m immediately before
                                         %   running construct_prior_A (e.g. BVAR.m lines 9-10, BVAR_CSV.m line 9);
                                         %   the niw 'kron_script' variant returns exactly those.
@@ -58,7 +58,7 @@ pr.progress_every = 5000;               % loop-counter disp cadence, every MCMC 
     % per model; they carry no free constants beyond the values above.
 
     % ---- rho MH truncation divergences (2026-09-02 audit; all VERIFIED
-    %      against source, values kept verbatim in run_all / bvt.ml.*) ----
+    %      against source, values kept verbatim in run_all / bvar.ml.*) ----
 pr.rho_mh_bnd_est = [NaN NaN .9999 NaN .9999 NaN .9999 .99];
                                         % ESTIMATION scripts, by model number:
                                         %   .9999 in BVAR_CSV.m line 69, BVAR_t_CSV.m line 87,
@@ -77,7 +77,7 @@ pr.psi_mh_bnd = .99;                    % psi MH acceptance bound |psic| < .99 a
                                         %   Kpsic fallback 1/.05^2 when chol(hess) fails; Hessian
                                         %   refreshed by fminunc when mod(isim,100)==0 or isim==1.
 
-    % ---- ML computation sizes (ml_BVAR_*.m; defaults inside bvt.ml.*) ----
+    % ---- ML computation sizes (ml_BVAR_*.m; defaults inside bvar.ml.*) ----
 pr.ml.R = [NaN NaN 1000 NaN 1000 NaN 5000 10000];
                                         % importance-sampling draws for the integrated likelihood,
                                         %   by model: ml_BVAR_CSV.m line 10, ml_BVAR_t_CSV.m lines 13-14,
@@ -97,19 +97,19 @@ pr.ml.ngrid = [NaN 700 700 700 700 300 300 299];
                                         %   truncation those grid points carry lpri_psi's -1e10 penalty.
 
     % ---- Known legacy defects in the ML scripts (2026-09-02 audit) ----
-    % Reproduced bit-for-bit by the bugcompat option of the affected bvt.ml
+    % Reproduced bit-for-bit by the bugcompat option of the affected bvar.ml
     % functions; the corrected computation is their default. Documented in
     % full in the affected function headers and tests/variant_map.md.
 pr.ml.bug_ma_psi_line17 = true;         % ml_BVAR_MA.m line 17: the llike term s2(1)/(1+psi^2) uses the
                                         %   loop variable psi left over from the estimation run (the final
                                         %   chain draw) where psi_mean is intended (lines 11/16 use psi_mean).
-                                        %   -> bvt.ml.kron_bvar_ma('bugcompat',true), fed by run_all's
+                                        %   -> bvar.ml.kron_bvar_ma('bugcompat',true), fed by run_all's
                                         %   out.state.psi.
 pr.ml.bug_csv_t_ma_hpsi_frozen = true;  % ml_BVAR_CSV_t_MA.m lines 42-44: the (A,Sig) ordinate loop never
                                         %   rebuilds Hpsi and never reads the stored psi draws - it consumes
                                         %   the estimation run's leftover Hpsi/psi for all nsims terms
                                         %   (ml_BVAR_CSV_MA.m lines 26-30 rebuild per draw - the intended
-                                        %   pattern). -> bvt.ml.kron_bvar_csv_t_ma('bugcompat',true).
+                                        %   pattern). -> bvar.ml.kron_bvar_csv_t_ma('bugcompat',true).
 pr.ml.bug_csv_t_ma_sig_line108 = true;  % ml_BVAR_CSV_t_MA.m line 108: the reduced-run psi target uses the
                                         %   leftover last DRAW `Sig` where Sig_mean is intended (the same
                                         %   line in ml_BVAR_CSV_MA.m line 83 uses Sig_mean; this reduced
@@ -123,7 +123,7 @@ pr.ml.quirk_csv_t_ma_intlike_first_obs = true;
                                         %   it variance (1+psi^2)*exp(h_1)*lam_1*Sig (the Gaussian
                                         %   intlike_BVAR_CSV_MA.m applies both). A likelihood-formula
                                         %   property, NOT an evaluation-point inconsistency: kept verbatim
-                                        %   in BOTH bvt.ml.intlike_csv_t_ma modes and documented there.
+                                        %   in BOTH bvar.ml.intlike_csv_t_ma modes and documented there.
 pr.ml.quirk_csv_t_ma_lam_first_obs = true;
                                         % BVAR_CSV_t_MA.m lam step (lines 71-75) and its ml reduced run
                                         %   (ml_BVAR_CSV_t_MA.m lines 90-91) apply NO (1+psi^2) correction
@@ -144,9 +144,9 @@ pr.llike_csv_ma_root_has_sumh = true;   % the package-ROOT legacy/llike_CSV_MA.m
                                         %   llike_CSV_MA call resolves to the REDUCED copy whenever the
                                         %   package root is not the current folder - the estimation/ML
                                         %   pipeline is protected only by cwd precedence in the legacy
-                                        %   workflow. bvt.ml.llike_csv_ma pins the root semantics and all
+                                        %   workflow. bvar.ml.llike_csv_ma pins the root semantics and all
                                         %   toolkit callers use the qualified name. (The realtime folder
                                         %   also shadows sample_h - executably identical - and sample_nu -
                                         %   log-form vs the root's normpdf-form MH ratio, mathematically
-                                        %   identical, floating-point different; see bvt.sv.nu_studentt.)
+                                        %   identical, floating-point different; see bvar.sv.nu_studentt.)
 end

@@ -1,8 +1,8 @@
 function test_nu_studentt
-% seeded draw-for-draw equivalence of bvt.sv.nu_studentt with all three legacy
+% seeded draw-for-draw equivalence of bvar.sv.nu_studentt with all three legacy
 % sample_nu copies (springer canonical; kronecker root uses the normpdf-ratio
 % acceptance arithmetic - decisions must still match draw-for-draw).
-root = getappdata(0, 'bvt_repo_root');
+root = getappdata(0, 'bvar_repo_root');
 
 % latent scales lam_t ~ IG(nu/2, nu/2): heavier-tail regime so the MH step
 % both accepts and rejects (acceptance ~0.9 over these seeds)
@@ -11,7 +11,7 @@ lam = 1./gamrnd(2.5/2, 2/2.5, 60, 1);
 nu_ub = 50; nrep = 500;
 
 rng(11, 'twister'); nu = 8; Nc = zeros(nrep,1); Fc = zeros(nrep,1);
-for i = 1:nrep, [nu,f,f_nu] = bvt.sv.nu_studentt(lam,nu,nu_ub); Nc(i) = nu; Fc(i) = f; end
+for i = 1:nrep, [nu,f,f_nu] = bvar.sv.nu_studentt(lam,nu,nu_ub); Nc(i) = nu; Fc(i) = f; end
 sc = rng;
 assert(any(Fc == 1) && any(Fc == 0), 'nu_studentt: harness did not exercise both MH branches');
 

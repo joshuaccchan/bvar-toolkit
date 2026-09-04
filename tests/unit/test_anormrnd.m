@@ -1,9 +1,9 @@
 function test_anormrnd
-% exact draw-for-draw equivalence of bvt.util.anormrnd with the legacy OISV
+% exact draw-for-draw equivalence of bvar.util.anormrnd with the legacy OISV
 % copy under one seed, across (mu,rho) pairs hitting both mixture branches
 % (rho = 1/T with T = 706 is the value the B0 row sampler passes), plus a
 % bimodality sanity check at mu = 0 (w = .5: both signs must appear).
-root = getappdata(0, 'bvt_repo_root');
+root = getappdata(0, 'bvar_repo_root');
 leg = fullfile(root, 'replications', 'chan_koop_yu2024_jbes_oisv', 'legacy', 'utility');
 addpath(leg); c = onCleanup(@() rmpath(leg));
 
@@ -18,7 +18,7 @@ for mu = mus
     for rho = rhos
         col = col + 1;
         for i = 1:ndraw
-            d1(i, col) = bvt.util.anormrnd(mu, rho);
+            d1(i, col) = bvar.util.anormrnd(mu, rho);
         end
     end
 end

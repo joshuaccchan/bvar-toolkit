@@ -19,18 +19,18 @@
 %      linear and Gaussian - so draw the whole h path with the ex01 precision
 %      sampler, and draw the component indicators from a 7-point distribution.
 %
-% bvt.sv.ksc_rw_h0 does steps 2 and 3 in one call. Its whole body is 20 lines:
+% bvar.sv.ksc_rw_h0 does steps 2 and 3 in one call. Its whole body is 20 lines:
 % a T x 7 table of mixture weights, then exactly the banded-precision draw of
 % ex01. It consumes one rand(T,1) and one randn(T,1) per call.
 %
-% SIBLINGS IN core/+bvt/+sv/ (same idea, different state equation):
-%   bvt.sv.ksc_rw_h0      random walk, KNOWN initial value h_1 ~ N(h0,sigh2)   <- here
-%   bvt.sv.ksc_rw_diffuse random walk, diffuse start h_1 ~ N(0,Vh); returns S too
-%   bvt.sv.ksc_ar1_mean   stationary AR(1) with a mean, h_t - mu = phi(h_{t-1}-mu) + u
-%   bvt.sv.csv_armh       common (scalar) stochastic volatility for an n-variate
+% SIBLINGS IN core/+bvar/+sv/ (same idea, different state equation):
+%   bvar.sv.ksc_rw_h0      random walk, KNOWN initial value h_1 ~ N(h0,sigh2)   <- here
+%   bvar.sv.ksc_rw_diffuse random walk, diffuse start h_1 ~ N(0,Vh); returns S too
+%   bvar.sv.ksc_ar1_mean   stationary AR(1) with a mean, h_t - mu = phi(h_{t-1}-mu) + u
+%   bvar.sv.csv_armh       common (scalar) stochastic volatility for an n-variate
 %                         VAR, drawn by an accept-reject Metropolis-Hastings step
-%   bvt.sv.sv_params /
-%   bvt.sv.sv0_params     draw (mu, phi, sigh2) for the AR(1) specifications
+%   bvar.sv.sv_params /
+%   bvar.sv.sv0_params     draw (mu, phi, sigh2) for the AR(1) specifications
 %
 % WHAT TO LOOK AT: the posterior mean of h should track the simulated truth
 % closely (correlation well above 0.9), the posterior of sigh2 should cover the
@@ -88,7 +88,7 @@ tic
 for isim = 1:nsim + burnin
 
         % (a) the whole log-volatility path, KSC mixture + precision sampler
-    h = bvt.sv.ksc_rw_h0(ystar, h, sigh2, h0);
+    h = bvar.sv.ksc_rw_h0(ystar, h, sigh2, h0);
 
         % (b) sigh2 | h, h0        (conjugate inverse gamma)
     e     = h - [h0; h(1:T-1)];
@@ -164,7 +164,7 @@ for is = 1:numel(scales)
     ystar_s = log(ys.^2 + sv_offset);
     hs = zeros(T,1); sigh2_s = 0.1; h0_s = 0; S = zeros(nsim_s, T);
     for isim = 1:nsim_s + burnin_s
-        hs      = bvt.sv.ksc_rw_h0(ystar_s, hs, sigh2_s, h0_s);
+        hs      = bvar.sv.ksc_rw_h0(ystar_s, hs, sigh2_s, h0_s);
         e       = hs - [h0_s; hs(1:T-1)];
         sigh2_s = 1/gamrnd(nuh0 + T/2, 1/(Sh0 + sum(e.^2)/2));
         Kh0     = 1/sigh2_s + 1/Vh0;

@@ -28,7 +28,7 @@ that develops it.
 zip's md5 recorded in `provenance.md`. Run those files as you would the original download.
 
 **Build on the code.** The samplers, priors, and forecasting machinery are factored into the
-`bvt` package under `core/`, each function tested to reproduce its legacy counterpart
+`bvar` package under `core/`, each function tested to reproduce its legacy counterpart
 draw-for-draw under a fixed seed. Call the blocks directly, or copy the nearest `run_all.m` as
 a template.
 
@@ -49,22 +49,35 @@ a template.
 "Legacy only" means the package has not been functionized yet — the original code is there and
 runs; a `run_all.m` will follow. Full citations are in `provenance.md`.
 
-## What is in `core/+bvt`
+## The `bvar` library
 
-| Namespace | Contents |
+A Bayesian VAR is estimated using Markov chain Monte Carlo by cycling through a handful of
+conditional draws: build the prior, draw the coefficients, draw the volatilities, draw the
+shrinkage hyperparameters, forecast. Across the twelve packages those steps were written
+out again and again — the same auxiliary-mixture volatility sampler appears in eight of
+them, under four names. `bvar` is those steps factored into one function each.
+
+They are not rewrites. Each function's body comes from a specific published package, and a
+unit test runs the original code beside it and requires the same numbers — bitwise, and
+draw-for-draw under a fixed seed for anything stochastic. Calling `bvar.sv.ksc_rw_h0` runs
+the computation the paper ran.
+
+| Namespace | What it is for |
 |---|---|
-| `bvt.util` | `build_lags`, `diffmat` (state-equation difference matrix), `surform`/`surform2` (different operators — see their headers), `igrnd`, `logsumexp`, `vec`, `vech`, `ldet`, `mgammaln`, `tnormrnd`, `anormrnd` |
-| `bvt.priors` | Minnesota scaling (`resid_var_ar4`, `minnesota_C`, `vtheta`), constructors `minn`, `niw`, `acp_stru`/`acp_redu`, `impact_B0` |
-| `bvt.sv` | KSC auxiliary-mixture samplers (`ksc_rw_h0`, `ksc_rw_diffuse`, `ksc_ar1_mean`), common SV (`csv_armh`), SV parameters (`sv_params`, `sv0_params`), t degrees of freedom (`nu_studentt`) |
-| `bvt.samplers` | `eq_gauss`, `gig_shrinkage`, `nu_psi_ng`, `eq_svar_oi`, `eq_tri_cs`, `alp_tri_cs`, `horseshoe_kappa_psi` |
-| `bvt.forecast` | `iterate` (per-draw forecasts and predictive likelihoods), `tables` (RMSFE / ALPL), `realtime_loaddata` |
-| `bvt.structural` | `construct_Sigt`, `b0_row_sampler` |
-| `bvt.ml` | Marginal likelihoods for the Kronecker model family, integrated-likelihood evaluators, log-density utilities |
+| `bvar.priors` | Building priors. `resid_var_ar4`, `minnesota_C` and `vtheta` compute the Minnesota scaling every prior here rests on; `minn`, `niw` and `acp_stru`/`acp_redu` are the prior constructors themselves — Minnesota, natural conjugate, and the asymmetric conjugate prior of Chan (2022) whose marginal likelihood is available in closed form. |
+| `bvar.sv` | Drawing stochastic volatility. The `ksc_*` functions are the Kim–Shephard–Chib auxiliary-mixture sampler, one per state equation (random walk with a known initial value, random walk with a diffuse one, stationary AR(1)); `csv_armh` draws a single common volatility factor; `sv_params` and `nu_studentt` draw the parameters governing them. |
+| `bvar.samplers` | Drawing everything else in the Gibbs loop: VAR coefficients equation by equation (`eq_gauss` for the structural form, `eq_svar_oi` for the order-invariant one, `eq_tri_cs` and `alp_tri_cs` for the Cholesky benchmark) and the hierarchical shrinkage blocks (`gig_shrinkage`, `horseshoe_kappa_psi`, `nu_psi_ng`). |
+| `bvar.forecast` | Producing forecasts from a chain. `iterate` runs one draw forward and scores it, `tables` accumulates RMSFEs and log predictive likelihoods, `realtime_loaddata` assembles a real-time data vintage. |
+| `bvar.structural` | Contemporaneous structure: `construct_Sigt` builds the time-varying covariance from the impact matrix, `b0_row_sampler` draws that matrix row by row for the order-invariant model. |
+| `bvar.ml` | Marginal likelihoods, for model comparison: Chib's method for the Kronecker model family, plus the integrated-likelihood evaluators and log densities it needs. |
+| `bvar.util` | The small shared pieces: `build_lags` (the lag matrix, intercept first), `diffmat` (the state-equation difference matrix that makes the precision samplers banded), `surform`/`surform2` (two different sparse expansions — see their headers), `logsumexp`, `igrnd`, and a few one-liners. |
 
-Variants that look interchangeable but are not — two `SVRW` samplers with different initial
-conditions, two `prior_NCP` signatures, `get_resid_var` versus its all-variables variant — are
-kept as separately named functions. `tests/variant_map.md` records, for every core function,
-which legacy copies it canonicalizes and how that was verified, plus a never-merge list.
+Where two legacy versions of a step turned out to differ numerically, both survive under
+separate names rather than being merged: `ksc_rw_h0` and `ksc_rw_diffuse` are the same
+sampler under different initial conditions, `resid_var_ar4` and `resid_var_allvars_ridge`
+compute the same scaling from different regressions. `tests/variant_map.md` records for
+every function which legacy copies it stands in for, how that was checked, and a
+never-merge list of the pairs that must stay apart.
 
 ## Examples
 

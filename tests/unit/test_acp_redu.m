@@ -9,11 +9,11 @@ kappa_asym = [0.1, 0.0009, 1, 100];
 sig2 = exp(randn(n, 1));
 idx_ns = [1 3 5];
 
-p_ns = bvt.priors.acp_redu(n, p, kappa, sig2, idx_ns);
-p_st = bvt.priors.acp_redu(n, p, kappa, sig2);   % nargin==4 branch, idx_ns = []
-p_as = bvt.priors.acp_redu(n, p, kappa_asym, sig2, idx_ns);
+p_ns = bvar.priors.acp_redu(n, p, kappa, sig2, idx_ns);
+p_st = bvar.priors.acp_redu(n, p, kappa, sig2);   % nargin==4 branch, idx_ns = []
+p_as = bvar.priors.acp_redu(n, p, kappa_asym, sig2, idx_ns);
 
-root = getappdata(0, 'bvt_repo_root');
+root = getappdata(0, 'bvar_repo_root');
 leg = fullfile(root, 'replications', 'chan2022_qe_acp', 'legacy', 'utility');
 addpath(leg); c = onCleanup(@() rmpath(leg));
 q_ns = prior_ACP_redu(n, p, kappa, sig2, idx_ns);

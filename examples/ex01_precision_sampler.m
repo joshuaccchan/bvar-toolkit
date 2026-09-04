@@ -21,15 +21,15 @@
 % and the whole path is drawn in ONE multivariate normal draw. No Kalman
 % filter, no forward-backward pass, no loop over t.
 %
-% Everything in core/+bvt/+sv/ (bvt.sv.ksc_rw_h0, bvt.sv.ksc_rw_diffuse,
-% bvt.sv.ksc_ar1_mean, bvt.sv.csv_armh) is this same three-line construction
+% Everything in core/+bvar/+sv/ (bvar.sv.ksc_rw_h0, bvar.sv.ksc_rw_diffuse,
+% bvar.sv.ksc_ar1_mean, bvar.sv.csv_armh) is this same three-line construction
 % with a different H and a different diagonal.
 %
 % WHAT TO LOOK AT when you run this:
 %   1. the sparsity numbers: K has ~3T nonzeros out of T^2;
 %   2. the timing table: doubling T roughly doubles the time (sparse) but
 %      multiplies it by ~8 (dense) - that is O(T) versus O(T^3);
-%   3. the last section: bvt.util.surform builds the same machinery for a
+%   3. the last section: bvar.util.surform builds the same machinery for a
 %      k-dimensional state (a time-varying-parameter regression).
 %
 % See: Chan, J.C.C. and I. Jeliazkov (2009). Efficient Simulation and
@@ -190,10 +190,10 @@ fprintf('  millisecond. That is the difference between a feasible and an\n');
 fprintf('  infeasible sampler.\n');
 
 %% ------------------------------------------------------------------
-%  5. The same trick with a k-DIMENSIONAL state: bvt.util.surform
+%  5. The same trick with a k-DIMENSIONAL state: bvar.util.surform
 %     A time-varying-parameter regression
 %       y_t = b_{1t} + b_{2t}*z_t + e_t,   b_t = b_{t-1} + u_t
-%     bvt.util.surform(X) turns the T x k matrix of regressors into the
+%     bvar.util.surform(X) turns the T x k matrix of regressors into the
 %     T x kT block-diagonal matrix that multiplies the STACKED state
 %     vector [b_1; b_2; ...; b_T]. Precision is then banded with bandwidth
 %     2k instead of 2 - still O(T).
@@ -212,7 +212,7 @@ for t = 2:T2
 end
 y2 = sum(Xt.*b_true, 2) + sqrt(sig2_e)*randn(T2,1);
 
-Xbig = bvt.util.surform(Xt);                     % T2 x (kk*T2), sparse
+Xbig = bvar.util.surform(Xt);                     % T2 x (kk*T2), sparse
 Hb   = speye(kk*T2) - sparse(kk+1:kk*T2, 1:kk*T2-kk, ones(kk*T2-kk,1), kk*T2, kk*T2);
 invSb = spdiags(repmat(1./sig2_b, T2, 1), 0, kk*T2, kk*T2);
 Kb    = Hb'*invSb*Hb;
@@ -229,7 +229,7 @@ end
 b_mean = reshape(mean(store_b)', kk, T2)';       % T2 x kk posterior mean paths
 
 fprintf('\nTVP regression with a %d-dimensional state, T = %d:\n', kk, T2);
-fprintf('  bvt.util.surform(Xt) is %d x %d with %d nonzeros (%.3f%% dense)\n', ...
+fprintf('  bvar.util.surform(Xt) is %d x %d with %d nonzeros (%.3f%% dense)\n', ...
     size(Xbig,1), size(Xbig,2), nnz(Xbig), 100*nnz(Xbig)/numel(Xbig));
 fprintf('  posterior precision Kpost: %d x %d, %d nonzeros, bandwidth %d\n', ...
     size(Kpost,1), size(Kpost,2), nnz(Kpost), bandwidth(Kpost,'lower'));

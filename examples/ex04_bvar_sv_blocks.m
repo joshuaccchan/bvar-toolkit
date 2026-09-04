@@ -25,7 +25,7 @@
 % WHY THIS IS HARDER THAN ex03, AND WHY IT IS WORTH IT. In the structural form
 % of ex03/MAHP, conditioning on the log-volatilities makes the n equations
 % independent, so each equation is a self-contained weighted regression
-% (bvt.samplers.eq_gauss). Here A is a reduced-form object: change equation ii's
+% (bvar.samplers.eq_gauss). Here A is a reduced-form object: change equation ii's
 % coefficients - column ii of A, see the layout note below - and you move the
 % orthogonalized errors of SEVERAL equations at once, because the
 % orthogonalization mixes them. The naive conditional for the whole of A is a
@@ -49,11 +49,11 @@
 % blocks:
 %
 %   1. A equation by equation       (the centrepiece; written out inline here)
-%   2. the free elements of B0      bvt.samplers.alp_tri_cs
-%   3. the n log-volatility paths   bvt.sv.ksc_ar1_mean
-%   4. (mu, phi, sig2) per equation bvt.sv.sv_params
+%   2. the free elements of B0      bvar.samplers.alp_tri_cs
+%   3. the n log-volatility paths   bvar.sv.ksc_ar1_mean
+%   4. (mu, phi, sig2) per equation bvar.sv.sv_params
 %
-% CONTRAST WITH bvt.samplers.eq_svar_oi. That function is the same idea for the
+% CONTRAST WITH bvar.samplers.eq_svar_oi. That function is the same idea for the
 % order-invariant SVAR-SV of Chan, Koop and Yu (2024, JBES): same standardized
 % stacking, same per-equation Cholesky. The one difference is decisive - its B0
 % is a GENERAL rotation, not triangular, so every equation's residual depends on
@@ -63,7 +63,7 @@
 %
 % TWO HONEST CAVEATS. This script ILLUSTRATES VAR_ARSV_redu; it does not
 % reproduce it bitwise, for two reasons.
-%   (a) bvt.sv.sv_params canonicalizes the OISV copy of sample_SVpara, NOT the
+%   (a) bvar.sv.sv_params canonicalizes the OISV copy of sample_SVpara, NOT the
 %       ml_varsv copy that VAR_ARSV_redu calls. The two differ - phi truncation
 %       bound .999 vs .998, and the handling of the h columns - and are on the
 %       never-merge list in tests/variant_map.md. Same conditional, different
@@ -78,7 +78,7 @@
 % A NAMING TRAP, worth two lines because it has caught people. In THIS paper's
 % code `alp` is vec(A), the VAR coefficients, and `beta` collects the free
 % elements of B0 - the opposite of the MAHP convention used in ex03 and in
-% bvt.priors.vtheta, where Vbeta holds the VAR coefficients and Valp the impact
+% bvar.priors.vtheta, where Vbeta holds the VAR coefficients and Valp the impact
 % matrix. The variable names below follow the ml_varsv legacy file, so the code
 % diffs line by line against it. Read the comments, not the letters.
 %
@@ -156,7 +156,7 @@ fprintf('  true log-volatility paths range over [%.2f, %.2f]\n', ...
 %     lag-1 block, then the lag-2 block, ... (identical to main_varsv.m's
 %     inline construction, lines 45-50).
 %  ------------------------------------------------------------------
-[~, X] = bvt.util.build_lags([Y0(end-p+1:end,:); Y], p);
+[~, X] = bvar.util.build_lags([Y0(end-p+1:end,:); Y], p);
 fprintf('\nbvt.util.build_lags -> X is %dx%d, k = 1 + n*p = %d\n', size(X,1), size(X,2), k);
 
 %% ------------------------------------------------------------------
@@ -164,16 +164,16 @@ fprintf('\nbvt.util.build_lags -> X is %dx%d, k = 1 + n*p = %d\n', size(X,1), si
 %
 %     Two constructors, both extracted verbatim from this paper's legacy
 %     utility folder:
-%       bvt.priors.minn      - the Minnesota prior on vec(A). Called with
+%       bvar.priors.minn      - the Minnesota prior on vec(A). Called with
 %                              n0pre = 4, it IS ml_varsv's prior_Minn.m. Its
 %                              third output sig2_hat is the vector of univariate
 %                              AR(4) residual variances (the same numbers
-%                              bvt.priors.resid_var_ar4 returns), which is what
+%                              bvar.priors.resid_var_ar4 returns), which is what
 %                              makes one scalar kappa mean the same thing for an
 %                              interest rate and for GDP growth.
-%       bvt.priors.impact_B0 - the prior on the free elements of B0, scaled
+%       bvar.priors.impact_B0 - the prior on the free elements of B0, scaled
 %                              kappa4*sig2_i/sig2_j. (This is ml_varsv's
-%                              prior_B0.m. bvt.priors.vtheta builds the SAME
+%                              prior_B0.m. bvar.priors.vtheta builds the SAME
 %                              object under the MAHP parameterization, as its
 %                              Valp output - see the naming trap in the header.)
 %  ------------------------------------------------------------------
@@ -182,8 +182,8 @@ kappa2 = (.2^2)^2;      % other lags - an order of magnitude tighter
 kappa3 = 100;           % intercepts: (near-)flat
 kappa4 = .2^2;          % free elements of B0
 
-[alp0,  Valp,  sig2_hat] = bvt.priors.minn(p, kappa1, kappa2, kappa3, Y0, Y, 4);
-[beta0, Vbeta] = bvt.priors.impact_B0(Y0, Y, kappa4);
+[alp0,  Valp,  sig2_hat] = bvar.priors.minn(p, kappa1, kappa2, kappa3, Y0, Y, 4);
+[beta0, Vbeta] = bvar.priors.impact_B0(Y0, Y, kappa4);
 
     % priors of the SV state equation (main_varsv.m case 3)
 Hyper.nuh  = 3*ones(n,1);   Hyper.Sh   = .1*(Hyper.nuh-1);   % sig2 ~ IG(3,.2)
@@ -199,7 +199,7 @@ fprintf('  prior sd on the free elements of B0   %s\n', mat2str(round(sqrt(Vbeta
 %% ------------------------------------------------------------------
 %  4. Initialize the Markov chain - VAR_ARSV_redu lines 17-33, step for step.
 %     A starts at a ridge estimate, h at the crude one-component log-chi^2
-%     approximation of the squared residuals (bvt.sv.init_approx1N, the paper's
+%     approximation of the squared residuals (bvar.sv.init_approx1N, the paper's
 %     getARh_approx1N), and mu at the sample mean of log(residual^2).
 %  ------------------------------------------------------------------
 mu   = log(sig2_hat);
@@ -213,7 +213,7 @@ for ii = 1:n
     A(:,ii)  = (XX + iValpi)\(X'*Y(:,ii));
     s2i      = (Y(:,ii) - X*A(:,ii)).^2;
     mu(ii)   = mean(log(s2i));
-    h(:,ii)  = bvt.sv.init_approx1N(s2i, mu(ii), phi(ii), sig2(ii));
+    h(:,ii)  = bvar.sv.init_approx1N(s2i, mu(ii), phi(ii), sig2(ii));
 end
 beta = zeros(k_beta,1);
 B0   = eye(n);
@@ -258,7 +258,7 @@ for isim = 1:nsim + burnin
     % (n-ii+1)*T rows instead of n*T, and the last equation costs just T.
     %
     % That truncation is what makes reduced-form estimation feasible at scale.
-    % Contrast bvt.samplers.eq_svar_oi, the same block for the order-invariant
+    % Contrast bvar.samplers.eq_svar_oi, the same block for the order-invariant
     % SVAR-SV of Chan, Koop and Yu (2024): there B0 is a general rotation with
     % no structural zeros, so it must keep all n*T rows for every equation -
     % `yi = vec((Y-X*A)*B0')./Lambda` and `Wi = kron(B0(:,ii),X)./Lambda`, with
@@ -271,8 +271,8 @@ for isim = 1:nsim + burnin
     sqrt_exph = exp(h/2);
     for ii = 1:n
         A(:,ii)  = 0;
-        Lambda   = bvt.util.vec(sqrt_exph(:,ii:n));           % (n-ii+1)*T x 1
-        yi       = bvt.util.vec((Y - X*A)*B0(ii:n,:)')./Lambda;
+        Lambda   = bvar.util.vec(sqrt_exph(:,ii:n));           % (n-ii+1)*T x 1
+        yi       = bvar.util.vec((Y - X*A)*B0(ii:n,:)')./Lambda;
         Wi       = kron(B0(ii:n,ii), X)./Lambda;              % (n-ii+1)*T x k
         iValpi   = sparse(1:k, 1:k, 1./Valp((ii-1)*k+1:ii*k));
         alpi0    = alp0((ii-1)*k+1:ii*k);                     % zero here, but the
@@ -291,23 +291,23 @@ for isim = 1:nsim + burnin
     % Given A, the reduced-form residuals E = Y - X*A are data. Row ii of B0
     % says eps_ii + sum_{j<ii} B0(ii,j)*eps_j has variance exp(h(:,ii)), i.e.
     % regress E(:,ii) on -E(:,1:ii-1) with weights exp(-h(:,ii)) and a normal
-    % prior. bvt.samplers.alp_tri_cs is that loop, byte for byte (it was
+    % prior. bvar.samplers.alp_tri_cs is that loop, byte for byte (it was
     % extracted from the Cholesky-SV sampler of the OISV package, where the same
     % block appears under the name `alp` - the naming trap again).
     E    = Y - X*A;
-    beta = bvt.samplers.alp_tri_cs(E, h, Vbeta)';
+    beta = bvar.samplers.alp_tri_cs(E, h, Vbeta)';
     B0(B0_id) = beta;
 
     %% ---- BLOCK 3: the n log-volatility paths ----
     %
     % Orthogonalize the residuals, then run one KSC auxiliary-mixture pass per
-    % equation. bvt.sv.ksc_ar1_mean is ex02's sampler with a stationary AR(1)
+    % equation. bvar.sv.ksc_ar1_mean is ex02's sampler with a stationary AR(1)
     % state equation instead of a random walk; the call signature below matches
     % the legacy `sample_SV(ystar,h(:,ii),mu(ii),phi(ii),sig2(ii))` exactly.
     B0E = E*B0';
     for ii = 1:n
         ystar   = log(B0E(:,ii).^2 + .0001);
-        h(:,ii) = bvt.sv.ksc_ar1_mean(ystar, h(:,ii), mu(ii), phi(ii), sig2(ii));
+        h(:,ii) = bvar.sv.ksc_ar1_mean(ystar, h(:,ii), mu(ii), phi(ii), sig2(ii));
     end
 
     %% ---- BLOCK 4: the SV state-equation parameters (mu, phi, sig2) ----
@@ -315,7 +315,7 @@ for isim = 1:nsim + burnin
     % sig2 conjugate inverse gamma, phi an independence-chain MH step against
     % the stationary initial condition, mu Gaussian. See the caveat in the
     % header: this is the OISV copy of the block, not the ml_varsv one.
-    [mu, phi, sig2, flag_phi] = bvt.sv.sv_params(h, mu, phi, Hyper);
+    [mu, phi, sig2, flag_phi] = bvar.sv.sv_params(h, mu, phi, Hyper);
     count_phi = count_phi + flag_phi;
 
     if isim > burnin

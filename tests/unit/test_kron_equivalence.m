@@ -1,8 +1,8 @@
 function test_kron_equivalence
 % seeded draw-for-draw equivalence of the functionized Kronecker pipeline
-% (replications/chan2020_jbes_kronecker/run_all.m + run_ml.m + bvt.ml.* +
-% bvt.sv.csv_armh/nu_studentt + bvt.priors.niw('kron_script') +
-% bvt.util.build_lags) with the legacy workspace scripts of Chan (2020,
+% (replications/chan2020_jbes_kronecker/run_all.m + run_ml.m + bvar.ml.* +
+% bvar.sv.csv_armh/nu_studentt + bvar.priors.niw('kron_script') +
+% bvar.util.build_lags) with the legacy workspace scripts of Chan (2020,
 % JBES), for ALL EIGHT models, estimation AND marginal likelihood in one
 % continuous stream (the legacy cp_ml = 1 pipeline: main_BVAR.m primes the
 % workspace, the estimation script runs, its tail dispatches ml_BVAR_* in
@@ -27,7 +27,7 @@ function test_kron_equivalence
 % whole run, chain init included. The harness replicates main_BVAR.m lines
 % 26-31 (data/dims priming) and overrides its hard-coded nsims/burnin, which
 % the scripts read from the workspace.
-root = getappdata(0, 'bvt_repo_root');
+root = getappdata(0, 'bvar_repo_root');
 leg = fullfile(root, 'replications', 'chan2020_jbes_kronecker', 'legacy');
 repdir = fullfile(root, 'replications', 'chan2020_jbes_kronecker');
 

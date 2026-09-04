@@ -1,7 +1,7 @@
 function test_mahp_equivalence
 % seeded draw-for-draw equivalence of the functionized MAHP estimation pipeline
-% (replications/chan2021_ijf_mahp/run_all.m + bvt.samplers.eq_gauss /
-% gig_shrinkage / nu_psi_ng + bvt.priors.* + bvt.sv.ksc_rw_h0) with the legacy
+% (replications/chan2021_ijf_mahp/run_all.m + bvar.samplers.eq_gauss /
+% gig_shrinkage / nu_psi_ng + bvar.priors.* + bvar.sv.ksc_rw_h0) with the legacy
 % workspace scripts BVAR_MNG / BVAR_NG / BVAR_Minn, run at small nsim from a
 % tempdir copy. Asserts isequal on ALL stored draws (not just means), on the
 % posterior means, and on the terminal rng state (same rng call sequence).
@@ -15,7 +15,7 @@ function test_mahp_equivalence
 % also where the hard-coded nsim = 10000 / burnin = 1000 are overridden: the
 % sampler scripts read nsim/burnin from the workspace, so the harness simply
 % assigns the small values before dispatching the script.
-root = getappdata(0, 'bvt_repo_root');
+root = getappdata(0, 'bvar_repo_root');
 leg = fullfile(root, 'replications', 'chan2021_ijf_mahp', 'legacy');
 repdir = fullfile(root, 'replications', 'chan2021_ijf_mahp');
 

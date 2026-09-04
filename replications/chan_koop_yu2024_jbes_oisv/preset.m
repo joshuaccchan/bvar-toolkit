@@ -57,7 +57,7 @@ pr.oi.Vphi = .05^2*ones(n,1);               % line 10: prior variance of phi
 pr.oi.B0_prior_mean = eye(n);               % line 11: Hyper.B0 - prior mean of the impact matrix rows (B0 rows ~ N(e_i, I))
 pr.oi.VB0  = 1*ones(n);                     % line 11: Hyper.VB0 - prior variances of the B0 elements (all 1)
 pr.oi.phi_mh_bnd = .99;                     % utility/sample_SV0para.m line 17: phi MH candidate bound |phic| < .99
-                                            %   (= the bvt.sv.sv0_params DEFAULT - run_all passes nothing)
+                                            %   (= the bvar.sv.sv0_params DEFAULT - run_all passes nothing)
 pr.oi.h_mean_in_sv = 0;                     % SVARSV_MH.m line 94: sample_SV(ystar,h,0,phi,sig2) - zero-mean log-volatilities
 
     % ---- CS_MH.m (model 2 = 'CS': Cholesky / triangularized SVAR-SV) ----
@@ -72,7 +72,7 @@ pr.cs.Sh    = .05*(pr.cs.nuh-1);            % line 15: IG scale (= .1; same valu
 pr.cs.phi0  = .95*ones(n,1);                % line 16
 pr.cs.Vphi  = .05^2*ones(n,1);              % line 16
 pr.cs.phi_mh_bnd = .999;                    % utility/sample_SVpara.m line 20: phi MH candidate bound |phic| < .999
-                                            %   (= the bvt.sv.sv_params DEFAULT - run_all passes nothing).
+                                            %   (= the bvar.sv.sv_params DEFAULT - run_all passes nothing).
                                             %   VERIFIED divergence trio: .999 (OISV sample_SVpara, CS estimation AND
                                             %   both forecast fragments) vs .99 (OISV sample_SV0para, OI) vs .998
                                             %   (chan2023_joe_mlvarsv sample_SVpara - different package, never-merge,
@@ -100,7 +100,7 @@ pr.forecast.oi_alpha_rewritten = true;      % forecast_SVARSV_MH.m lines 69-81 R
                                             %   exp(-reshape(h',Tt*n,1)) weighting - vs estimation SVARSV_MH.m lines
                                             %   76-87: yi = vec((Y-X*A)*B0')./Lambda, Wi = kron(B0(:,ii),X)./Lambda
                                             %   (equation-stacked, row-scaled). Same conditional posterior, different
-                                            %   floating-point path - NOT canonicalized by bvt.samplers.eq_svar_oi
+                                            %   floating-point path - NOT canonicalized by bvar.samplers.eq_svar_oi
                                             %   (never-merge, tests/variant_map.md).
 pr.forecast.cs_kappa_from_driver = true;    % forecast_CS_MH.m never initializes kappa (first read at line 44);
                                             %   submain_forecasting_*.m line 44 supplies kappa = [.1,.1,1,100]

@@ -22,7 +22,7 @@
 % Functionized 2026-09-02 (step 8, Kronecker family pass, part 1: estimation +
 % marginal likelihood; the realtime forecasting drivers are part 2). Marginal
 % likelihoods are NOT computed here - run_ml.m in this folder runs this
-% estimation and then the extracted bvt.ml.kron_bvar_* computation on its
+% estimation and then the extracted bvar.ml.kron_bvar_* computation on its
 % output (exposing the bugcompat option for the two ml scripts with known
 % legacy defects; see run_ml and tests/variant_map.md).
 %
@@ -44,13 +44,13 @@
 %
 % All constants come from preset.m in this folder (each field cites its legacy
 % source line); the data file is read from legacy/ READ-ONLY; core reuse:
-%   bvt.priors.niw('kron_script')  = legacy construct_prior_A (+ the S0/nu0
+%   bvar.priors.niw('kron_script')  = legacy construct_prior_A (+ the S0/nu0
 %                                    assignments its callers make first),
-%   bvt.util.build_lags            = the inline X construction,
-%   bvt.sv.csv_armh                = legacy sample_h (root copy),
-%   bvt.sv.nu_studentt             = legacy sample_nu (root copy; normpdf-form
+%   bvar.util.build_lags            = the inline X construction,
+%   bvar.sv.csv_armh                = legacy sample_h (root copy),
+%   bvar.sv.nu_studentt             = legacy sample_nu (root copy; normpdf-form
 %                                    MH ratio - see that header's note),
-%   bvt.ml.llike_ma / llike_csv_ma = legacy llike_MA / ROOT llike_CSV_MA
+%   bvar.ml.llike_ma / llike_csv_ma = legacy llike_MA / ROOT llike_CSV_MA
 %                                    inside the psi-MH steps.
 % The Sig/A joint draw, lam, sigh2, rho-MH and psi-MH blocks have no core
 % counterpart and live verbatim in the per-model subfunctions below.
@@ -61,7 +61,7 @@
 % hyperparameters), the preset used, and `state` = the final workspace values
 % the legacy ml_* scripts consume as leftovers (final chain draws of
 % Sig/A/h/lam/rho/sigh2/psi/nu, the final psi-MH mode psihat, counters) -
-% made explicit so run_ml/bvt.ml.* can reproduce the legacy ML computations
+% made explicit so run_ml/bvar.ml.* can reproduce the legacy ML computations
 % exactly (including their leftover-workspace defects under bugcompat).
 %
 % See:
@@ -72,8 +72,8 @@
 function out = run_all(model, nsim, burnin, seed)
 thisdir = fileparts(mfilename('fullpath'));
 
-    % make bvt.* resolvable when called standalone
-if isempty(which('bvt.ml.lniwpdf'))
+    % make bvar.* resolvable when called standalone
+if isempty(which('bvar.ml.lniwpdf'))
     root = fileparts(fileparts(thisdir));
     addpath(fullfile(root, 'core'));
 end
@@ -113,12 +113,12 @@ shortY = data(pr.n0+1:end, :);
 k = n*p+1;                              % # of coefficients in each equation
 
     % prior [each BVAR*.m prior block: S0 = eye(n); nu0 = n+3;
-    % construct_prior_A -> bvt.priors.niw 'kron_script' variant]
-[A0, VA0, nu0, S0] = bvt.priors.niw(p, pr.minn_kappa, Y0, shortY, 'kron_script');
+    % construct_prior_A -> bvar.priors.niw 'kron_script' variant]
+[A0, VA0, nu0, S0] = bvar.priors.niw(p, pr.minn_kappa, Y0, shortY, 'kron_script');
 pri = struct('A0', A0, 'VA0', VA0, 'nu0', nu0, 'S0', S0);
 
     % X [each BVAR*.m "construct X" block; identical to the legacy inline loop]
-[~, X] = bvt.util.build_lags([Y0(end-p+1:end, :); shortY], p);
+[~, X] = bvar.util.build_lags([Y0(end-p+1:end, :); shortY], p);
 
 switch model
     case 1, res = post_bvar(shortY, X, pri, T, n, k);
@@ -147,7 +147,7 @@ end
 function res = post_bvar(shortY, X, pri, T, ~, k)
 % BVAR.m functionized (lines 13-26; the figure block and the inline cp_ml
 % marginal-likelihood block are not reproduced here - the latter is
-% bvt.ml.kron_bvar, called by run_ml). No MCMC, no rng.
+% bvar.ml.kron_bvar, called by run_ml). No MCMC, no rng.
 A0 = pri.A0; VA0 = pri.VA0; nu0 = pri.nu0; S0 = pri.S0;
 
 XX = X'*X;
@@ -209,8 +209,8 @@ for isim = 1:nsims + burnin
     s2 = sum(tmp.^2,2);
     lam = 1./gamrnd((n+nu)/2,2./(s2+nu));
 
-        %% sample nu [legacy sample_nu -> bvt.sv.nu_studentt]
-    [nu,flag,fnu] = bvt.sv.nu_studentt(lam,nu,nuub);
+        %% sample nu [legacy sample_nu -> bvar.sv.nu_studentt]
+    [nu,flag,fnu] = bvar.sv.nu_studentt(lam,nu,nuub);
     countnu = countnu + flag;
 
     if isim > burnin
@@ -286,11 +286,11 @@ for isim = 1:nsims + burnin
     CSig = chol(Sig,'lower');
     A = Ahat + (chol(KA,'lower')'\randn(k,n))*CSig';
 
-        %% sample h [legacy sample_h -> bvt.sv.csv_armh]
+        %% sample h [legacy sample_h -> bvar.sv.csv_armh]
     U = shortY - X*A;
     tmp = (U/CSig');
     s2 = sum(tmp.^2,2);
-    [h, flag] = bvt.sv.csv_armh(s2,rho,sigh2,h,n);
+    [h, flag] = bvar.sv.csv_armh(s2,rho,sigh2,h,n);
     counth = counth + flag;
 
         %% sample sigh2
@@ -384,9 +384,9 @@ for isim = 1:nsims + burnin
     CSig = chol(Sig,'lower');
     A = Ahat + (chol(KA,'lower')'\randn(k,n))*CSig';
 
-    %% sample psi [legacy llike_MA -> bvt.ml.llike_ma]
+    %% sample psi [legacy llike_MA -> bvar.ml.llike_ma]
     U = shortY - X*A;
-    lp_psi = @(x) bvt.ml.llike_ma(x,U,Sig) + lpri_psi(x);
+    lp_psi = @(x) bvar.ml.llike_ma(x,U,Sig) + lpri_psi(x);
     if (mod(isim,100)==0) || isim == 1 %% get the Hessian every 100 iterations
         [psihat,fval,exitflag,output,grad,hess] ...
             = fminunc(@(x)-lp_psi(x),psihat,options);   %#ok<ASGLU>
@@ -485,11 +485,11 @@ for isim = 1:nsims + burnin
     CSig = chol(Sig,'lower');
     A = Ahat + (chol(KA,'lower')'\randn(k,n))*CSig';
 
-        %% sample h [legacy sample_h -> bvt.sv.csv_armh]
+        %% sample h [legacy sample_h -> bvar.sv.csv_armh]
     U = shortY - X*A;
     tmp = (U/CSig');
     s2 = sum(tmp.^2,2)./lam;
-    [h, flag] = bvt.sv.csv_armh(s2,rho,sigh2,h,n);
+    [h, flag] = bvar.sv.csv_armh(s2,rho,sigh2,h,n);
     counth = counth + flag;
 
         %% sample lam
@@ -498,8 +498,8 @@ for isim = 1:nsims + burnin
     s2 = sum(tmp.^2,2)./exp(h);
     lam = 1./gamrnd((n+nu)/2,2./(s2+nu));
 
-        %% sample nu [legacy sample_nu -> bvt.sv.nu_studentt]
-    [nu, flag, fnu] = bvt.sv.nu_studentt(lam,nu,nuub);
+        %% sample nu [legacy sample_nu -> bvar.sv.nu_studentt]
+    [nu, flag, fnu] = bvar.sv.nu_studentt(lam,nu,nuub);
     countnu = countnu + flag;
 
         %% sample sigh2
@@ -610,10 +610,10 @@ for isim = 1:nsims + burnin
     CSig = chol(Sig,'lower');
     A = Ahat + (chol(KA,'lower')'\randn(k,n))*CSig';
 
-      %% sample psi1 [legacy llike_CSV_MA (ROOT copy) -> bvt.ml.llike_csv_ma,
+      %% sample psi1 [legacy llike_CSV_MA (ROOT copy) -> bvar.ml.llike_csv_ma,
       %  reused with h := log(lam)]
     U = shortY - X*A;
-    lp_psi = @(x) bvt.ml.llike_csv_ma(x,U,Sig,log(lam)) + lpri_psi(x);
+    lp_psi = @(x) bvar.ml.llike_csv_ma(x,U,Sig,log(lam)) + lpri_psi(x);
     if (mod(isim,100)==0) || isim == 1 %% get the Hessian every 100 iterations
         [psihat,fval,exitflag,output,grad,hess] ...
             = fminunc(@(x)-lp_psi(x),psihat,options);   %#ok<ASGLU>
@@ -646,8 +646,8 @@ for isim = 1:nsims + burnin
     s2(1) = s2(1)/(1+psi1^2);
     lam = 1./gamrnd((n+nu)/2,2./(s2+nu));
 
-        %% sample nu [legacy sample_nu -> bvt.sv.nu_studentt]
-    [nu, flag, fnu] = bvt.sv.nu_studentt(lam,nu,nuub);
+        %% sample nu [legacy sample_nu -> bvar.sv.nu_studentt]
+    [nu, flag, fnu] = bvar.sv.nu_studentt(lam,nu,nuub);
     countnu = countnu + flag;
 
     if isim > burnin
@@ -740,13 +740,13 @@ for isim = 1:nsims + burnin
     CSig = chol(Sig,'lower');
     A = Ahat + (chol(KA,'lower')'\randn(k,n))*CSig';
 
-        %% sample h [legacy sample_h -> bvt.sv.csv_armh]
+        %% sample h [legacy sample_h -> bvar.sv.csv_armh]
     U = shortY - X*A;
     Utld = Hpsi\U;
     tmp = (Utld/CSig');
     s2 = sum(tmp.^2,2);
     s2(1) = s2(1)/(1+psi^2);
-    [h, flag] = bvt.sv.csv_armh(s2,rho,sigh2,h,n);
+    [h, flag] = bvar.sv.csv_armh(s2,rho,sigh2,h,n);
     counth = counth + flag;
 
         %% sample sigh2
@@ -767,9 +767,9 @@ for isim = 1:nsims + burnin
         end
     end
 
-      %% sample psi [legacy llike_CSV_MA (ROOT copy) -> bvt.ml.llike_csv_ma]
+      %% sample psi [legacy llike_CSV_MA (ROOT copy) -> bvar.ml.llike_csv_ma]
     U = shortY - X*A;
-    lp_psi = @(x) bvt.ml.llike_csv_ma(x,U,Sig,h) + lpri_psi(x);
+    lp_psi = @(x) bvar.ml.llike_csv_ma(x,U,Sig,h) + lpri_psi(x);
     if (mod(isim,100)==0) || isim == 1 %% get the Hessian every 100 iterations
         [psihat,fval,exitflag,output,grad,hess] ...
             = fminunc(@(x)-lp_psi(x),psihat,options);   %#ok<ASGLU>
@@ -896,11 +896,11 @@ for isim = 1:nsims + burnin
     s2_lam = sum(tmp.^2,2)./exp(h);
     lam = 1./gamrnd((n+nu)/2,2./(s2_lam+nu));
 
-        % sample h [legacy sample_h -> bvt.sv.csv_armh; note: reuses `tmp`
+        % sample h [legacy sample_h -> bvar.sv.csv_armh; note: reuses `tmp`
         % from the lam step with the NEW lam - verbatim]
     s2_h = sum(tmp.^2,2)./lam;
     s2_h(1) = s2_h(1)/(1+psi^2);
-    [h, flag] = bvt.sv.csv_armh(s2_h,rho,sigh2,h,n);
+    [h, flag] = bvar.sv.csv_armh(s2_h,rho,sigh2,h,n);
     count_h = count_h + flag;
 
         % sample sigh2
@@ -921,9 +921,9 @@ for isim = 1:nsims + burnin
         end
     end
 
-        % sample psi [legacy llike_CSV_MA (ROOT copy) -> bvt.ml.llike_csv_ma]
+        % sample psi [legacy llike_CSV_MA (ROOT copy) -> bvar.ml.llike_csv_ma]
     U_psi = U./repmat(sqrt(lam),1,n);
-    lp_psi = @(x) bvt.ml.llike_csv_ma(x,U_psi,Sig,h) + lpri_psi(x);
+    lp_psi = @(x) bvar.ml.llike_csv_ma(x,U_psi,Sig,h) + lpri_psi(x);
     if (mod(isim,100)==0) || isim == 1 %% get the Hessian every 100 iterations
         [psihat,fval,exitflag,output,grad,hess] ...
             = fminunc(@(x)-lp_psi(x),psihat,options);   %#ok<ASGLU>
@@ -949,8 +949,8 @@ for isim = 1:nsims + burnin
         Hpsi = speye(T) + psi*sparse(2:T,1:(T-1),ones(1,T-1),T,T);
     end
 
-        % sample nu [legacy sample_nu -> bvt.sv.nu_studentt]
-    [nu,flag,fnu] = bvt.sv.nu_studentt(lam,nu,nuub);
+        % sample nu [legacy sample_nu -> bvar.sv.nu_studentt]
+    [nu,flag,fnu] = bvar.sv.nu_studentt(lam,nu,nuub);
     count_nu = count_nu + flag;
 
     if isim > burnin

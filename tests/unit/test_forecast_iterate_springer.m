@@ -3,10 +3,10 @@ function test_forecast_iterate_springer
 % FORECAST pipeline with the legacy workspace scripts of
 % chan2020_springer_largebvar, primed exactly as main_forecasting.m primes
 % them for one real-time vintage t and run at small nsims from tempdir copies:
-%   model 2  forecast_BVAR_Minn.m     -> bvt.priors.minn      + iterate('springer_gauss')
-%   model 6  forecast_BVAR_CSV.m      -> bvt.priors.niw('largebvar_nc') +
-%                                        bvt.sv.csv_armh      + iterate('springer_csv')
-%   model 7  forecast_BVAR_CSV_t.m    -> + bvt.sv.nu_studentt + iterate('springer_csv_t')
+%   model 2  forecast_BVAR_Minn.m     -> bvar.priors.minn      + iterate('springer_gauss')
+%   model 6  forecast_BVAR_CSV.m      -> bvar.priors.niw('largebvar_nc') +
+%                                        bvar.sv.csv_armh      + iterate('springer_csv')
+%   model 7  forecast_BVAR_CSV_t.m    -> + bvar.sv.nu_studentt + iterate('springer_csv_t')
 %   model 8  forecast_BVAR_CSV_t_MA.m -> + inline psi-MH      + iterate('springer_csv_t_ma')
 % Model 2 runs at TWO vintages - one with the latest observation missing
 % (is_last_miss true: the extra pre-step simulation draw) and one without -
@@ -19,13 +19,13 @@ function test_forecast_iterate_springer
 % The 20-file vintage xlsread (main_forecasting.m lines 34-53) is slow, so it
 % runs ONCE and is cached to a .mat inside the tempdir; the vintage assembly
 % itself doubles as the first real-vintage verification of
-% bvt.forecast.realtime_loaddata against the legacy loaddata.m copy.
+% bvar.forecast.realtime_loaddata against the legacy loaddata.m copy.
 %
 % Estimation blocks with no core counterpart yet (the per-model conditional
 % draws: iwishrnd Sig/A, lam/sigh2 gamrnd, the rho and psi MH steps) are
 % kept VERBATIM inside run_core_* below - this test certifies the forecast
 % engine; those blocks belong to the springer family pass.
-root = getappdata(0, 'bvt_repo_root');
+root = getappdata(0, 'bvar_repo_root');
 leg = fullfile(root, 'replications', 'chan2020_springer_largebvar', 'legacy');
 
 tmpdir = tempname; mkdir(tmpdir);
@@ -86,7 +86,7 @@ end
     % verifying core realtime_loaddata against the legacy loaddata copy as we go
 t_miss = []; t_nomiss = [];
 for t = T0:T
-    [dtc, dkc] = bvt.forecast.realtime_loaddata(rt_data, nonrev_data, t, T0, tcode, var_type);
+    [dtc, dkc] = bvar.forecast.realtime_loaddata(rt_data, nonrev_data, t, T0, tcode, var_type);
     [dtl, dkl] = loaddata(rt_data, nonrev_data, t, T0, tcode, var_type);   % tempdir legacy copy
     assert(isequaln(dtc, dtl) && isequaln(dkc, dkl), ...
         'realtime_loaddata differs from legacy loaddata at t=%d', t);
@@ -136,7 +136,7 @@ end
 function D = add_vintage(D, rt_data, nonrev_data, t)
 % per-vintage assembly, verbatim main_forecasting.m lines 104-119 (both sides
 % receive the SAME precomputed panel; the assembly itself has no rng calls)
-[data_t, data_tpk] = bvt.forecast.realtime_loaddata(rt_data, nonrev_data, ...
+[data_t, data_tpk] = bvar.forecast.realtime_loaddata(rt_data, nonrev_data, ...
     t, D.T0, D.tcode, D.var_type);
 is_last_miss = (sum(isnan(data_t(end, :)), 2) > 0);
 if is_last_miss
@@ -189,16 +189,16 @@ cfg = struct('shortYt', D.shortYt, 'data_tpk', D.data_tpk, ...
 end
 
 function out = run_core_minn(D, nsims, burnin, seed)
-% functionized model 2 [forecast_BVAR_Minn.m]: bvt.priors.minn +
-% bvt.util.surform2, forecast via iterate('springer_gauss')
+% functionized model 2 [forecast_BVAR_Minn.m]: bvar.priors.minn +
+% bvar.util.surform2, forecast via iterate('springer_gauss')
 n = D.n; p = D.p; k = D.k; Y0 = D.Y0; shortYt = D.shortYt; Tt = D.Tt;
 rng(seed, 'twister');
 Yt = reshape(shortYt', n*Tt, 1);
 tmpyhat0 = zeros(nsims, 2*n+1);
 tmpyhat1 = zeros(nsims, 2*n+1);
-[beta_Minn, V_Minn, Sig_hat] = bvt.priors.minn(p, D.c1, D.c2, D.c3, Y0, shortYt, p);  % legacy prior_Minn
-[~, Z] = bvt.util.build_lags([Y0(end-p+1:end, :); shortYt], p);
-X = bvt.util.surform2(Z, n);                            % legacy SURform2
+[beta_Minn, V_Minn, Sig_hat] = bvar.priors.minn(p, D.c1, D.c2, D.c3, Y0, shortYt, p);  % legacy prior_Minn
+[~, Z] = bvar.util.build_lags([Y0(end-p+1:end, :); shortYt], p);
+X = bvar.util.surform2(Z, n);                            % legacy SURform2
 XiSig = X'*kron(speye(Tt), sparse(1:n, 1:n, 1./Sig_hat));
 Kbeta = sparse(1:n*k, 1:n*k, 1./V_Minn) + XiSig*X;
 C_Kbeta = chol(Kbeta, 'lower');
@@ -210,7 +210,7 @@ for isim = 1:nsims + burnin
     if isim > burnin
         isave = isim - burnin;
         A = reshape(beta, k, n);                        % legacy line 35 (caller-side)
-        fcr = bvt.forecast.iterate('springer_gauss', ...
+        fcr = bvar.forecast.iterate('springer_gauss', ...
             struct('A', A, 'CSig', CSig, 'dSig', Sig_hat'), cfg);
         tmpyhat0(isave, :) = fcr(1, :);
         tmpyhat1(isave, :) = fcr(2, :);
@@ -221,16 +221,16 @@ out = struct('tmpyhat0', tmpyhat0, 'tmpyhat1', tmpyhat1, 'rngstate', s.State);
 end
 
 function out = run_core_csv(D, nsims, burnin, seed)
-% functionized model 6 [forecast_BVAR_CSV.m]: bvt.priors.niw('largebvar_nc') +
-% bvt.sv.csv_armh; the Sig/A, sigh2 and rho-MH draws stay verbatim inline
+% functionized model 6 [forecast_BVAR_CSV.m]: bvar.priors.niw('largebvar_nc') +
+% bvar.sv.csv_armh; the Sig/A, sigh2 and rho-MH draws stay verbatim inline
 % (springer family pass); forecast via iterate('springer_csv')
 n = D.n; p = D.p; k = D.k; Y0 = D.Y0; shortYt = D.shortYt; Tt = D.Tt;
 nuh0 = D.nuh0; Sh0 = D.Sh0; rho0 = D.rho0; Vrho = D.Vrho;
 rng(seed, 'twister');
 tmpyhat0 = zeros(nsims, 2*n+1);
 tmpyhat1 = zeros(nsims, 2*n+1);
-[A0, VA0, nu0, S0] = bvt.priors.niw(p, [D.c1 D.c2], Y0, shortYt, 'largebvar_nc');  % legacy prior_NC
-[~, Z] = bvt.util.build_lags([Y0(end-p+1:end, :); shortYt], p);
+[A0, VA0, nu0, S0] = bvar.priors.niw(p, [D.c1 D.c2], Y0, shortYt, 'largebvar_nc');  % legacy prior_NC
+[~, Z] = bvar.util.build_lags([Y0(end-p+1:end, :); shortYt], p);
 h = zeros(Tt, 1);
 rho = .8;
 sigh2 = .1;
@@ -251,7 +251,7 @@ for isim = 1:nsims + burnin
     U = shortYt - Z*A;
     tmph = (U/CSig');
     s2_h = sum(tmph.^2, 2);
-    h = bvt.sv.csv_armh(s2_h, rho, sigh2, h, n);        % legacy sample_h
+    h = bvar.sv.csv_armh(s2_h, rho, sigh2, h, n);        % legacy sample_h
         % sample sigh2 [lines 49-50]
     eh = [h(1)*sqrt(1-rho^2);  h(2:end)-rho*h(1:end-1)];
     sigh2 = 1/gamrnd(nuh0+Tt/2, 1/(Sh0 + sum(eh.^2)/2));
@@ -268,7 +268,7 @@ for isim = 1:nsims + burnin
     end
     if isim > burnin
         isave = isim - burnin;
-        fcr = bvt.forecast.iterate('springer_csv', ...
+        fcr = bvar.forecast.iterate('springer_csv', ...
             struct('A', A, 'CSig', CSig, 'Sig', Sig, 'h', h, 'rho', rho, 'sigh2', sigh2), cfg);
         tmpyhat0(isave, :) = fcr(1, :);
         tmpyhat1(isave, :) = fcr(2, :);
@@ -280,15 +280,15 @@ end
 
 function out = run_core_csv_t(D, nsims, burnin, seed)
 % functionized model 7 [forecast_BVAR_CSV_t.m]: adds the lam gamrnd draw and
-% bvt.sv.nu_studentt (legacy sample_nu); rho bound .99 here (CSV uses .999);
+% bvar.sv.nu_studentt (legacy sample_nu); rho bound .99 here (CSV uses .999);
 % forecast via iterate('springer_csv_t')
 n = D.n; p = D.p; k = D.k; Y0 = D.Y0; shortYt = D.shortYt; Tt = D.Tt;
 nuh0 = D.nuh0; Sh0 = D.Sh0; rho0 = D.rho0; Vrho = D.Vrho; nuub = D.nuub;
 rng(seed, 'twister');
 tmpyhat0 = zeros(nsims, 2*n+1);
 tmpyhat1 = zeros(nsims, 2*n+1);
-[A0, VA0, nu0, S0] = bvt.priors.niw(p, [D.c1 D.c2], Y0, shortYt, 'largebvar_nc');
-[~, Z] = bvt.util.build_lags([Y0(end-p+1:end, :); shortYt], p);
+[A0, VA0, nu0, S0] = bvar.priors.niw(p, [D.c1 D.c2], Y0, shortYt, 'largebvar_nc');
+[~, Z] = bvar.util.build_lags([Y0(end-p+1:end, :); shortYt], p);
 h = zeros(Tt, 1);
 nu = 5;
 rho = .8;
@@ -311,14 +311,14 @@ for isim = 1:nsims + burnin
     U = shortYt - Z*A;
     tmph = (U/CSig');
     s2_h = sum(tmph.^2, 2)./lam;
-    h = bvt.sv.csv_armh(s2_h, rho, sigh2, h, n);
+    h = bvar.sv.csv_armh(s2_h, rho, sigh2, h, n);
         % sample lam [lines 50-53]
     U = shortYt - Z*A;
     tmph = (U/CSig');
     s2 = sum(tmph.^2, 2)./exp(h);
     lam = 1./gamrnd((n+nu)/2, 2./(s2+nu));
         % sample nu [line 56]
-    nu = bvt.sv.nu_studentt(lam, nu, nuub);             % legacy sample_nu
+    nu = bvar.sv.nu_studentt(lam, nu, nuub);             % legacy sample_nu
         % sample sigh2 [lines 59-60]
     eh = [h(1)*sqrt(1-rho^2);  h(2:end)-rho*h(1:end-1)];
     sigh2 = 1/gamrnd(nuh0+Tt/2, 1/(Sh0 + sum(eh.^2)/2));
@@ -335,7 +335,7 @@ for isim = 1:nsims + burnin
     end
     if isim > burnin
         isave = isim - burnin;
-        fcr = bvt.forecast.iterate('springer_csv_t', ...
+        fcr = bvar.forecast.iterate('springer_csv_t', ...
             struct('A', A, 'CSig', CSig, 'Sig', Sig, 'h', h, 'rho', rho, ...
             'sigh2', sigh2, 'nu', nu), cfg);
         tmpyhat0(isave, :) = fcr(1, :);
@@ -358,8 +358,8 @@ lpri_psi = D.lpri_psi;
 rng(seed, 'twister');
 tmpyhat0 = zeros(nsims, 2*n+1);
 tmpyhat1 = zeros(nsims, 2*n+1);
-[A0, VA0, nu0, S0] = bvt.priors.niw(p, [D.c1 D.c2], Y0, shortYt, 'largebvar_nc');
-[~, Z] = bvt.util.build_lags([Y0(end-p+1:end, :); shortYt], p);
+[A0, VA0, nu0, S0] = bvar.priors.niw(p, [D.c1 D.c2], Y0, shortYt, 'largebvar_nc');
+[~, Z] = bvar.util.build_lags([Y0(end-p+1:end, :); shortYt], p);
 h = zeros(Tt, 1);
 nu = 5;
 rho = .8;
@@ -394,7 +394,7 @@ for isim = 1:nsims + burnin
         % sample h [lines 56-58]
     s2_h = sum(tmph.^2, 2)./lam;
     s2_h(1) = s2_h(1)/(1+psi^2);
-    h = bvt.sv.csv_armh(s2_h, rho, sigh2, h, n);
+    h = bvar.sv.csv_armh(s2_h, rho, sigh2, h, n);
         % sample sigh2 [lines 61-62]
     eh = [h(1)*sqrt(1-rho^2);  h(2:end)-rho*h(1:end-1)];
     sigh2 = 1/gamrnd(nuh0+Tt/2, 1/(Sh0 + sum(eh.^2)/2));
@@ -436,10 +436,10 @@ for isim = 1:nsims + burnin
         Hpsi = speye(Tt) + psi*sparse(2:Tt, 1:(Tt-1), ones(1, Tt-1), Tt, Tt);
     end
         % sample nu [line 105]
-    nu = bvt.sv.nu_studentt(lam, nu, nuub);
+    nu = bvar.sv.nu_studentt(lam, nu, nuub);
     if isim > burnin
         isave = isim - burnin;
-        fcr = bvt.forecast.iterate('springer_csv_t_ma', ...
+        fcr = bvar.forecast.iterate('springer_csv_t_ma', ...
             struct('A', A, 'CSig', CSig, 'Sig', Sig, 'h', h, 'rho', rho, ...
             'sigh2', sigh2, 'nu', nu, 'psi', psi, 'Hpsi', Hpsi), cfg);
         tmpyhat0(isave, :) = fcr(1, :);
