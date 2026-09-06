@@ -28,7 +28,8 @@ legacy copy in `tests/unit/` (stochastic functions compared draw-for-draw under 
 
 New functions with no legacy counterpart (behavior fixed by unit tests only):
 `bvar.util.build_lags` (codifies the inline `Z=[1, lags]` construction repeated in every
-package - test reproduces the inline pattern exactly), `bvar.util.logsumexp`.
+package - test reproduces the inline pattern exactly), `bvar.util.logsumexp`,
+`bvar.samplers.eq_var_oi` (2026-09-06; see the note at the end of this file).
 
 Edits made during extraction, in full: provenance header prepended; function renamed where
 the table says so (surform, surform2, init_approx1N, realtime_loaddata, heatmap_fx). Bodies
@@ -739,6 +740,14 @@ A future deduplication must not unify any of these; doing so silently changes pu
   so rows 1..ii-1 carry B0(j,ii) = 0 and contribute nothing) and adds `iValpi*alpi0`. Same
   conditional posterior in the triangular case, different dimensions and floating-point path;
   and the OISV B0 is NOT triangular, so its truncation would be wrong there. Keep separate.
+- **`eq_var_oi` vs `eq_svar_oi`**: the SAME conditional, deliberately kept as two functions.
+  `eq_svar_oi` is the verbatim CKY24 block and the bitwise anchor of the OISV replication -
+  it must never be edited for speed. `eq_var_oi` (new 2026-09-06) computes the same draw
+  with the same rng consumption in `O(T k^2 + k^3)` per equation instead of
+  `O(T n k^2 + k^3)`, by summing the per-equation precision weights rather than stacking
+  `kron(B0(:,ii),X)`; the `k^3` Cholesky is common to both. Use
+  `eq_var_oi` in new code, `eq_svar_oi` when reproducing CKY24 draw-for-draw. Equivalence
+  and the speed ratio: `tests/unit/test_eq_var_oi.m`.
 - **`anormrnd.m` vs `tnormrnd.m`**: anormrnd is the OISV bimodal two-component draw for the
   first B0 rotation coordinate (one rand + one randn); tnormrnd is an inverse-cdf truncated
   normal. Same "restricted normal draw" vibe, entirely different densities and rng
@@ -896,3 +905,54 @@ corrections are also smaller than the estimator's own seed-to-seed Monte Carlo s
 (model 8's bugcompat ML varies by 4.2 points across the two seeds), i.e. the defects move
 these marginal likelihoods by less than the noise already inherent in reporting them. The
 model-7 control confirms the flag is a bitwise no-op where no defect exists.
+
+## New core function (2026-09-06): `bvar.samplers.eq_var_oi`
+
+Canonicalizes no legacy file; it is new code, and `eq_svar_oi` is untouched.
+
+**What it is.** The equation-by-equation draw of the reduced-form VAR coefficients `A` in
+the order-invariant VAR-SV model - the same conditional as `bvar.samplers.eq_svar_oi`, the
+same rng consumption (`randn(k,1)` per equation, equations in order), hence the same draw
+under a common seed.
+
+**Why it exists.** Column `ii` of `A` enters structural equation `j` with the coefficient
+`B0(j,ii)`, so its conditional precision collapses to a single weighted cross-product,
+`X' diag(w) X` with `w_t = sum_j B0(j,ii)^2 exp(-h_jt)` - `O(T k^2)`. The legacy block
+`eq_svar_oi` reproduces instead writes the system as a generic stacked SUR,
+`Wi = kron(B0(:,ii),X)./Lambda`, a dense `(T n) x k` matrix, and forms `Wi'*Wi` - `O(T n k^2)`,
+the factor `n` being the redundancy of stacking the same `X` once per structural equation.
+Both then factor the same `k x k` precision, so the per-equation cost is `O(T k^2 + k^3)`
+against `O(T n k^2 + k^3)`.
+
+**Measured** on R2025b (Windows 11), median of repeated warm sweeps over the `n` equations,
+on an otherwise loaded machine:
+
+| n | T | p | k | `eq_svar_oi` | `eq_var_oi` | ratio |
+|---|---|---|---|---|---|---|
+| 6 | 500 | 1 | 7 | 0.0007 s | 0.0002 s | 2.8x |
+| 20 | 300 | 4 | 81 | 0.0522 s | 0.0045 s | 11.5x |
+| 24 | 241 | 4 | 97 | 0.0737 s | 0.0057 s | 12.9x |
+| 30 | 241 | 12 | 361 | 0.8157 s | 0.0681 s | 12.0x |
+
+Treat these as an order of magnitude, not as constants: repeated runs of the unit test on
+the same machine give ratios between 9x and 20x at the `n = 24` row, depending on load, and
+absolute times vary with it. The ratio does not approach the nominal `n`, and is not
+monotone in `n`, because both functions pay the same `O(k^3)` Cholesky per equation, which
+the change does not touch and which grows relative to the rest as `k` rises against `T` -
+at the last row `k^3` already exceeds `T k^2`. The unit test asserts only that the ratio
+stays above 3x, which is a floor the stacked form cannot reach.
+
+**Naming.** "svar" in `eq_svar_oi` is inherited from the legacy file `SVARSV_MH.m` and
+refers to the structural parameterization of the error covariance, not to what is drawn:
+both functions draw the reduced-form coefficients `A`. The new name follows
+`eq_var_redu_tri`.
+
+**Verified.** `tests/unit/test_eq_var_oi.m`: seeded agreement with `eq_svar_oi` to
+`< 1e-12` relative across four shapes (`n` = 3, 6, 10, 24) with non-diagonal `B0`,
+heterogeneous log-variances and heterogeneous prior variances (measured 4e-16 to 2e-15),
+plus identical terminal rng state, a guard that every column is redrawn, an exactness check
+on the prior-mean reparameterization the header documents, the three input guards, and the
+3x speed floor. Mutation-checked: `B0(ii,:)` for `B0(:,ii)`, a dropped prior term, a
+missing `A(:,ii) = 0`, a reversed equation order, a transposed `B0`, a wrong `tmpdV` block,
+a wrong Cholesky solve, and an extra `randn` are each killed at the first shape.
+First consumer: an out-of-tree clustered stochastic volatility VAR sampler.

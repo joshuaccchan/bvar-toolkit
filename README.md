@@ -64,13 +64,15 @@ factored into one function each.
 They are not rewrites. Each function's body is taken from a specific published package,
 and a unit test runs the original code alongside it and requires identical output — draw
 for draw, bitwise, under a fixed seed. Calling `bvar.sv.ksc_rw_h0` runs the computation
-the paper ran.
+the paper ran. A small number of functions are new code rather than extractions — they are
+marked as such in their headers and listed in `tests/variant_map.md`, and are pinned
+instead to the inline spelling they generalize.
 
 | Namespace | What it is for |
 |---|---|
 | `bvar.priors` | Building priors. `resid_var_ar4`, `minnesota_C` and `vtheta` compute the Minnesota scaling every prior here rests on; `minn`, `niw` and `acp_stru`/`acp_redu` are the prior constructors themselves — Minnesota, natural conjugate, and the asymmetric conjugate prior of Chan (2022) whose marginal likelihood is available in closed form. |
 | `bvar.sv` | Drawing stochastic volatility. The `ksc_*` functions are the Kim–Shephard–Chib auxiliary-mixture sampler, one per state equation (random walk with a known initial value, random walk with a diffuse one, stationary AR(1)); `csv_armh` draws a single common volatility factor; `sv_params` and `nu_studentt` draw the parameters governing them. |
-| `bvar.samplers` | Drawing everything else in the Gibbs loop: VAR coefficients equation by equation (`eq_gauss` for the structural form, `eq_var_redu_tri` and `eq_svar_oi` for the reduced form, `eq_tri_cs` for the Cholesky benchmark), the factor blocks (`factor_fsv`, `eq_fsv_load`), `eq_hyb_tvp` for the hybrid TVP-VAR, where each equation's coefficients are drawn jointly with the indicators that decide whether they vary at all, and the hierarchical shrinkage blocks (`gig_shrinkage`, `horseshoe_kappa_psi`, `nu_psi_ng`). |
+| `bvar.samplers` | Drawing everything else in the Gibbs loop: VAR coefficients equation by equation (`eq_gauss` for the structural form, `eq_var_redu_tri` and `eq_svar_oi` for the reduced form, `eq_var_oi` for the same order-invariant conditional as `eq_svar_oi` at `O(T k^2 + k^3)` per equation instead of `O(T n k^2 + k^3)`, `eq_tri_cs` for the Cholesky benchmark), the factor blocks (`factor_fsv`, `eq_fsv_load`), `eq_hyb_tvp` for the hybrid TVP-VAR, where each equation's coefficients are drawn jointly with the indicators that decide whether they vary at all, and the hierarchical shrinkage blocks (`gig_shrinkage`, `horseshoe_kappa_psi`, `nu_psi_ng`). |
 | `bvar.forecast` | Producing forecasts from a chain. `iterate` runs one draw forward and scores it, `tables` accumulates RMSFEs and log predictive likelihoods, `realtime_loaddata` assembles a real-time data vintage. |
 | `bvar.structural` | Contemporaneous structure: `construct_Sigt` builds the time-varying covariance from the impact matrix, `b0_row_sampler` draws that matrix row by row for the order-invariant model. |
 | `bvar.ml` | Marginal likelihoods, for model comparison. Chib's method for the VARs with non-Gaussian, heteroscedastic and serially dependent innovations of Chan (2020), adaptive importance sampling for the stochastic volatility specifications of Chan (2023), plus the integrated-likelihood evaluators and log densities they share. |
@@ -90,9 +92,13 @@ BVAR with stochastic volatility assembled from core blocks. See `examples/README
 
 ## Verification
 
-Every core function is covered by a unit test that runs the corresponding legacy code and
-requires exact agreement — bitwise, draw-for-draw under a fixed seed for the stochastic ones.
-The functionized drivers are tested the same way against the original scripts in full.
+Every core function extracted from a published package is covered by a unit test that runs
+the corresponding legacy code and requires exact agreement — bitwise, draw-for-draw under a
+fixed seed for the stochastic ones. The functionized drivers are tested the same way against
+the original scripts in full. The few functions that are new code, listed under new
+functions in `tests/variant_map.md`, have no legacy counterpart to run: they are tested
+against the inline expression they replace, to floating-point rather than bitwise agreement,
+and `eq_var_oi` additionally against the published block it computes more cheaply.
 
 ```matlab
 run tests/unit/run_unit_tests.m
