@@ -10,9 +10,11 @@ cd examples
 ex03_minnesota_bvar         % a small BVAR, start to finish
 ```
 
-Requirements: MATLAB with the Statistics and Machine Learning Toolbox. A few replication
-drivers also want Optimization (`fminunc`) or System Identification; `setup.m` warns about
-what is missing.
+Requirements: MATLAB with the Statistics and Machine Learning Toolbox, which nearly every
+sampler needs. The Optimization Toolbox is needed by the marginal-likelihood functions for
+the MA-error models in `bvar.ml`, and by two replication drivers; the System Identification
+Toolbox by one replication driver only. `setup.m` checks all three and names what each
+missing one will break.
 
 For the methods behind the code, see the book *Bayesian Macroeconometrics: Methods and
 Applications* (Chapman & Hall/CRC, forthcoming) —
@@ -100,11 +102,18 @@ run tests/unit/run_unit_tests.m
 forecast metric tables and figures they print), with `tests/golden_runs/manifest.md` recording
 what was run, how long it took, and which scripts do not run as shipped.
 
-Three marginal-likelihood scripts in the Chan (2020, JBES) package evaluate an ordinate at a leftover
-chain value where the posterior mean is intended. The core functions fix this by default and
-reproduce the published computation under `'bugcompat', true`; the corrections change the
-reported values by at most 2.45 log points and do not affect the paper's model ranking. The
-audit and the full comparison are in `tests/variant_map.md`.
+Two of the marginal-likelihood scripts in the Chan (2020, JBES) package — for models 4 and 8 —
+contain three places between them where a value left over from the estimation loop is used
+where the computation calls for a freshly evaluated one. The core functions compute the
+intended quantity by default and reproduce the published computation bitwise under
+`'bugcompat', true`.
+
+The VAR-SVO marginal likelihood in the Chan (2023, JoE) package has three defects of its own,
+all in its outlier block. `bvar.ml.mlvarsv_arsvo_redu` takes the same approach — corrected by
+default, `'bugcompat', true` to reproduce the original — and `run_ml` prints which computation
+produced the number.
+
+Both audits are in `tests/variant_map.md`, with the full comparison for the 2020 package.
 
 ## Citation
 

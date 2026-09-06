@@ -1,120 +1,46 @@
-# bvar-toolkit
+# Examples
 
-MATLAB code for large Bayesian VARs by [Joshua Chan](https://joshuachan.org) — the packages
-distributed at [joshuachan.org/code.html](https://joshuachan.org/code.html), consolidated into a
-documented library with the original code preserved verbatim alongside it.
+Five short scripts that build up from the one computational idea the toolkit rests on to a
+full model comparison. They are teaching material, not replications: each works on data small
+enough that you can check the numbers against the truth, and each prints its reasoning as it
+goes. For reproducing a published table, use `replications/<paper>/` instead.
+
+Every script puts the toolkit on the path itself, so any of them runs from a clean session:
 
 ```matlab
-run setup.m                 % adds core/ and third_party/ to the path
 cd examples
-ex03_minnesota_bvar         % a small BVAR, start to finish
+ex01_precision_sampler
 ```
 
-Requirements: MATLAB with the Statistics and Machine Learning Toolbox. A few replication
-drivers also want Optimization (`fminunc`) or System Identification; `setup.m` warns about
-what is missing.
+Read them in order. Each one uses what the last one built.
 
-For the methods behind the code, see the book *Bayesian Macroeconometrics: Methods and
-Applications* (Chapman & Hall/CRC, forthcoming) —
-[sample chapters](https://joshuachan.org/papers/BayesMacroBook_sample.pdf) and
-[its own code repository](https://github.com/joshuaccchan/bayesian-macroeconometrics), with
-MATLAB, R and Python for all fourteen chapters. Each example in `examples/` names the chapter
-that develops it.
-
-## Two ways to use this repo
-
-**Reproduce a paper.** Every package is here exactly as published, never edited, under
-`replications/<paper>/legacy/`, with a permanent `as-published/<paper>` git tag and the source
-zip's md5 recorded in `provenance.md`. Run those files as you would the original download.
-
-**Build on the code.** The samplers, priors, and forecasting machinery are factored into the
-`bvar` package under `core/`, each function tested to reproduce its legacy counterpart
-draw-for-draw under a fixed seed. Call the blocks directly, or copy the nearest `run_all.m` as
-a template.
-
-## Which model do I want?
-
-| If you want | Paper | Folder | Driver |
+| | Script | What it teaches | Runs in |
 |---|---|---|---|
-| Shrinkage priors for a large BVAR (the default choice) | Chan (2021, IJF) | `chan2021_ijf_mahp` | `run_all('MNG',…)` |
-| A VAR-SV that does not depend on variable ordering | Chan, Koop & Yu (2024, JBES) | `chan_koop_yu2024_jbes_oisv` | `run_all('OI',…)` |
-| Non-Gaussian / serially dependent errors, and marginal likelihoods | Chan (2020, JBES) | `chan2020_jbes_kronecker` | `run_all`, `run_ml` |
-| Asymmetric conjugate prior, closed-form ML, sign restrictions | Chan (2022, QE) | `chan2022_qe_acp` | legacy only |
-| Which SV specification for a large VAR? | Chan (2023, JoE) | `chan2023_joe_mlvarsv` | `run_all('VAR-SV',…)`, `run_ml` |
-| Time-varying parameters, decided per equation | Chan (2023, JBES) | `chan2023_jbes_hybtvp` | legacy only |
-| Forecast comparison across priors and volatility models | Chan (2020, Springer) | `chan2020_springer_largebvar` | legacy only |
-| The precision sampler for state space models | Chan & Jeliazkov (2009) | `chan_jeliazkov2009_statespace` | legacy only |
-| Prior sensitivity by automatic differentiation | Chan, Jacobi & Zhu (2019/2020/2022) | `cjz2018_ad_var`, `cjz2019_ad_opthyper`, `cjz2021_jae_ad_ml` | legacy only |
+| 1 | `ex01_precision_sampler.m` | Drawing an entire state path in one block, with no filtering recursion — the Chan–Jeliazkov (2009) precision sampler. Derives it from the banded precision matrix, checks the draws against the Kalman smoother, and shows the sparse structure that makes it linear in *T*. | 11 s |
+| 2 | `ex02_sv_ksc.m` | Stochastic volatility by the Kim–Shephard–Chib auxiliary mixture: how squaring and logging the data turns a nonlinear model into the linear Gaussian one ex01 already solves, and what the seven-component mixture is for. | 5 s |
+| 3 | `ex03_minnesota_bvar.m` | A small BVAR end to end with a Minnesota / natural-conjugate prior — how the prior is built, what the shrinkage hyperparameter does, and why the natural-conjugate restriction yields an analytic posterior. No MCMC: samples are directly drawn from the posterior. | 3 s |
+| 4 | `ex04_bvar_sv_blocks.m` | Assembling a reduced-form BVAR with stochastic volatility from core blocks, drawn equation by equation — the sampler of `VAR_ARSV_redu.m` from Chan (2023, JoE), on simulated data with the truth known. | 4 s |
+| 5 | `ex05_marginal_likelihood.m` | Marginal likelihoods and model comparison: the three pieces of Chib's identity, why the posterior ordinate is *subtracted* (the Ockham factor), and a three-model comparison from Chan (2020, JBES). | 1 s |
 
-"Legacy only" means the package has not been functionized yet — the original code is there and
-runs; a `run_all.m` will follow. Full citations are in `provenance.md`.
+Timings are from one warm R2025b session on a desktop machine; treat them as orders of
+magnitude. The first four each draw figures as well as printing.
 
-## The `bvar` library
+## What each one exercises
 
-A Bayesian VAR is estimated using Markov chain Monte Carlo by cycling through a handful of
-conditional draws: build the prior, draw the coefficients, draw the volatilities, draw the
-shrinkage hyperparameters, forecast. Across the twelve packages those steps were written
-out again and again — the same auxiliary-mixture volatility sampler appears in eight of
-them, under four names. `bvar` is those steps factored into one function each.
+Useful if you are looking for a worked call of a particular core function.
 
-They are not rewrites. Each function's body comes from a specific published package, and a
-unit test runs the original code beside it and requires the same numbers — bitwise, and
-draw-for-draw under a fixed seed for anything stochastic. Calling `bvar.sv.ksc_rw_h0` runs
-the computation the paper ran.
+| Script | Core functions called | Data |
+|---|---|---|
+| ex01 | `bvar.util.surform` — the precision sampler itself is written out line by line, since deriving it is the point | simulated |
+| ex02 | `bvar.sv.ksc_rw_h0` | simulated |
+| ex03 | `bvar.priors.minn`, `bvar.priors.niw`, `bvar.priors.resid_var_ar4`, `bvar.util.build_lags` | `replications/chan2020_jbes_kronecker/legacy/data_Q.csv`, read-only |
+| ex04 | `bvar.priors.minn`, `bvar.priors.impact_B0`, `bvar.samplers.alp_tri_cs`, `bvar.sv.ksc_ar1_mean`, `bvar.sv.sv_params`, `bvar.sv.init_approx1N`, `bvar.util.build_lags`, `bvar.util.vec` | simulated |
+| ex05 | `replications/chan2020_jbes_kronecker/run_ml.m`, which calls the `bvar.ml.*` evaluators | that package's `data_Q.csv` |
 
-| Namespace | What it is for |
-|---|---|
-| `bvar.priors` | Building priors. `resid_var_ar4`, `minnesota_C` and `vtheta` compute the Minnesota scaling every prior here rests on; `minn`, `niw` and `acp_stru`/`acp_redu` are the prior constructors themselves — Minnesota, natural conjugate, and the asymmetric conjugate prior of Chan (2022) whose marginal likelihood is available in closed form. |
-| `bvar.sv` | Drawing stochastic volatility. The `ksc_*` functions are the Kim–Shephard–Chib auxiliary-mixture sampler, one per state equation (random walk with a known initial value, random walk with a diffuse one, stationary AR(1)); `csv_armh` draws a single common volatility factor; `sv_params` and `nu_studentt` draw the parameters governing them. |
-| `bvar.samplers` | Drawing everything else in the Gibbs loop: VAR coefficients equation by equation (`eq_gauss` for the structural form, `eq_var_redu_tri` and `eq_svar_oi` for the reduced form, `eq_tri_cs` for the Cholesky benchmark), the factor blocks (`factor_fsv`, `eq_fsv_load`), and the hierarchical shrinkage blocks (`gig_shrinkage`, `horseshoe_kappa_psi`, `nu_psi_ng`). |
-| `bvar.forecast` | Producing forecasts from a chain. `iterate` runs one draw forward and scores it, `tables` accumulates RMSFEs and log predictive likelihoods, `realtime_loaddata` assembles a real-time data vintage. |
-| `bvar.structural` | Contemporaneous structure: `construct_Sigt` builds the time-varying covariance from the impact matrix, `b0_row_sampler` draws that matrix row by row for the order-invariant model. |
-| `bvar.ml` | Marginal likelihoods, for model comparison. Chib's method for the Kronecker model family, adaptive importance sampling for the SV specifications, plus the integrated-likelihood evaluators and log densities they share. |
-| `bvar.util` | The small shared pieces: `build_lags` (the lag matrix, intercept first), `diffmat` (the state-equation difference matrix that makes the precision samplers banded), `surform`/`surform2` (two different sparse expansions — see their headers), `logsumexp`, `igrnd`, and a few one-liners. |
-
-Where two legacy versions of a step turned out to differ numerically, both survive under
-separate names rather than being merged: `ksc_rw_h0` and `ksc_rw_diffuse` are the same
-sampler under different initial conditions, `resid_var_ar4` and `resid_var_allvars_ridge`
-compute the same scaling from different regressions. `tests/variant_map.md` records for
-every function which legacy copies it stands in for, how that was checked, and a
-never-merge list of the pairs that must stay apart.
-
-## Examples
-
-`examples/` holds short scripts, each runnable in seconds, from the precision sampler up to a
-BVAR with stochastic volatility assembled from core blocks. See `examples/README.md`.
-
-## Verification
-
-Every core function is covered by a unit test that runs the corresponding legacy code and
-requires exact agreement — bitwise, draw-for-draw under a fixed seed for the stochastic ones.
-The functionized drivers are tested the same way against the original scripts in full.
-
-```matlab
-run tests/unit/run_unit_tests.m
-```
-
-`tests/golden/` holds captured output from the original packages (the log marginal likelihoods,
-forecast metric tables and figures they print), with `tests/golden_runs/manifest.md` recording
-what was run, how long it took, and which scripts do not run as shipped.
-
-Three marginal-likelihood scripts in the Kronecker package evaluate an ordinate at a leftover
-chain value where the posterior mean is intended. The core functions fix this by default and
-reproduce the published computation under `'bugcompat', true`; the corrections change the
-reported values by at most 2.45 log points and do not affect the paper's model ranking. The
-audit and the full comparison are in `tests/variant_map.md`.
-
-## Citation
-
-Cite the paper whose code you use — full references in `provenance.md`. For the toolkit itself:
-
-> Chan, J. C. C. *bvar-toolkit: MATLAB code for large Bayesian VARs*. https://github.com/joshuaccchan/bvar-toolkit
-
-## License
-
-MIT — see `LICENSE`. This relicenses the archived packages too: their original headers say
-"free to use for academic purposes only", wording preserved unaltered as part of the verbatim
-archive and superseded by the repository license. Citing the paper you use is expected
-scholarly practice, not a licensing condition. Third-party code keeps its own license — the
-files under `third_party/`, and the third-party files bundled inside some legacy packages
-(`gigrnd.m`, `EvalFore.m`, `heatmap.m`).
+We note two points about reading these scripts. First, ex01 and ex04 write out by hand what a
+core function would otherwise do in one call: the precision-sampler draw in ex01, and the
+equation-by-equation coefficient block in ex04. The construction is what these two scripts
+teach, and their headers name the packaged version to use in practice. Second, the settings in
+ex05 are far smaller than those of the published run, a few hundred draws against 30,000. The
+ranking of the three models is still informative, but the values are not those reported in
+the paper. The closing lines of that script give the settings for a full-length run.

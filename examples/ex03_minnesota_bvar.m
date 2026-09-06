@@ -24,7 +24,7 @@
 %       A | Sig ~ MN(A0, diag(VA0), Sig),  Sig ~ IW(nu0, S0). The prior
 %       variance c1/(l^2*sig2_j) drops the equation index i, which is exactly
 %       the restriction that buys the Kronecker structure - and with it an
-%       ANALYTIC posterior from which we draw directly, no MCMC at all.
+%       ANALYTIC posterior: samples are directly drawn from it, no MCMC at all.
 %
 % Both scale their hyperparameters by sig2, the residual variances of
 % univariate AR(4) fits (bvar.priors.resid_var_ar4). That is what makes a

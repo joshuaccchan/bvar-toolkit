@@ -1,0 +1,66 @@
+# The archived packages under replications/<slug>/legacy/ are the repository's
+# central promise: every one is the published code, byte for byte, never edited.
+# This job enforces it on every push and pull request.
+#
+# The check compares each legacy tree at HEAD against the as-published/<slug>
+# tag created when that package was imported. Nothing else is needed - no
+# checksum manifest to keep in sync, no MATLAB, no network. provenance.md
+# records the MD5 of each ORIGINAL ZIP, which anchors the tags to the files
+# distributed at joshuachan.org, but the zips are not in the repository, so the
+# tags are what a CI run can verify without re-downloading them.
+#
+# A package directory with no matching tag also fails: that is how a newly
+# imported package gets caught if its tag was never pushed.
+name: Legacy archives unmodified
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # full history and tags are needed for the comparison
+
+      - name: Every legacy archive must match its as-published tag
+        run: |
+          status=0
+          found=0
+          for dir in replications/*/legacy; do
+            [ -d "$dir" ] || continue
+            found=$((found + 1))
+            slug=$(basename "$(dirname "$dir")")
+            tag="as-published/$slug"
+            if ! git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+              echo "::error file=$dir::$slug has a legacy/ archive but no $tag tag - import incomplete, or the tag was not pushed"
+              status=1
+              continue
+            fi
+            if git diff --quiet "$tag" HEAD -- "$dir/"; then
+              echo "ok        $slug"
+            else
+              echo "::error file=$dir::$slug: the legacy archive differs from $tag - archived packages must never be edited"
+              git diff --name-status "$tag" HEAD -- "$dir/" | sed 's/^/            /'
+              status=1
+            fi
+          done
+
+          # A tag whose directory has gone missing is equally a break.
+          for tag in $(git tag -l 'as-published/*'); do
+            slug=${tag#as-published/}
+            if [ ! -d "replications/$slug/legacy" ]; then
+              echo "::error::$tag exists but replications/$slug/legacy/ does not"
+              status=1
+            fi
+          done
+
+          if [ "$found" -eq 0 ]; then
+            echo "::error::no replications/*/legacy directories found - the checkout looks wrong"
+            status=1
+          fi
+          echo "checked $found archived packages"
+          exit $status

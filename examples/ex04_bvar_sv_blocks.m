@@ -8,9 +8,9 @@
 % Specifications for Large Bayesian VARs"), on simulated data small enough to
 % check every number against the truth.
 %
-% THE MODEL. Unlike ex03's structural triangular form, the VAR here is written
-% in REDUCED form - each equation's regressors are lags only, no contemporaneous
-% variables:
+% THE MODEL. The VAR is in REDUCED form, exactly as in ex03 - each equation's
+% regressors are lags only, no contemporaneous variables - but with two additions
+% that change how it has to be drawn:
 %
 %       Y = X*A + E,        A is k x n,  k = 1 + n*p,  intercept first,
 %       B0*eps_t = u_t,     u_{it} ~ N(0, exp(h_{it})),
@@ -22,10 +22,16 @@
 % Var(eps_t) = B0^{-1} diag(exp(h_t)) B0^{-1}' - and it is the ORTHOGONALIZED
 % errors B0*eps_t that carry the n independent AR(1) stochastic volatilities.
 %
-% WHY THIS IS HARDER THAN ex03, AND WHY IT IS WORTH IT. In the structural form
-% of ex03/MAHP, conditioning on the log-volatilities makes the n equations
-% independent, so each equation is a self-contained weighted regression
-% (bvar.samplers.eq_gauss). Here A is a reduced-form object: change equation ii's
+% WHY THIS IS HARDER THAN ex03, AND WHY IT IS WORTH IT. ex03 draws its posterior
+% analytically, because the natural-conjugate prior keeps the Kronecker structure
+% and the errors are homoskedastic. Neither survives here: the n log-volatility
+% paths make the error variance time-varying and equation-specific, so no
+% Kronecker factorization is left and there is no closed form - the coefficients
+% have to be drawn in a sweep. Nor do the equations separate the way they do in
+% the structural form of MAHP (replications/chan2021_ijf_mahp), where
+% conditioning on the log-volatilities leaves each equation a self-contained
+% weighted regression (bvar.samplers.eq_gauss). Here A is a reduced-form object
+% carrying a triangular B0: change equation ii's
 % coefficients - column ii of A, see the layout note below - and you move the
 % orthogonalized errors of SEVERAL equations at once, because the
 % orthogonalization mixes them. The naive conditional for the whole of A is a
@@ -80,8 +86,9 @@
 %
 % A NAMING TRAP, worth two lines because it has caught people. In THIS paper's
 % code `alp` is vec(A), the VAR coefficients, and `beta` collects the free
-% elements of B0 - the opposite of the MAHP convention used in ex03 and in
-% bvar.priors.vtheta, where Vbeta holds the VAR coefficients and Valp the impact
+% elements of B0 - the opposite of the MAHP convention used in
+% replications/chan2021_ijf_mahp and in bvar.priors.vtheta, where Vbeta holds
+% the VAR coefficients and Valp the impact
 % matrix. The variable names below follow the ml_varsv legacy file, so the code
 % diffs line by line against it. Read the comments, not the letters.
 %
