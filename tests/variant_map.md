@@ -601,6 +601,57 @@ additions - and `c1`, the one line the o patch should have touched and did not).
   unlike the legacy ones, actually penalise implausible o - collapse. The published
   configuration (nsim = 10000) is the one that matters; see the adjudication below.
 
+## Canonicalized in step 11 (HYB family pass, 2026-09-05)
+
+`chan2023_jbes_hybtvp` (Chan 2023, JBES 41(3): 890-905) is the hybrid TVP-VAR: each
+equation decides separately whether its VAR coefficients and its impact-matrix elements
+are time-varying, so the four (gam^beta, gam^alpha) configurations are compared on
+marginal likelihoods with the states integrated out. Six of its nine utilities were
+already core before this pass; two more are extracted here, and `gigrnd.m` is the
+third-party copy.
+
+| core | legacy source | status | test |
+|---|---|---|---|
+| `bvar.samplers.eq_hyb_tvp` | `utility/sample_gam_thetai_ver2.m` (only copy) | body verbatim; the four `SURform` calls routed to `bvar.util.surform`, whose body is byte-identical (this package is its canonical source) | unit (whole-chain, draw-for-draw) |
+| `bvar.util.gam_mode` | `utility/get_gammode.m` (only copy) | body verbatim; renamed | unit (same) |
+| `bvar.util.surform` | `utility/SURform.m` | ALREADY canonical from this package (step 3) | - |
+| `bvar.priors.minnesota_C` | `utility/get_C.m` | already core (step 4); comment-stripped diff identical | - |
+| `bvar.priors.resid_var_allvars_ridge` | `utility/get_resid_var_v2.m` | already core (step 4); this package is the only copy | - |
+| `bvar.priors.vtheta` | `utility/getVtheta.m` | already core (step 4). HYB hard-codes kappa_3 = .2 and kappa_4 = 1 and reads only kappa(1:2); `run_all` supplies them as kappa(3:4) | unit (both settings) |
+| `bvar.sv.ksc_rw_h0` | `utility/sample_SVRW.m` | already core (step 4). Same algorithm spelled differently - legacy `chol(Kh,'lower')'\randn`, core `chol(Ph)\randn`, and `sparse(...)` vs `spdiags(...)` for the difference matrix. Verified BITWISE over 200 randomized (T, ystar, h, sig2, h0) | unit (whole-chain) |
+| `third_party/gigrnd.m` | `utility/gigrnd.m` | md5-identical to the other copies (step 3) | - |
+
+`initialize.m` is not extracted: it is a script, not a function, and what it does -
+equation-wise least squares for beta0/alp0, then one volatility path per equation - is
+inlined in `run_all` where it belongs to that driver's setup.
+
+- Functionized: `run_all.m` (the whole of main_HYB_TVPSV.m, estimation and the
+  Savage-Dickey post-processing) and `preset.m` (every constant, tagged with its legacy
+  line).
+- **Seeding order matters here.** main_HYB_TVPSV.m runs `initialize` - which itself draws
+  n volatility paths - at line 82, BEFORE the clock seeding at line 85. With the clock line
+  removed there is one continuous stream covering initialization and the loop, and
+  `run_all` reproduces exactly that: `rng(seed)` once, then initialization, then sweeps.
+  Seeding after initialization instead would produce a different chain from the same seed.
+- **The data must be read with `xlsread`, not `readmatrix`.** On
+  `macrodata_Q_2018Q4.csv` the two disagree in the last bit of some cells (max absolute
+  difference 6.9e-18 across the 238 x 248 block - a few decimal strings parse to adjacent
+  doubles). Numerically nothing; enough to break draw-for-draw equivalence. `run_all`
+  keeps the legacy `xlsread` call for that reason, deprecation notwithstanding.
+- Equivalence test `test_hybtvp_equivalence` runs the legacy script wholesale from a
+  tempdir copy at n = 3, nsim = 25, and asserts isequal on all thirteen store arrays, on
+  lBF / gam_hat / gam_mode, and on the terminal rng state. It also asserts that the run
+  visits both time-varying and constant configurations, so `eq_hyb_tvp`'s branches are
+  actually entered. Four patches to the legacy copy, each asserted to occur exactly once:
+  the clock-seed line, `nsim`, `burnin`, and the opening `clear; clc;` (which would wipe
+  the harness's own bookkeeping when the script is run from a function). None touches an
+  arithmetic line. Runtime ~10 s.
+- Perturbation check: a 1e-9 relative change to the `c1` constant in a scratch mirror of
+  `eq_hyb_tvp` makes the test fail on `store_lpostgam`. The real tree was never modified.
+- Dead line kept: main 40 computes `[Valp,Vbeta]` before the loop, and line 91 recomputes
+  them as the first act of every sweep, so the line-40 values are never read. `run_all`
+  omits the dead call (it consumes no randomness); recorded in `preset.notes`.
+
 ## Ranking adjudication (step 10, 2026-09-03)
 
 Full-length runs at the published configuration (n = 15) comparing the two modes are
