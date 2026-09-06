@@ -1,0 +1,45 @@
+# Runs the unit suite on every push and pull request. Each test runs the
+# corresponding published legacy code beside the consolidated function and
+# requires identical output - bitwise, draw for draw under a fixed seed - so this
+# is the job that keeps the repository's central claim honest between releases.
+#
+# MATLAB is licensed automatically here because this repository is PUBLIC:
+# matlab-actions licenses all products for public projects, with no token and no
+# account. A private fork would need an MLM_LICENSE_TOKEN secret instead.
+#
+# ONE TEST IS SKIPPED, deliberately and visibly. test_forecast_iterate_springer
+# reads the Springer package's real-time data vintages with twenty xlsread calls
+# that pass a RANGE argument, six of them against genuine OLE2/BIFF .xls files
+# and a .csv. Without Excel installed - which no hosted runner has, on any OS -
+# MATLAB falls back to basic import mode, which reads only XLS(X/M) and rejects
+# a range argument outright. The test is therefore impossible on a runner rather
+# than merely failing on one, and it stays a local test. The runner prints the
+# skip and the summary line reports it, so a green tick here never reads as full
+# coverage.
+name: Unit tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v2
+        with:
+          release: R2025b
+          products: >
+            Statistics_and_Machine_Learning_Toolbox
+            Optimization_Toolbox
+
+      - name: Run the unit suite
+        uses: matlab-actions/run-command@v2
+        env:
+          BVAR_SKIP_TESTS: test_forecast_iterate_springer
+        with:
+          command: run('tests/unit/run_unit_tests.m')
