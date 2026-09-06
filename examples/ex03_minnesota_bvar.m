@@ -1,5 +1,8 @@
 %% ex03 - A small BVAR with a Minnesota / natural-conjugate prior
 %
+% BOOK: Chapter 12, Vector Autoregressions, in Bayesian Macroeconometrics:
+% Methods and Applications (Chapman & Hall/CRC, forthcoming).
+%
 % THE MODEL. A VAR(p) with an intercept, written a row at a time:
 %
 %       y_t' = z_t' A + eps_t',      eps_t ~ N(0, Sig),
@@ -73,7 +76,7 @@ fprintf('        series means %s, sds %s\n', mat2str(round(mean(shortY),2)), ...
 %     complete lag-1 block, then the lag-2 block, ...
 %  ------------------------------------------------------------------
 [Y, X] = bvar.util.build_lags([Y0(end-p+1:end,:); shortY], p);
-fprintf('\nbvt.util.build_lags -> Y is %dx%d, X is %dx%d; X(1,:) = %s\n', ...
+fprintf('\nbvar.util.build_lags -> Y is %dx%d, X is %dx%d; X(1,:) = %s\n', ...
     size(Y,1), size(Y,2), size(X,1), size(X,2), mat2str(round(X(1,1:4),2)));
 
 %% ------------------------------------------------------------------

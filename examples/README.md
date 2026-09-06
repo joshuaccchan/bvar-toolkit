@@ -14,16 +14,23 @@ ex01_precision_sampler
 
 Read them in order. Each one uses what the last one built.
 
-| | Script | What it teaches | Runs in |
-|---|---|---|---|
-| 1 | `ex01_precision_sampler.m` | Drawing an entire state path in one block, with no filtering recursion — the Chan–Jeliazkov (2009) precision sampler. Derives it from the banded precision matrix, checks the draws against the Kalman smoother, and shows the sparse structure that makes it linear in *T*. | 11 s |
-| 2 | `ex02_sv_ksc.m` | Stochastic volatility by the Kim–Shephard–Chib auxiliary mixture: how squaring and logging the data turns a nonlinear model into the linear Gaussian one ex01 already solves, and what the seven-component mixture is for. | 5 s |
-| 3 | `ex03_minnesota_bvar.m` | A small BVAR end to end with a Minnesota / natural-conjugate prior — how the prior is built, what the shrinkage hyperparameter does, and why the natural-conjugate restriction yields an analytic posterior. No MCMC: samples are directly drawn from the posterior. | 3 s |
-| 4 | `ex04_bvar_sv_blocks.m` | Assembling a reduced-form BVAR with stochastic volatility from core blocks, drawn equation by equation — the sampler of `VAR_ARSV_redu.m` from Chan (2023, JoE), on simulated data with the truth known. | 4 s |
-| 5 | `ex05_marginal_likelihood.m` | Marginal likelihoods and model comparison: the three pieces of Chib's identity, why the posterior ordinate is *subtracted* (the Ockham factor), and a three-model comparison from Chan (2020, JBES). | 1 s |
+| | Script | What it teaches | Book | Runs in |
+|---|---|---|---|---|
+| 1 | `ex01_precision_sampler.m` | Drawing an entire state path in one block, with no filtering recursion — the Chan–Jeliazkov (2009) precision sampler. Derives it from the banded precision matrix, checks the draws against the Kalman smoother, and shows the sparse structure that makes it linear in *T*. | Ch. 9 | 11 s |
+| 2 | `ex02_sv_ksc.m` | Stochastic volatility by the Kim–Shephard–Chib auxiliary mixture: how squaring and logging the data turns a nonlinear model into the linear Gaussian one ex01 already solves, and what the seven-component mixture is for. | Ch. 10 | 5 s |
+| 3 | `ex03_minnesota_bvar.m` | A small BVAR end to end with a Minnesota / natural-conjugate prior — how the prior is built, what the shrinkage hyperparameter does, and why the natural-conjugate restriction yields an analytic posterior. No MCMC: samples are directly drawn from the posterior. | Ch. 12 | 3 s |
+| 4 | `ex04_bvar_sv_blocks.m` | Assembling a reduced-form BVAR with stochastic volatility from core blocks, drawn equation by equation — the sampler of `VAR_ARSV_redu.m` from Chan (2023, JoE), on simulated data with the truth known. | Ch. 14 | 4 s |
+| 5 | `ex05_marginal_likelihood.m` | Marginal likelihoods and model comparison: the three pieces of Chib's identity, why the posterior ordinate is *subtracted* (the Ockham factor), and a three-model comparison from Chan (2020, JBES). | Ch. 5 | 1 s |
 
 Timings are from one warm R2025b session on a desktop machine; treat them as orders of
-magnitude. The first four each draw figures as well as printing.
+magnitude. The first four each draw figures as well as printing. The chapter column
+refers to *Bayesian Macroeconometrics: Methods and Applications* (Chan, Chapman &
+Hall/CRC, forthcoming), whose [sample chapters](https://joshuachan.org/papers/BayesMacroBook_sample.pdf)
+and [code repository](https://github.com/joshuaccchan/bayesian-macroeconometrics) are
+online: 9 Linear Gaussian State Space Models, 10 Stochastic Volatility Models, 12
+Vector Autoregressions, 14 Large VARs with Stochastic Volatility, 5 Bayesian Model
+Comparison. The auxiliary mixture ex02 uses is developed in Chapter 4, Mixture Models.
+Each script repeats its chapter in the header.
 
 ## What each one exercises
 

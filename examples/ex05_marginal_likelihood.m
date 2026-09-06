@@ -1,5 +1,8 @@
 %% ex05 - Marginal likelihoods and model comparison
 %
+% BOOK: Chapter 5, Bayesian Model Comparison, in Bayesian Macroeconometrics:
+% Methods and Applications (Chapman & Hall/CRC, forthcoming).
+%
 % THE QUANTITY. The marginal likelihood of a model M is
 %
 %       p(y | M) = INT p(y | theta, M) p(theta | M) d theta,

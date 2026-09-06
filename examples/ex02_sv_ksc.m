@@ -1,5 +1,9 @@
 %% ex02 - Univariate stochastic volatility by the KSC auxiliary mixture
 %
+% BOOK: Chapter 10, Stochastic Volatility Models, in Bayesian
+% Macroeconometrics: Methods and Applications (Chapman & Hall/CRC,
+% forthcoming); the auxiliary mixture itself is Chapter 4, Mixture Models.
+%
 % THE MODEL (random-walk stochastic volatility, known initial log-volatility):
 %
 %       y_t = exp(h_t/2) * eps_t,     eps_t ~ N(0,1)

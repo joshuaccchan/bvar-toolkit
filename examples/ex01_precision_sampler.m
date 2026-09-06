@@ -1,5 +1,9 @@
 %% ex01 - The precision sampler: drawing a whole state path in one block
 %
+% BOOK: Chapter 9, Linear Gaussian State Space Models, in Bayesian
+% Macroeconometrics: Methods and Applications (Chapman & Hall/CRC,
+% forthcoming).
+%
 % This is the computational foundation of everything else in the toolkit.
 %
 % THE IDEA (Chan and Jeliazkov, 2009). A linear Gaussian state space model can

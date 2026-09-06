@@ -7,15 +7,24 @@
 # matlab-actions licenses all products for public projects, with no token and no
 # account. A private fork would need an MLM_LICENSE_TOKEN secret instead.
 #
-# ONE TEST IS SKIPPED, deliberately and visibly. test_forecast_iterate_springer
-# reads the Springer package's real-time data vintages with twenty xlsread calls
-# that pass a RANGE argument, six of them against genuine OLE2/BIFF .xls files
-# and a .csv. Without Excel installed - which no hosted runner has, on any OS -
-# MATLAB falls back to basic import mode, which reads only XLS(X/M) and rejects
-# a range argument outright. The test is therefore impossible on a runner rather
-# than merely failing on one, and it stays a local test. The runner prints the
-# skip and the summary line reports it, so a green tick here never reads as full
-# coverage.
+# TWO TESTS ARE SKIPPED, deliberately and visibly, for the same single reason:
+# both run legacy code that calls xlsread WITH A RANGE ARGUMENT. Without Excel
+# installed - which no hosted runner has, on any OS - MATLAB falls back to basic
+# import mode, which reads only XLS(X/M) and rejects a range argument outright.
+# Both tests are therefore impossible on a runner rather than merely failing on
+# one, and they stay local tests.
+#
+#   test_forecast_iterate_springer - twenty xlsread range calls over the
+#     Springer real-time vintages, six against genuine OLE2/BIFF .xls and a .csv.
+#   test_hybtvp_equivalence - main_HYB_TVPSV.m reads macrodata_Q_2018Q4.csv as
+#     xlsread(file,'A1:IN238'). The functionized run_all keeps that exact call
+#     on purpose: readmatrix disagrees with xlsread in the last bit of some
+#     cells here, which is enough to break the draw-for-draw guarantee the test
+#     exists to check. Fidelity to the published code and runnability on a
+#     hosted runner are simply in conflict for this package, and fidelity wins.
+#
+# The runner prints each skip and the summary line counts them, so a green tick
+# here never reads as full coverage.
 name: Unit tests
 
 on:
@@ -40,6 +49,6 @@ jobs:
       - name: Run the unit suite
         uses: matlab-actions/run-command@v2
         env:
-          BVAR_SKIP_TESTS: test_forecast_iterate_springer
+          BVAR_SKIP_TESTS: test_forecast_iterate_springer,test_hybtvp_equivalence
         with:
           command: run('tests/unit/run_unit_tests.m')

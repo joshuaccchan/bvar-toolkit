@@ -1,5 +1,9 @@
 %% ex04 - A REDUCED-FORM BVAR with stochastic volatility, equation by equation
 %
+% BOOK: Chapter 14, Large VARs with Stochastic Volatility, in Bayesian
+% Macroeconometrics: Methods and Applications (Chapman & Hall/CRC,
+% forthcoming).
+%
 % This example teaches the sampler of
 %
 %       replications/chan2023_joe_mlvarsv/legacy/VAR_ARSV_redu.m
@@ -167,7 +171,7 @@ fprintf('  true log-volatility paths range over [%.2f, %.2f]\n', ...
 %     inline construction, lines 45-50).
 %  ------------------------------------------------------------------
 [~, X] = bvar.util.build_lags([Y0(end-p+1:end,:); Y], p);
-fprintf('\nbvt.util.build_lags -> X is %dx%d, k = 1 + n*p = %d\n', size(X,1), size(X,2), k);
+fprintf('\nbvar.util.build_lags -> X is %dx%d, k = 1 + n*p = %d\n', size(X,1), size(X,2), k);
 
 %% ------------------------------------------------------------------
 %  3. Priors, at the paper's preset values (main_varsv.m lines 56-62, 86-91).
