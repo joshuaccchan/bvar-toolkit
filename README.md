@@ -117,7 +117,9 @@ Both audits are in `tests/variant_map.md`, with the full comparison for the 2020
 
 ## Citation
 
-Cite the paper whose code you use — full references in `provenance.md`. For the toolkit itself:
+Cite the paper whose code you use — full references in `provenance.md`. For the toolkit
+itself, `CITATION.cff` holds the machine-readable record, which GitHub's "Cite this
+repository" button reads:
 
 > Chan, J. C. C. *bvar-toolkit: MATLAB code for large Bayesian VARs*. https://github.com/joshuaccchan/bvar-toolkit
 

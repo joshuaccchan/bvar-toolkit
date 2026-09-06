@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+title: "bvar-toolkit: MATLAB code for large Bayesian VARs"
+message: >-
+  If you use this software, please cite both the paper whose method you use
+  (see provenance.md) and this software record.
+type: software
+authors:
+  - family-names: Chan
+    given-names: Joshua C. C.
+    orcid: "https://orcid.org/0000-0003-3632-128X"
+    affiliation: Purdue University
+repository-code: "https://github.com/joshuaccchan/bvar-toolkit"
+url: "https://joshuachan.org/code.html"
+abstract: >-
+  MATLAB code for estimating large Bayesian vector autoregressions. The
+  repository archives twelve published replication packages verbatim and
+  consolidates their shared machinery into a single tested library: samplers
+  for stochastic volatility and VAR coefficients, shrinkage and asymmetric
+  conjugate priors, forecasting routines, and marginal-likelihood estimators.
+  Every consolidated function is covered by a unit test that runs the
+  corresponding published code beside it and requires identical output, draw
+  for draw under a fixed seed.
+keywords:
+  - Bayesian econometrics
+  - vector autoregression
+  - stochastic volatility
+  - Markov chain Monte Carlo
+  - marginal likelihood
+  - shrinkage priors
+  - macroeconomic forecasting
+  - MATLAB
+license: MIT
