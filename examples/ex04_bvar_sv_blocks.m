@@ -1,106 +1,59 @@
 %% ex04 - A REDUCED-FORM BVAR with stochastic volatility, equation by equation
 %
 % BOOK: Chapter 14, Large VARs with Stochastic Volatility, in Bayesian
-% Macroeconometrics: Methods and Applications (Chapman & Hall/CRC,
-% forthcoming).
+% Macroeconometrics: Methods and Applications (Chapman & Hall/CRC, forthcoming).
 %
 % This example teaches the sampler of
 %
 %       replications/chan2023_joe_mlvarsv/legacy/VAR_ARSV_redu.m
 %
-% (Chan, 2023, JoE 235(2): 1419-1446, "Comparing Stochastic Volatility
-% Specifications for Large Bayesian VARs"), on simulated data small enough to
-% check every number against the truth.
+% (Chan, 2023, JoE 235(2): 1419-1446), on simulated data small enough to check
+% every number against the truth.
 %
-% THE MODEL. The VAR is in REDUCED form, exactly as in ex03 - each equation's
-% regressors are lags only, no contemporaneous variables - but with two additions
-% that change how it has to be drawn:
+% THE MODEL. The VAR is in reduced form, as in ex03 - each equation's regressors
+% are lags only - with two additions:
 %
 %       Y = X*A + E,        A is k x n,  k = 1 + n*p,  intercept first,
 %       B0*eps_t = u_t,     u_{it} ~ N(0, exp(h_{it})),
 %       h_{it} = mu_i + phi_i*(h_{i,t-1} - mu_i) + v_{it},  v_{it} ~ N(0, sig2_i),
 %       h_{i1} ~ N(mu_i, sig2_i/(1 - phi_i^2)).
 %
-% E is T x n with rows eps_t'. B0 is LOWER UNITRIANGULAR: ones on the diagonal,
-% n*(n-1)/2 free elements below it. So the reduced-form errors are correlated -
-% Var(eps_t) = B0^{-1} diag(exp(h_t)) B0^{-1}' - and it is the ORTHOGONALIZED
-% errors B0*eps_t that carry the n independent AR(1) stochastic volatilities.
+% B0 is lower unitriangular, so the reduced-form errors are correlated,
+% Var(eps_t) = B0^{-1} diag(exp(h_t)) B0^{-1}', and the orthogonalized errors
+% B0*eps_t carry the n independent AR(1) log-volatilities.
 %
-% WHY THIS IS HARDER THAN ex03, AND WHY IT IS WORTH IT. ex03 draws its posterior
-% analytically, because the natural-conjugate prior keeps the Kronecker structure
-% and the errors are homoskedastic. Neither survives here: the n log-volatility
-% paths make the error variance time-varying and equation-specific, so no
-% Kronecker factorization is left and there is no closed form - the coefficients
-% have to be drawn in a sweep. Nor do the equations separate the way they do in
-% the structural form of MAHP (replications/chan2021_ijf_mahp), where
-% conditioning on the log-volatilities leaves each equation a self-contained
-% weighted regression (bvar.samplers.eq_gauss). Here A is a reduced-form object
-% carrying a triangular B0: change equation ii's
-% coefficients - column ii of A, see the layout note below - and you move the
-% orthogonalized errors of SEVERAL equations at once, because the
-% orthogonalization mixes them. The naive conditional for the whole of A is a
-% k*n x k*n system - 21 x 21 here, but 3660 x 3660 at the paper's n = 15, p = 4,
-% and a dense Cholesky of that every sweep is what you are trying to avoid.
+% WHY IT IS DRAWN EQUATION BY EQUATION. ex03 has a closed-form posterior because
+% the natural-conjugate prior keeps the Kronecker structure and the errors are
+% homoskedastic; neither survives once the volatilities are equation-specific.
+% The conditional for the whole of A is then a k*n x k*n system - 21 x 21 here,
+% 3660 x 3660 at the paper's n = 15, p = 4 - and factorizing that every sweep is
+% what the equation-by-equation draw avoids, at n Choleskys of size k x k.
+% Triangularity is what keeps each one small; see the comment in block 1.
 %
-% THE ALGORITHM. Draw A EQUATION BY EQUATION (section 5, block 1), so the
-% expensive step becomes n Cholesky factorizations of size k x k. The trick that
-% makes each of those systems small is triangularity - see the long comment in
-% block 1.
+% LAYOUT. A is k x n with beta = vec(A), the convention of the legacy code and
+% of this toolkit, so equation ii's coefficients are COLUMN ii of A:
+% Y(:,ii) = X*A(:,ii) + error. Keeping that layout is what makes this script
+% diff line by line against the legacy file. The four blocks:
 %
-% BE PRECISE ABOUT THE LAYOUT. A is k x n with beta = vec(A) - the convention of
-% the legacy code and of the rest of this toolkit - so equation ii's k
-% coefficients are COLUMN ii of A:  Y(:,ii) = X*A(:,ii) + error. The loop below
-% therefore draws A(:,ii), which is ONE EQUATION per iteration. Store the same
-% coefficients the other way round, as the n x k matrix A', and the identical
-% draw would be row by row. Column versus row here is a layout convention, not a
-% difference in the algorithm; a column of A is an equation, not a lag and not
-% one variable across equations. (Do not switch the layout: keeping A as k x n
-% is what makes this script diff line by line against the legacy file.) The four
-% blocks:
-%
-%   1. A equation by equation       (the centrepiece; written out inline here,
-%                                    and available as bvar.samplers.eq_var_redu_tri)
+%   1. A equation by equation       (inline here; also bvar.samplers.eq_var_redu_tri)
 %   2. the free elements of B0      bvar.samplers.alp_tri_cs
 %   3. the n log-volatility paths   bvar.sv.ksc_ar1_mean
 %   4. (mu, phi, sig2) per equation bvar.sv.sv_params
 %
-% CONTRAST WITH bvar.samplers.eq_svar_oi. That function is the same idea for the
-% order-invariant SVAR-SV of Chan, Koop and Yu (2024, JBES): same standardized
-% stacking, same per-equation Cholesky. The one difference is decisive - its B0
-% is a GENERAL rotation, not triangular, so every equation's residual depends on
-% every column of A and its Wi = kron(B0(:,ii),X) keeps all n*T rows. Here
-% B0(1:ii-1,ii) = 0, so rows 1..ii-1 drop out exactly. Read its header next to
-% block 1 below: the two blocks differ in exactly one index range.
+% ONE CAVEAT. This script illustrates VAR_ARSV_redu rather than reproducing it
+% bitwise: the shrinkage hyperparameters kappa are held fixed at the paper's
+% preset values, where VAR_ARSV_redu draws them from generalized-inverse-Gaussian
+% conditionals every sweep. replications/chan2021_ijf_mahp/run_all.m shows that
+% block switched on.
 %
-% ONE HONEST CAVEAT. This script ILLUSTRATES VAR_ARSV_redu; it does not
-% reproduce it bitwise, for one reason.
-%   (a) [RETIRED 2026-09-03.] This slot used to claim bvar.sv.sv_params could not
-%       reproduce the ml_varsv sample_SVpara because the two "handle the h
-%       columns differently". That is false: the difference is a no-op whenever
-%       numel(mu) == size(h,2), which every ml_varsv call satisfies, and the phi
-%       truncation bound is the only live difference. Block 4 below therefore
-%       passes .998 and matches the legacy draw for draw. See
-%       tests/unit/test_sv_params_mlvarsv.m.
-%   (b) The shrinkage hyperparameters kappa are held FIXED at the paper's preset
-%       values. VAR_ARSV_redu draws kappa1, kappa2 and kappa4 from
-%       generalized-inverse-Gaussian conditionals with gigrnd every sweep, which
-%       is why its prior variances are rebuilt inside the loop. Fixing them costs
-%       one Gibbs block and buys a much shorter script. (ex04's predecessor, and
-%       replications/chan2021_ijf_mahp/run_all.m, show that block switched on.)
+% A NAMING TRAP. In this paper's code `alp` is vec(A), the VAR coefficients, and
+% `beta` collects the free elements of B0 - the opposite of the MAHP convention
+% used in replications/chan2021_ijf_mahp and in bvar.priors.vtheta. The names
+% below follow the legacy file. Read the comments, not the letters.
 %
-% A NAMING TRAP, worth two lines because it has caught people. In THIS paper's
-% code `alp` is vec(A), the VAR coefficients, and `beta` collects the free
-% elements of B0 - the opposite of the MAHP convention used in
-% replications/chan2021_ijf_mahp and in bvar.priors.vtheta, where Vbeta holds
-% the VAR coefficients and Valp the impact
-% matrix. The variable names below follow the ml_varsv legacy file, so the code
-% diffs line by line against it. Read the comments, not the letters.
-%
-% WHAT TO LOOK AT: the row-count line printed in block 1 (the truncation, in
-% numbers), the coefficient RMSE against ordinary least squares, the recovered
-% B0 elements, and the correlation between the estimated and true log-volatility
-% paths.
-
+% WHAT TO LOOK AT: the row-count line printed in block 1, the coefficient RMSE
+% against ordinary least squares, the recovered B0 elements, and the correlation
+% between the estimated and true log-volatility paths.
 run(fullfile(fileparts(fileparts(mfilename('fullpath'))),'setup.m'))
 
 rng(20260903, 'twister')
@@ -272,11 +225,13 @@ for isim = 1:nsim + burnin
     % (n-ii+1)*T rows instead of n*T, and the last equation costs just T.
     %
     % That truncation is what makes reduced-form estimation feasible at scale.
-    % Contrast bvar.samplers.eq_svar_oi, the same block for the order-invariant
-    % SVAR-SV of Chan, Koop and Yu (2024): there B0 is a general rotation with
-    % no structural zeros, so it must keep all n*T rows for every equation -
-    % `yi = vec((Y-X*A)*B0')./Lambda` and `Wi = kron(B0(:,ii),X)./Lambda`, with
-    % the full column B0(:,ii). The two blocks differ in exactly one index range.
+    % In the order-invariant SVAR-SV of Chan, Koop and Yu (2024), B0 is a general
+    % rotation with no structural zeros, so bvar.samplers.eq_svar_oi keeps all
+    % n*T rows for every equation - `yi = vec((Y-X*A)*B0')./Lambda` and
+    % `Wi = kron(B0(:,ii),X)./Lambda`, with the full column B0(:,ii).
+    % bvar.samplers.eq_var_oi reaches the same draw from a single weighted
+    % cross-product in O(T k^2) and is the one to call in new code; eq_svar_oi
+    % remains the block the OISV replication is pinned to bitwise.
     %
     % Note also that A(:,ii) = 0 must be re-imposed EVERY equation, and Y-X*A
     % recomputed, because the previous equations have already been updated: this
