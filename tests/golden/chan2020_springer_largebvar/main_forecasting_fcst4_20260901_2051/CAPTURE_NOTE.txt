@@ -1,0 +1,17 @@
+This capture is complete, but its printed tables were RECONSTRUCTED rather than
+captured live.
+
+main_forecasting.m saves <model_name>.mat (line 177) and only then prints the RMSFE and
+ALPL tables. Both of the expensive models ran far past the harness's 24-hour stdout
+wrapper, which exited and took the remaining output with it - so golden_log_main_
+forecasting.txt here stops mid-run, at the last line the wrapper saw, and contains no
+tables. The MATLAB process itself survived and ran to completion, writing the .mat.
+
+The tables in golden_tables_regenerated.txt were produced from that .mat by replaying
+main_forecasting.m lines 163-194 verbatim (the model ~= 1 branch, with n = 20 and
+var_core = [1 7 8 12]'), which is a deterministic function of yhat0 and yhat1. They are
+the numbers the script would have printed. The harness is
+scratchpad/regen_springer_tables.m in the session that produced this capture; the same
+routine produced both models' tables.
+
+Model 4, BVAR-IP. Started 2026-09-01 20:51, finished 2026-09-04 22:00.
