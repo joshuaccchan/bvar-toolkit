@@ -23,7 +23,14 @@ Applications* (Chapman & Hall/CRC, forthcoming) —
 MATLAB, R and Python for all fourteen chapters. `examples/README.md` maps each example to the
 chapter that develops it.
 
-## Two ways to use this repo
+## Three ways to use this repo
+
+**Learn the methods.** `examples/` holds seven short scripts, each runnable in seconds and
+each printing its reasoning as it goes: the precision sampler, stochastic volatility by
+auxiliary mixture, a small BVAR end to end, a BVAR with stochastic volatility assembled from
+core blocks, marginal likelihoods and model comparison, and identification by sign
+restrictions, both on impact and over a stretch of the impulse response. Each works on data
+small enough to check the numbers against the truth, and they are meant to be read in order.
 
 **Reproduce a paper.** Every package is here exactly as published, never edited, under
 `replications/<paper>/legacy/`, with a permanent `as-published/<paper>` git tag and the source
@@ -92,14 +99,6 @@ legacy behaviour as the default: `bvar.ml.acp` has a `ridge` argument because on
 adds a jitter to the posterior precision that another does not. `tests/variant_map.md`
 records for every function which legacy copies it stands in for, how that was checked, and
 a never-merge list of the pairs that must stay apart.
-
-## Examples
-
-`examples/` holds seven short scripts, each runnable in seconds: from the precision sampler
-up to a BVAR with stochastic volatility assembled from core blocks, then marginal
-likelihoods and model comparison, and finally identification by sign restrictions — on
-impact in ex06, and over a stretch of the impulse response in ex07. See
-`examples/README.md`.
 
 ## Verification
 
