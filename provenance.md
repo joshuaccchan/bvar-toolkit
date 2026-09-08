@@ -17,8 +17,15 @@ Import date: 2026-09-01. `.gitattributes` sets `* -text` so git stores every byt
 | `chan2023_jbes_hybtvp` | [HYB_TVPVAR_code.zip](https://joshuachan.org/code/HYB_TVPVAR_code.zip) | `84415eb7fbbe6ad207b49ecc1f6a6f3b` | 2022-05-12 | 12 | Chan, J.C.C. (2023). "Large Hybrid Time-Varying Parameter VARs," Journal of Business and Economic Statistics, 41(3): 890-905. |
 | `chan2023_joe_mlvarsv` | [ml_varsv_code.zip](https://joshuachan.org/code/ml_varsv_code.zip) | `53a77cc17cd42ec153b74f463c7b4a11` | 2023-01-13 | 33 | Chan, J.C.C. (2023). "Comparing Stochastic Volatility Specifications for Large Bayesian VARs," Journal of Econometrics, 235(2): 1419-1446. |
 | `chan_koop_yu2024_jbes_oisv` | [OISV_code.zip](https://joshuachan.org/code/OISV_code.zip) | `4072a2a1deec84cfe4c3b83343ac2de0` | 2026-09-01 | 41 | Chan, J.C.C., Koop, G. and Yu, X. (2024). "Large Order-Invariant Bayesian VARs with Stochastic Volatility," Journal of Business and Economic Statistics, 42(2): 825-837. |
+| `chan_matthes_yu2026_qe_svarsign` | [ReplicationPackage (2026Aug).zip](https://joshuachan.org/code/ReplicationPackage%20(2026Aug).zip) | `db68c1de6ab123c410abf9fe3a40be3d` | 2026-08-27 | 76 | Chan, J.C.C., Matthes, C. and Yu, X. (2026). "Large Structural VARs with Multiple Sign and Ranking Restrictions," Quantitative Economics, 17(3): 709-740. |
 
 ## Notes
+
+- **chan_matthes_yu2026_qe_svarsign**: the archived zip is the August 2026 release, as
+  distributed. The paper's figures were computed with the March release, which differs in one
+  file of 76: `utility/IRredu.m` advanced the companion matrix before using it, reporting
+  every impulse response after impact one horizon early. Expect that one-period shift when
+  comparing output with the published figures.
 
 - **chan2022_qe_acp**: Zip updated 2026-08-27; includes the IRredu h=1 fix applied on that date.
 - **Git LFS decision**: not used. Largest file is 6.2 MB (`replications/chan_koop_yu2024_jbes_oisv/legacy/results_mat/forecastingOI2-cluster.mat`), total working tree 55.3 MB - both well under GitHub limits (100 MB/file). Revisit only if a future artifact exceeds 50 MB.

@@ -46,6 +46,7 @@ a template.
 | Time-varying parameters, decided per equation | Chan (2023, JBES) | `chan2023_jbes_hybtvp` | `run_all` |
 | Forecast comparison across priors and volatility models | Chan (2020, Springer) | `chan2020_springer_largebvar` | legacy only |
 | The precision sampler for state space models | Chan & Jeliazkov (2009) | `chan_jeliazkov2009_statespace` | legacy only |
+| Sign and ranking restrictions in a large structural VAR | Chan, Matthes & Yu (2026, QE) | `chan_matthes_yu2026_qe_svarsign` | legacy only |
 | Prior sensitivity by automatic differentiation | Chan, Jacobi & Zhu (2019/2020/2022) | `cjz2018_ad_var`, `cjz2019_ad_opthyper`, `cjz2021_jae_ad_ml` | legacy only |
 
 "Legacy only" means the package has not been functionized yet — the original code is there and
