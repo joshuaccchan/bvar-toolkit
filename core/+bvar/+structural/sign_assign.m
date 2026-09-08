@@ -31,10 +31,10 @@
 %
 % WHY IT IS FASTER. bvar.structural.sign_restrict requires column i to satisfy
 % shock i and rejects the draw at the first shock that does not, which is the
-% standard rejection scheme. But the labelling of the columns of Q is arbitrary:
-% a rotation whose third column satisfies the monetary restrictions is just as
-% admissible as one where the monetary shock happens to land in the third
-% column, and the strict scheme discards the first. This function builds the
+% accept-reject algorithm of Rubio-Ramirez, Waggoner and Zha (2010). But the
+% labelling of the columns of Q is arbitrary: a rotation whose third column
+% satisfies the monetary restrictions is just as admissible as one where the
+% first column satisfies them, and accept-reject discards the former. This function builds the
 % m x n table of which columns admit which shocks, accepts whenever every shock
 % has at least one, and draws an assignment uniformly from those available.
 %
@@ -80,6 +80,9 @@
 % Equivalence: tests/unit/test_sign_assign.m. Record: tests/variant_map.md.
 %
 % See:
+% Rubio-Ramirez, J.F., Waggoner, D.F. and Zha, T. (2010). Structural Vector
+% Autoregressions: Theory of Identification and Algorithms for Inference,
+% Review of Economic Studies, 77(2): 665-696.
 % Chan, J.C.C., Matthes, C. and Yu, X. (2026). Large Structural VARs with
 % Multiple Sign and Ranking Restrictions, Quantitative Economics, 17(3): 709-740.
 

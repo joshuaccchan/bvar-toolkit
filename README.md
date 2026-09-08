@@ -30,7 +30,8 @@ each printing its reasoning as it goes: the precision sampler, stochastic volati
 auxiliary mixture, a small BVAR end to end, a BVAR with stochastic volatility assembled from
 core blocks, marginal likelihoods and model comparison, and identification by sign
 restrictions, both on impact and over a stretch of the impulse response. Each works on data
-small enough to check the numbers against the truth, and they are meant to be read in order.
+small enough to check the numbers against the truth, and they are meant to be read in
+order. `examples/README.md` lists what each one teaches and which core functions it calls.
 
 **Reproduce a paper.** Every package is here exactly as published, never edited, under
 `replications/<paper>/legacy/`, with a permanent `as-published/<paper>` git tag and the source
