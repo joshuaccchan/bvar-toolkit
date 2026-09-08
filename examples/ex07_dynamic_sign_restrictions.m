@@ -6,12 +6,14 @@
 % on impact. Output is left free, which is what makes the identification
 % agnostic.
 %
-% Acceptance has two stages. The impact restrictions are tested first, which is
-% where sign_restrict and sign_assign differ, and the impulse responses at
-% horizons 1..K second, which is plain rejection under both. So the algorithm of
-% Chan, Matthes and Yu (2026) accelerates the impact stage; it does not impose
-% the dynamic restrictions. That is the structure of Application_Uhlig2005.m in
-% the replication package.
+% THE ACCEPTANCE TEST. The impact restrictions are tested first, which is
+% where the two rules differ - sign_restrict is the accept-reject algorithm of
+% Rubio-Ramirez, Waggoner and Zha (2010), sign_assign the search of Chan,
+% Matthes and Yu (2026), both applied to rotations that qr_sign draws uniformly
+% from the orthogonal group. The impulse responses at horizons 1..K are tested
+% second, which is plain rejection under both. So the 2026 algorithm accelerates
+% the impact stage; it does not impose the dynamic restrictions. That is the
+% structure of Application_Uhlig2005.m in the replication package.
 %
 % This script runs both rules over the SAME candidates until each has 1000
 % accepted draws. They differ in cost, by a wide margin. They do not differ in
@@ -19,8 +21,7 @@
 % rotation - and the script checks that against a Monte Carlo yardstick rather
 % than asserting it.
 %
-% The data are read-only from
-% replications/chan_matthes_yu2026_qe_svarsign/legacy/data/
+% DATA. Read-only from replications/chan_matthes_yu2026_qe_svarsign/legacy/data/
 % Uhlig_monthly.csv, monthly US data on GDP, the GDP deflator, commodity prices,
 % nonborrowed reserves, total reserves and the federal funds rate, the first five
 % in logs. The package records that commodity prices were perturbed with noise
@@ -32,6 +33,9 @@
 % Uhlig, H. (2005). What are the Effects of Monetary Policy on Output? Results
 % from an Agnostic Identification Procedure, Journal of Monetary Economics,
 % 52(2): 381-419.
+% Rubio-Ramirez, J.F., Waggoner, D.F. and Zha, T. (2010). Structural Vector
+% Autoregressions: Theory of Identification and Algorithms for Inference,
+% Review of Economic Studies, 77(2): 665-696.
 % Chan, J.C.C., Matthes, C. and Yu, X. (2026). Large Structural VARs with
 % Multiple Sign and Ranking Restrictions, Quantitative Economics, 17(3): 709-740.
 

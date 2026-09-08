@@ -6,28 +6,31 @@
 % restrictions pick out the economically meaningful ones - a monetary
 % contraction raises the interest rate and lowers output and prices, and so on.
 % Since no finite set of sign restrictions leaves a single L, the object of
-% inference is a SET, and it is explored by drawing rotations at random and
-% keeping those that satisfy the restrictions.
+% inference is a SET, explored by drawing rotations at random and keeping those
+% that satisfy the restrictions.
 %
-% That acceptance step is the whole computational problem, and this example is
-% about two ways of doing it.
+% WHERE THE ROTATIONS COME FROM. bvar.structural.qr_sign draws Q uniformly from
+% the orthogonal group, via the QR decomposition of a Gaussian matrix. The two
+% rules below differ in what is done with it, and that acceptance step is where
+% the computation goes.
 %
-%   bvar.structural.sign_restrict   requires column i to satisfy shock i, and
-%                                   rejects the candidate at the first shock
-%                                   that fails. This is the standard scheme.
+%   bvar.structural.sign_restrict   requires column i to satisfy shock i and
+%                                   rejects at the first shock that fails - the
+%                                   accept-reject algorithm of Rubio-Ramirez,
+%                                   Waggoner and Zha (2010).
 %
 %   bvar.structural.sign_assign     tabulates which columns admit which shocks,
 %                                   accepts whenever every shock has at least
-%                                   one, and then draws an assignment. This is
-%                                   the algorithm of Chan, Matthes and Yu (2026).
+%                                   one, and then draws an assignment - the
+%                                   algorithm of Chan, Matthes and Yu (2026).
 %
-% The insight is that the labelling of the columns of Q is arbitrary. A rotation
-% whose fourth column looks like a monetary shock is just as admissible as one
-% where the monetary shock happens to land in the fourth column, but the strict
-% scheme throws the first away. Both target the same identified set. They differ
-% only in how much work is wasted, and the difference is not small: the run
-% behind this repository's tests/golden/chan2022_qe_acp/main_ACP_apps_15var
-% capture needed 3.8 million draws for each acceptance at n = 15.
+% The labelling of the columns of Q is arbitrary. A rotation whose fourth column
+% satisfies the monetary restrictions is just as admissible as one where the
+% first column satisfies them, and accept-reject discards the former. Both target
+% the same identified set. They differ in how many candidates are wasted, and the
+% difference is not small: the run behind this repository's
+% tests/golden/chan2022_qe_acp/main_ACP_apps_15var capture needed 3.8 million
+% draws for each acceptance at n = 15.
 %
 % WHAT THIS SCRIPT DOES. Draws one batch from the posterior of a 6-variable VAR
 % under the asymmetric conjugate prior, then runs BOTH acceptance rules over the
@@ -41,6 +44,9 @@
 % S&P 500 and a credit spread.
 %
 % See:
+% Rubio-Ramirez, J.F., Waggoner, D.F. and Zha, T. (2010). Structural Vector
+% Autoregressions: Theory of Identification and Algorithms for Inference,
+% Review of Economic Studies, 77(2): 665-696.
 % Chan, J.C.C., Matthes, C. and Yu, X. (2026). Large Structural VARs with
 % Multiple Sign and Ranking Restrictions, Quantitative Economics, 17(3): 709-740.
 
