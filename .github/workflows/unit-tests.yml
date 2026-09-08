@@ -25,10 +25,15 @@
 #
 # The runner prints each skip and the summary line counts them, so a green tick
 # here never reads as full coverage.
+#
+# Restricted to pushes to main. An unfiltered `on: push` also fires when an
+# as-published/<slug> tag is pushed, which re-runs this eight-minute suite over
+# content the same push already tested on main.
 name: Unit tests
 
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 

@@ -679,10 +679,8 @@ inlined in `run_all` where it belongs to that driver's setup.
 Full-length runs at the published configuration (n = 15) comparing the two modes are
 complete on two seeds, with a VAR-SV control; the bugcompat path reproduces the published
 values within Monte Carlo error, on an affected and an unaffected model - the full-scale
-end-to-end check the small-nsim equivalence test cannot give. The quantitative record of
-the corrected computation is withheld pending completion of the adjudication (runs at the
-remaining model dimensions are in progress) and the author's review; it will be recorded
-here when settled.
+end-to-end check the small-nsim equivalence test cannot give. The adjudication is complete,
+at every model dimension.
 
 - Runtime: test_mlvarsv_ml is ~16 s for its 11 configurations (both sides), and
   test_mlvarsv_ml_densities ~1 s.
@@ -780,7 +778,7 @@ Only the paper's own contribution is extracted here.
   differ by 1.99 in the log marginal likelihood, so a model comparison must hold it fixed
   across the models compared.
 - `auxFunctions/` is third-party (Read 2022, copied from that paper's code) and is not a
-  consolidation candidate. `provenance.md` and LICENSE record it.
+  consolidation candidate. `provenance.md` and `NOTICE.md` record it.
 - Not functionized: the five main programs, `RWZ_15var.m`, `proposed_15var.m` and
   `Application_Uhlig2005.m`. They depend on `auxFunctions`, so a driver could not be a
   core-only entry point, and their output is figures rather than reusable computation.

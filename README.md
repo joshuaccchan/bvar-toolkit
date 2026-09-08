@@ -141,9 +141,11 @@ repository" button reads:
 
 ## License
 
-MIT — see `LICENSE`. This relicenses the archived packages too: their original headers say
-"free to use for academic purposes only", wording preserved unaltered as part of the verbatim
-archive and superseded by the repository license. Citing the paper you use is expected
-scholarly practice, not a licensing condition. Third-party code keeps its own license — the
-files under `third_party/`, and the third-party files bundled inside some legacy packages
-(`gigrnd.m`, `EvalFore.m`, `heatmap.m`).
+MIT — see `LICENSE`, with the scope recorded separately in `NOTICE.md` so that `LICENSE`
+stays the unmodified MIT text and tooling can identify it. This relicenses the archived
+packages too: their original headers say "free to use for academic purposes only", wording
+preserved unaltered as part of the verbatim archive and superseded by the repository
+license. Citing the paper you use is expected scholarly practice, not a licensing condition.
+Third-party code keeps its own license — the files under `third_party/`, the third-party
+files bundled inside some legacy packages, and the whole of the SVAR-sign package's
+`auxFunctions/`. `NOTICE.md` lists them.

@@ -11,10 +11,15 @@
 #
 # A package directory with no matching tag also fails: that is how a newly
 # imported package gets caught if its tag was never pushed.
+# Restricted to pushes to main, for the same reason as the unit suite: a tag
+# push would re-run it over content the accompanying main push already checked.
+# A newly imported package still gets caught, because its archive commit goes to
+# main and this job fails on a legacy tree with no matching tag.
 name: Legacy archives unmodified
 
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
