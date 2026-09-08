@@ -17,11 +17,11 @@
 % Sibling of bvar.samplers.eq_svar_oi (order-invariant SVAR-SV), which stacks all
 % n rows, has no prior-mean term and no o. Do not merge the two.
 %
-% Extracted 2026-09-03 (step 9). Canonical source, body verbatim:
-% chan2023_joe_mlvarsv/legacy/VAR_ARSV_redu.m lines 44-57; the o argument also
-% canonicalizes VAR_ARSVO_redu.m lines 51-64 (sole textual difference: the
-% Lambda line's .*repmat(o,1,n-ii+1)). Wrapped as a function with sizes from the
-% arguments and vec -> bvar.util.vec. Details: tests/variant_map.md.
+% Body from chan2023_joe_mlvarsv/legacy/VAR_ARSV_redu.m lines 44-57, wrapped as
+% a function: sizes from the arguments, vec -> bvar.util.vec. The optional o
+% argument also covers VAR_ARSVO_redu.m lines 51-64, whose sole textual
+% difference is the Lambda line's .*repmat(o,1,n-ii+1).
+% Equivalence: tests/unit/test_mlvarsv_equivalence.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

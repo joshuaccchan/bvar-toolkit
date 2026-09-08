@@ -4,13 +4,8 @@
 % N(ht, inv(Kh)) built at the Newton-Raphson mode of the conditional density
 % of h. Consumes R*T randn calls (one CKh'\randn(T,1) per draw).
 %
-% Extracted 2026-09-02 (step 8, Kronecker family pass). Canonical source:
-%   chan2020_jbes_kronecker/legacy/intlike_BVAR_CSV.m  (body verbatim,
-%   including the deny_h subfunction with its -n/2*sum(h) term; renamed
-%   intlike_BVAR_CSV -> intlike_csv). Called by the BVAR-CSV marginal
-% likelihood with R = 1000 (legacy ml_BVAR_CSV.m line 10). Verified by
-% tests/unit/test_kron_intlike.m (bitwise, seeded) and end-to-end through
-% the ML equivalence tests.
+% Body from chan2020_jbes_kronecker/legacy/intlike_BVAR_CSV.m, renamed.
+% Equivalence: tests/unit/test_kron_intlike.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

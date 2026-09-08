@@ -1,11 +1,8 @@
 % bvar.ml.linvgammpdf - log density of the inverse-gamma IG(a,b) distribution
 % at y (shape a, scale b; elementwise over array inputs).
 %
-% Extracted 2026-09-02 (step 8, Kronecker family pass). Canonical source:
-%   chan2020_jbes_kronecker/legacy/linvgammpdf.m  (body verbatim; the only
-%   copy). Used by the sigh2 posterior ordinates of the CSV-family marginal
-% likelihoods. Verified by tests/unit/test_kron_ml_densities.m (bitwise) and
-% end-to-end through the ML equivalence tests.
+% Body from chan2020_jbes_kronecker/legacy/linvgammpdf.m.
+% Equivalence: tests/unit/test_kron_ml_densities.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

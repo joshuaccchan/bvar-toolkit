@@ -1,4 +1,5 @@
-% Extracted 2026-09-01 (step 3, zero-risk core): verified identical (modulo comments/whitespace). Canonical source: chan2023_joe_mlvarsv/legacy/utility/tnormrnd.m (single legacy copy).
+% Body from chan2023_joe_mlvarsv/legacy/utility/tnormrnd.m (identical modulo comments).
+% Equivalence: tests/unit/test_tnormrnd.m. Record: tests/variant_map.md.
 % This function samples N draws from the truncated normal
 %    
 % See:

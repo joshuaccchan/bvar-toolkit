@@ -17,8 +17,9 @@
 % evaluation-point inconsistencies. tests/variant_map.md has the audit, the
 % full quirk list and the effect on the published values.
 %
-% Extracted 2026-09-02 from
-% chan2020_jbes_kronecker/legacy/ml_BVAR_CSV_t_MA.m.
+% Body from chan2020_jbes_kronecker/legacy/ml_BVAR_CSV_t_MA.m, verbatim except
+% for the two defect fixes above (reproduced under 'bugcompat').
+% Equivalence: tests/unit/test_kron_equivalence.m.
 %
 %   [ML, out] = bvar.ml.kron_bvar_csv_t_ma(shortY, X, pri, est, ...)
 %

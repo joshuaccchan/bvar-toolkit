@@ -4,15 +4,11 @@
 % first transformed observation carrying the initialization variance factor
 % (1+psi^2) and the matching -n/2*log(1+psi^2) constant.
 %
-% Extracted 2026-09-02 (step 8, Kronecker family pass). Canonical source:
-%   chan2020_jbes_kronecker/legacy/llike_MA.m  (body verbatim).
-% The realtime_forecasts/llike_MA.m file in the same package is NOT
-% canonicalized here: its function line is named llike_MA1 (filename wins at
-% dispatch) and it differs only in comments/whitespace - it belongs to the
-% part-2 forecast pass. Note the legacy body writes CSig = chol(Sig)' (upper
-% Cholesky transposed) where the rest of the package writes chol(Sig,'lower');
-% kept verbatim. Verified by tests/unit/test_kron_ml_densities.m (bitwise)
-% and end-to-end through the BVAR-MA equivalence test.
+% Body from chan2020_jbes_kronecker/legacy/llike_MA.m, the package-root
+% copy; the realtime_forecasts sibling is not canonicalized here (its function
+% line is named llike_MA1, so the filename wins at dispatch, and it differs only
+% in comments/whitespace).
+% Equivalence: tests/unit/test_kron_ml_densities.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

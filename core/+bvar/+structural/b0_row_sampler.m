@@ -20,16 +20,12 @@
 % rng consumption, per row: one rand then one randn (inside anormrnd), then
 % n-1 further randn - rows in order ii = 1:n.
 %
-% Extracted 2026-09-02 (step 7, OISV family pass). Canonical source (body
-% verbatim, including comments): chan_koop_yu2024_jbes_oisv/legacy/SVARSV_MH.m
-% lines 49-72 (the inline "sammple B0" loop). Also canonicalizes
-% forecast_SVARSV_MH.m lines 43-66, which are textually identical modulo the
-% Y/X/T -> Yt/Xt/Tt renaming (U and T enter only through the arguments here).
-% Edits made, in full: wrapped as a function with [T,n] = size(U) replacing the
-% workspace T,n (identical integers); Hyper.B0/Hyper.VB0 renamed B00/VB0; the
-% unqualified anormrnd call now bvar.util.anormrnd (code-identical to the legacy
-% utility copy). Everything else byte-verbatim. Draw-for-draw equivalence:
-% tests/unit/test_oisv_equivalence.m.
+% Body from chan_koop_yu2024_jbes_oisv/legacy/SVARSV_MH.m lines 49-72 (the
+% inline "sammple B0" loop), wrapped as a function: T and n now come from
+% size(U), and Hyper.B0/Hyper.VB0 enter as the arguments B00/VB0. Also stands in
+% for forecast_SVARSV_MH.m lines 43-66, identical modulo the Y/X/T -> Yt/Xt/Tt
+% renaming, which reaches this function only through U.
+% Equivalence: tests/unit/test_oisv_equivalence.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian

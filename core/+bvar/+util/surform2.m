@@ -1,10 +1,9 @@
 % bvar.util.surform2 - sparse SUR expansion with rows kron(speye(n), X(i,:)) for stacked-vector
 % VAR sampling. NOT the same operator as bvar.util.surform (block-diagonal T x Tk).
-% Extracted 2026-09-01 (step 3, zero-risk core): verified identical (modulo comments/whitespace) across chan2023_joe_mlvarsv/legacy/utility/SURform2.m (canonical, this copy),
-% chan2020_springer_largebvar/legacy/SURform2.m, chan2020_jbes_kronecker/legacy/
-% realtime_forecasts/SURform2.m, and chan_koop_yu2024_jbes_oisv/legacy/utility/SURform2.m
-% (differences: output variable spelling, [r c] vs [r,c], indentation).
-% Function renamed SURform2 -> surform2.
+% Body from chan2023_joe_mlvarsv/legacy/utility/SURform2.m, renamed; stands in
+% for the springer_largebvar, jbes_kronecker and oisv copies, which differ only
+% in variable spelling and whitespace.
+% Equivalence: tests/unit/test_surform2.m. Record: tests/variant_map.md.
 function Xout = surform2( X, n )
 repX = kron(X,ones(n,1));
 [r,c] = size( X );

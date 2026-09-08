@@ -12,11 +12,11 @@
 %
 % rng: rand once per period t = 1:T, then one betarnd.
 %
-% Extracted 2026-09-03 (step 9). Canonical source, body verbatim:
-% chan2023_joe_mlvarsv/legacy/VAR_ARSVO_redu.m lines 112-124 (single copy in
-% the repo). Wrapped as a function with T, n, ngrid taken from the arguments
-% and Hyper.p0a/p0b passed explicitly; o is preallocated instead of updated in
-% place (every element is overwritten before any read, so the values match).
+% Body from chan2023_joe_mlvarsv/legacy/VAR_ARSVO_redu.m lines 112-124, wrapped
+% as a function: T, n, ngrid taken from the arguments, Hyper.p0a/p0b passed
+% explicitly, o preallocated instead of updated in place (equivalent - every
+% element is overwritten before any read).
+% Equivalence: tests/unit/test_mlvarsv_equivalence.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

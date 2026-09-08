@@ -7,14 +7,15 @@
 % truncated normal, kappa gamma - and the M log weights are averaged in 50
 % batches, which also gives the numerical standard error.
 %
-% Clean bill from the step-10 audit. Quirks kept verbatim: the dead gamfit block
+% Clean bill from the audit. Quirks kept verbatim: the dead gamfit block
 % over 1./sig2 (its consumers are commented out at legacy line 51), and the
 % is_kappasym prior scored with Hyper.c0 rows 2:3 where the estimation draws
 % kappa1 from row 1 - a no-op only because rows 1 and 2 are equal.
 % tests/variant_map.md has the audit and the family-wide quirks.
 %
-% Extracted 2026-09-03 from chan2023_joe_mlvarsv/legacy/utility/ml_var_arsv_redu.m
-% (body verbatim; helper calls redirected to core).
+% Body from chan2023_joe_mlvarsv/legacy/utility/ml_var_arsv_redu.m,
+% renamed, with helper calls redirected to core (listed below).
+% Equivalence: tests/unit/test_mlvarsv_ml.m.
 %
 %   [lml,lmlstd,out] = bvar.ml.mlvarsv_arsv_redu(X,Y,Y0,M,Hyper,flag_marg,...
 %       store_h,store_beta,store_hpara,store_kappa,is_kappafixed,is_kappasym)

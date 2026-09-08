@@ -6,12 +6,9 @@
 % covariance uses the exact negative Hessian of the t-marginal conditional.
 % Consumes R*T randn calls.
 %
-% Extracted 2026-09-02 (step 8, Kronecker family pass). Canonical source:
-%   chan2020_jbes_kronecker/legacy/intlike_BVAR_t_CSV.m  (body verbatim;
-%   renamed intlike_BVAR_t_CSV -> intlike_t_csv). Called by the BVAR-t-CSV
-% marginal likelihood with R = 1000 (legacy ml_BVAR_t_CSV.m lines 13-14).
-% Verified by tests/unit/test_kron_intlike.m (bitwise, seeded) and
-% end-to-end through the ML equivalence tests.
+% Body from chan2020_jbes_kronecker/legacy/intlike_BVAR_t_CSV.m,
+% renamed.
+% Equivalence: tests/unit/test_kron_intlike.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

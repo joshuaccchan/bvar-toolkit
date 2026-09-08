@@ -23,22 +23,14 @@
 %
 % rng consumption: randn(ii-1,1) per equation, equations in order ii = 2:n.
 %
-% Extracted 2026-09-02 (step 7, OISV family pass). Canonical source (body
-% verbatim): chan_koop_yu2024_jbes_oisv/legacy/CS_MH.m lines 77-87 (the inline
-% "sample alp" count_alp loop). Also canonicalizes forecast_CS_MH.m lines
-% 68-78, textually identical modulo T -> Tt (enters through size(E) here).
-% Edits made, in full: wrapped as a function with [T,n] = size(E) replacing
-% the workspace T, n (identical integers); Hyper.Valp renamed Valp; alp
-% preallocated zeros(1,n*(n-1)/2) instead of dynamically grown (see above).
-% Everything else byte-verbatim. Draw-for-draw equivalence:
-% tests/unit/test_oisv_equivalence.m.
-%
-% Also canonicalizes (added 2026-09-03, step 9; draw-for-draw verified, not a
-% visual match): the impact-matrix block of chan2023_joe_mlvarsv, i.e.
-% VAR_ARSV_redu.m lines 64-73 (o omitted) and VAR_ARSVO_redu.m lines 71-80
-% (o supplied - its sole textual difference is the iD line's ./o.^2). Those
-% callers name the object beta/Hyper.Vbeta and keep it as a k_beta x 1 column,
-% so they transpose the returned row. Details: tests/variant_map.md.
+% Body from chan_koop_yu2024_jbes_oisv/legacy/CS_MH.m lines 77-87 (the inline
+% "sample alp" loop), wrapped as a function: sizes from size(E), Hyper.Valp ->
+% Valp, alp preallocated. The optional o argument also covers
+% chan2023_joe_mlvarsv/legacy/VAR_ARSVO_redu.m lines 71-80, whose sole textual
+% difference is the iD line's ./o.^2; the default path covers forecast_CS_MH.m
+% lines 68-78 and VAR_ARSV_redu.m lines 64-73 (naming only).
+% Equivalence: tests/unit/test_oisv_equivalence.m,
+% tests/unit/test_mlvarsv_equivalence.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian

@@ -6,25 +6,15 @@
 % via chol(Kthetai,'lower'), and accumulate the structural residuals U.
 % rng consumption: exactly one randn(ki,1) per equation, ki = n*p+ii - nothing else.
 %
-% Extracted 2026-09-01 (step 5, MAHP flagship functionization). Canonical source
-% (loop body verbatim):
-%   chan2021_ijf_mahp/legacy/BVAR_MNG.m lines 40-59 (the "sample alp and beta"
-%   block: count_alp bookkeeping, per-equation draw, beta/alp assembly, U).
-% The SAME inline block appears verbatim (comment-stripped diff; the forecast
-% copies only rename Y/Z/T -> Yt/Zt/Tt) in
-%   chan2021_ijf_mahp/legacy/BVAR_NG.m            lines 38-57,
-%   chan2021_ijf_mahp/legacy/BVAR_Minn.m          lines 31-50,
-%   chan2021_ijf_mahp/legacy/forecast_BVAR_MNG.m  lines 43-61,
-%   chan2021_ijf_mahp/legacy/forecast_BVAR_NG.m   lines 44-63,
-%   chan2021_ijf_mahp/legacy/forecast_BVAR_Minn.m lines 38-56.
-% Prior-variance scaling stays with the CALLER: BVAR_MNG doubles Valp/Vbeta
-% before this block (its line 39: Valp = 2*Valp; Vbeta = 2*Vbeta), the forecast
-% scripts all double, estimation BVAR_NG/BVAR_Minn do not - pass Valp/Vbeta
-% exactly as the legacy script has them at entry to the equation loop.
-% Edits made: wrapped as a function (Y,Z,h,Valp,Vbeta in; beta,alp,U out);
-% np = size(Z,2)-1 replaces the literal n*p (identical integers); beta/alp are
-% fresh zeros here because the legacy scripts fully overwrite every element of
-% both each sweep - bitwise the same result as the legacy in-place update.
+% Body from chan2021_ijf_mahp/legacy/BVAR_MNG.m lines 40-59 (the inline "sample
+% alp and beta" block), wrapped as a function (Y,Z,h,Valp,Vbeta in; beta,alp,U
+% out) with np = size(Z,2)-1 replacing the literal n*p. The same block appears
+% verbatim in BVAR_NG.m, BVAR_Minn.m and the three forecast_BVAR_*.m scripts
+% (Y/Z/T -> Yt/Zt/Tt only). Prior-variance scaling stays with the CALLER:
+% BVAR_MNG and all three forecast scripts double Valp/Vbeta before this block,
+% estimation BVAR_NG/BVAR_Minn do not - pass Valp/Vbeta exactly as the legacy
+% script has them at entry to the equation loop.
+% Equivalence: tests/unit/test_mahp_equivalence.m. Record: tests/variant_map.md.
 %
 % Inputs:  Y     - T x n observations (equation ii regresses Y(:,ii) on
 %                  [Z -Y(:,1:ii-1)], the structural triangular form)

@@ -2,34 +2,15 @@
 % common stochastic volatility (CSV) log-volatility path h, marginal of the mixture
 % indicators: Newton-Raphson mode-finding, Gaussian AR proposal, then MH correction.
 %
-% Extracted 2026-09-01 (step 4, SV/prior core). Canonical source:
-%   chan2023_joe_mlvarsv/legacy/utility/sample_CSV.m  (body verbatim; renamed
-%   sample_CSV -> csv_armh).
-% Also canonicalizes exactly (verified draw-for-draw under fixed seeds, identical
-% rand/randn call sequence and count, identical terminal rng state):
-%   chan2020_jbes_kronecker/legacy/sample_h.m
-%   chan2020_jbes_kronecker/legacy/realtime_forecasts/sample_h.m
-%   chan2020_springer_largebvar/legacy/sample_h.m
-% The three sample_h copies have executably identical bodies (differences are
-% comments, `[h is_accept]` output-list syntax, a stray semicolon after `while`,
-% and `10^(-3)` vs `1e-3` - bitwise-equal doubles). sample_CSV differs only by the
-% is_ForcedAccept flag; with the flag false (the default here) `log(rand)` is still
-% evaluated before the short-circuit `||`, so the rng sequence matches sample_h
-% exactly. Parameterized: is_ForcedAccept (optional, default false = sample_h
-% behavior; true = always move to the proposal, as ml_varsv's VAR_CSV.m does at
-% initialization and during early burn-in iterations).
-%
-% Second parameterization added 2026-09-02 (step 8, Kronecker family pass):
-% ht_start (optional, default h = the legacy sample_h/sample_CSV behavior) -
-% the Newton-Raphson mode-search starting point. The inline h step of the
-% marginal-likelihood reduced run in chan2020_jbes_kronecker/legacy/
-% ml_BVAR_CSV.m (lines 51-88) is byte-equivalent to this body EXCEPT that it
-% starts the NR search at the posterior mean path h_mean instead of the
-% current h (its line 52: ht = h_mean) and force-accepts on the reduced run's
-% first sweep; csv_armh(s2,rho,sigh2,h,n,isim==1,h_mean) reproduces it
-% bitwise, including the rng call sequence (log(rand) is evaluated before the
-% short-circuit ||, exactly as in the legacy `if alpMH > log(rand) || isim == 1`).
-% Default calls are unchanged bit-for-bit.
+% Body from chan2023_joe_mlvarsv/legacy/utility/sample_CSV.m, renamed,
+% with two optional arguments added: is_ForcedAccept (default false = the legacy
+% sample_h behavior; true = always move to the proposal, as ml_varsv's VAR_CSV.m
+% does at initialization and during early burn-in) and ht_start (default h), the
+% Newton-Raphson mode-search starting point. Also stands in for the sample_h
+% copies in chan2020_jbes_kronecker and chan2020_springer_largebvar, and - called
+% as csv_armh(s2,rho,sigh2,h,n,isim==1,h_mean) - for the inline h step of the
+% reduced run in chan2020_jbes_kronecker/legacy/ml_BVAR_CSV.m.
+% Equivalence: tests/unit/test_csv_armh.m. Record: tests/variant_map.md.
 %
 % Inputs:  s2    - T x 1, sum over the n series of squared (orthogonalized,
 %                  lambda-scaled) errors at each t

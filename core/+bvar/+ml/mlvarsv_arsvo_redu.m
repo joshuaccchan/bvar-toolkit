@@ -16,8 +16,9 @@
 % identical stream and differ only in the weights. tests/variant_map.md has the
 % audit, the effect on the published value and the family-wide quirks.
 %
-% Extracted 2026-09-03 from chan2023_joe_mlvarsv/legacy/utility/ml_var_arsvo_redu.m
-% (body verbatim apart from the three corrections; helper calls redirected to core).
+% Body from chan2023_joe_mlvarsv/legacy/utility/ml_var_arsvo_redu.m, verbatim
+% apart from the three defect fixes above, with helper calls redirected to core.
+% Equivalence: tests/unit/test_mlvarsv_ml.m.
 %
 %   [lml,lmlstd,out] = bvar.ml.mlvarsv_arsvo_redu(X,Y,Y0,M,Hyper,flag_marg,...
 %       store_h,store_beta,store_hpara,store_kappa,store_o,store_po,o_grid,...

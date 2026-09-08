@@ -1,8 +1,8 @@
 % bvar.forecast.realtime_loaddata - assembles the vintage-t real-time estimation panel.
-% Extracted 2026-09-01 (step 3): BYTE-IDENTICAL in chan2020_springer_largebvar/legacy/loaddata.m
-% (canonical, this copy) and chan2020_jbes_kronecker/legacy/realtime_forecasts/loaddata.m.
-% Function renamed loaddata -> realtime_loaddata. No unit test yet (needs the vintage structs);
-% covered by the forecasting regression tests when drivers are functionized.
+%
+% Body from chan2020_springer_largebvar/legacy/loaddata.m, renamed (the copy at
+% chan2020_jbes_kronecker/legacy/realtime_forecasts/loaddata.m is byte-identical).
+% Equivalence: tests/unit/test_forecast_iterate_springer.m. Record: tests/variant_map.md.
 function [data_t,data_tpk] = realtime_loaddata(rt_data,nonrev_data,t,T0,tcode,var_type)
 n = length(var_type);
 data_t = zeros(t-2,n);

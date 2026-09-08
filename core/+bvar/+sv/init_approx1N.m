@@ -1,7 +1,6 @@
 % bvar.sv.init_approx1N - crude 1-component log-chi2 approximation used to initialize SV paths.
-% Extracted 2026-09-01 (step 3, zero-risk core): verified identical (modulo comments/whitespace) across chan2023_joe_mlvarsv/legacy/utility/getARh_approx1N.m (canonical, live copy)
-% and chan_koop_yu2024_jbes_oisv/legacy/utility/getARh_approx1N.m (dead there).
-% Function renamed getARh_approx1N -> init_approx1N.
+% Body from chan2023_joe_mlvarsv/legacy/utility/getARh_approx1N.m, renamed.
+% Equivalence: tests/unit/test_init_approx1N.m. Record: tests/variant_map.md.
 % This function approximates the SV model using a linear Gaussian state 
 % space model where the log chi^2 errors are modeled as N(-1.27,4.94)
 %

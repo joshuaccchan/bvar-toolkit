@@ -7,10 +7,10 @@
 %   Y     : (T0-p) x n left-hand-side observations, Yfull(p+1:end,:)
 %   Z     : (T0-p) x (1+n*p) regressor matrix [1, y_{t-1}, ..., y_{t-p}]
 %
-% New in the consolidated toolkit (2026-09-01, step 3): codifies the inline
-% construction repeated in every legacy package (verified identical convention
-% across all 12 packages in the 2026-09-01 audit). Where a legacy driver keeps
+% New in the consolidated toolkit: codifies the inline construction repeated in
+% every legacy package (same convention in all 12); where a legacy driver keeps
 % separate initial conditions Y0, call build_lags([Y0(end-p+1:end,:); Y], p).
+% Equivalence: tests/unit/test_build_lags.m. Record: tests/variant_map.md.
 
 function [Y, Z] = build_lags(Yfull, p)
     [T0, n] = size(Yfull);

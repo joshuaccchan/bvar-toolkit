@@ -15,11 +15,8 @@
 % O(nsim x distinct configurations); it is quick at the sizes used here but is
 % not the way to count a long chain over many equations.
 %
-% Extracted 2026-09-05 (step 11, HYB family pass). Canonical source (body
-% verbatim): chan2023_jbes_hybtvp/legacy/utility/get_gammode.m, the only copy in
-% the repository. Edits made, in full: function renamed get_gammode -> gam_mode.
-% Everything else byte-verbatim.
-% Equivalence: tests/unit/test_hybtvp_equivalence.m.
+% Body from chan2023_jbes_hybtvp/legacy/utility/get_gammode.m, renamed.
+% Equivalence: tests/unit/test_hybtvp_equivalence.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C. (2023). Large Hybrid Time-Varying Parameter VARs, Journal of

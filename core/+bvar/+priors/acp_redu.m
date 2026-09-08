@@ -1,13 +1,11 @@
 % bvar.priors.acp_redu - asymmetric conjugate prior elicited on the
 % reduced-form parameterization, mapped to the implied prior on the
 % structural parameterization.
-% Extracted 2026-09-01 (step 4, SV/prior core). Canonical source:
-% replications/chan2022_qe_acp/legacy/utility/prior_ACP_redu.m (R1, the
-% published QE version). Body verbatim; only two edits: the function was
-% renamed prior_ACP_redu -> acp_redu, and the internal call
-% prior_ACP_stru(...) now targets the canonicalized core copy
-% bvar.priors.acp_stru(...) (itself verbatim from the same R1 package).
-% No parameterization was added.
+%
+% Body from chan2022_qe_acp/legacy/utility/prior_ACP_redu.m
+% (R1, the published QE version), renamed; its internal prior_ACP_stru call now
+% targets the core copy bvar.priors.acp_stru.
+% Equivalence: tests/unit/test_acp_redu.m. Record: tests/variant_map.md.
 %
 % This function first elicits the asymmetric conjugate prior on the
 % reduced-form parameterization and then constructs the implied prior on

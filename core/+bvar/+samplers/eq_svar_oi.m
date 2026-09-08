@@ -13,20 +13,13 @@
 % rng consumption: randn(k,1) per equation, equations in order ii = 1:n.
 % The caller keeps `alpha = A(:)` (legacy line 88).
 %
-% Extracted 2026-09-02 (step 7, OISV family pass). Canonical source (body
-% verbatim): chan_koop_yu2024_jbes_oisv/legacy/SVARSV_MH.m lines 76-87 (the
-% inline "sample alpha" block, from the Lambda line through the equation loop).
-% Edits made, in full: wrapped as a function with k = size(X,2) and
-% n = size(Y,2) replacing the workspace k = 1+n*p and n (identical integers);
-% the unqualified vec calls now bvar.util.vec (code-identical to the legacy
-% utility copy). Everything else byte-verbatim.
-% NEVER canonicalizes forecast_SVARSV_MH.m lines 69-81: that fragment REWRITES
-% this step - zi = reshape(B0*(Yt - [XA cols, zeroed ii])',Tt*n,1) with
-% Wi = kron(Xt,B0(:,ii)) (time-interleaved stacking) and an explicit
-% exp(-reshape(h',Tt*n,1)) weighting matrix instead of the ./Lambda row
-% scaling. Same conditional posterior, numerically different floating-point
-% path and stacking order - see the never-merge list in tests/variant_map.md.
-% Draw-for-draw equivalence: tests/unit/test_oisv_equivalence.m.
+% Body from chan_koop_yu2024_jbes_oisv/legacy/SVARSV_MH.m lines 76-87 (the
+% inline "sample alpha" block), wrapped as a function: k and n from the
+% arguments, vec -> bvar.util.vec. It does NOT cover forecast_SVARSV_MH.m lines
+% 69-81, which rewrites this step with time-interleaved stacking
+% (Wi = kron(Xt,B0(:,ii))) and an explicit exp(-h) weighting matrix in place of
+% the ./Lambda row scaling - same conditional, different floating-point path.
+% Equivalence: tests/unit/test_oisv_equivalence.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian

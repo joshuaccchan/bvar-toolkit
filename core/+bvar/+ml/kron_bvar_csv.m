@@ -8,13 +8,12 @@
 % chain from the final stored draws. Consumes rng: R*T randn in the intlike,
 % then the reduced run's AR-MH h draws and rho MH draws.
 %
-% Extracted 2026-09-02 from chan2020_jbes_kronecker/legacy/ml_BVAR_CSV.m,
-% body verbatim. Clean bill: every ordinate sits at the same starred point;
-% the leftover-workspace reads are chain continuation, made explicit here
-% (reduced run starts from the last stored h and rho; est.state.countrho
-% carries the estimation counter the legacy script increments). No bugcompat
-% flag needed. The reduced run's h step is bvar.sv.csv_armh with NR start
-% h_mean and a first-sweep forced accept.
+% Body from chan2020_jbes_kronecker/legacy/ml_BVAR_CSV.m, with the
+% legacy script's leftover-workspace reads made explicit inputs (the reduced run
+% continues from the last stored h and rho; est.state.countrho carries the
+% estimation counter) and its inline AR-MH h step calling bvar.sv.csv_armh.
+% Every ordinate sits at the same starred point: no bugcompat flag.
+% Equivalence: tests/unit/test_kron_equivalence.m. Record: tests/variant_map.md.
 %
 %   [ML, out] = bvar.ml.kron_bvar_csv(shortY, X, pri, est, ...)
 %

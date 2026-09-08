@@ -1,17 +1,16 @@
 % bvar.priors.minn - Minnesota prior constructor for a VAR(p) with intercept.
-% Extracted 2026-09-01 (step 4, SV/prior core). Canonicalizes:
-%   chan2020_springer_largebvar/legacy/prior_Minn.m  -> call with n0pre = p
-%   chan2023_joe_mlvarsv/legacy/utility/prior_Minn.m -> call with n0pre = 4
-% Body is verbatim from the ml_varsv copy (the superset: it also returns the
-% AR(4) residuals U_hat). The ONLY parameterization is n0pre, the number of
-% presample rows of Y0 prepended before the univariate AR(4) fits:
-%   tmpY = [Y0(end-n0pre+1:end,:); Yt]
-% The two legacy copies differ only in that index (p vs hard-coded 4) and in
-% the extra U_hat output; requesting three outputs reproduces the large_BVAR
-% copy exactly (sig2 via stored residuals is bit-identical to the inline
-% mean((y-Z*b).^2)). NOTE: the AR(4) design matrix is conformable only when
-% the prepended block has exactly 4 rows, so n0pre = p runs only for p = 4
-% (as in every large_BVAR caller); at p = 4 the two settings coincide.
+%
+% Body from chan2023_joe_mlvarsv/legacy/utility/prior_Minn.m
+% (the superset - it also returns the AR(4) residuals U_hat), renamed, with one
+% parameterization: n0pre, the number of presample rows of Y0 prepended before the
+% univariate AR(4) fits, tmpY = [Y0(end-n0pre+1:end,:); Yt]. n0pre = 4 reproduces
+% that copy; n0pre = p with three outputs requested reproduces
+% chan2020_springer_largebvar/legacy/prior_Minn.m, which differs only
+% in that index and in lacking U_hat. NOTE: the AR(4) design matrix is conformable
+% only when the prepended block has exactly 4 rows, so n0pre = p runs only for
+% p = 4 (as in every large_BVAR caller), where the two settings coincide.
+% Equivalence: tests/unit/test_prior_minn_mlvarsv.m, test_prior_minn_largebvar.m.
+% Record: tests/variant_map.md.
 %
 % Prior: alpha ~ N(beta_Minn, diag(V_Minn)), equation by equation, with
 % intercept variance c3, own-lag variance c1/l^2, cross-lag variance

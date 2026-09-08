@@ -15,15 +15,11 @@
 % rng consumption: randn(k,1) per equation, equations in order ii = 1:n.
 % The caller keeps `beta = reshape(B',k_beta,1)` (legacy line 73).
 %
-% Extracted 2026-09-02 (step 7, OISV family pass). Canonical source (body
-% verbatim): chan_koop_yu2024_jbes_oisv/legacy/CS_MH.m lines 54-72 (the inline
-% "sample B" block, from the Ytilde line through the equation loop). Also
-% canonicalizes forecast_CS_MH.m lines 45-63, textually identical modulo the
-% Y/X/T -> Yt/Xt/Tt renaming (all enter through the arguments/sizes here).
-% Edits made, in full: wrapped as a function with [T,n] = size(Y) and
-% k = size(X,2) replacing the workspace T, n, k = k_beta/n (identical
-% integers); Hyper.beta0 renamed beta0. Everything else byte-verbatim.
-% Draw-for-draw equivalence: tests/unit/test_oisv_equivalence.m.
+% Body from chan_koop_yu2024_jbes_oisv/legacy/CS_MH.m lines 54-72 (the inline
+% "sample B" block), wrapped as a function: T, n, k from the arguments,
+% Hyper.beta0 -> beta0. Also covers forecast_CS_MH.m lines 45-63 (Y/X/T ->
+% Yt/Xt/Tt only).
+% Equivalence: tests/unit/test_oisv_equivalence.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian

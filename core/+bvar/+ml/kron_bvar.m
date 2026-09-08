@@ -4,11 +4,10 @@
 % pair A = Ahat, Sig = Shat/(T+nu0), with both NIW ordinates in closed form.
 % No rng is consumed.
 %
-% Extracted 2026-09-02 (step 8, Kronecker family pass). Canonical source:
-%   chan2020_jbes_kronecker/legacy/BVAR.m lines 36-47 (the inline cp_ml
-%   block; model 1 has no separate ml_* script). Body verbatim; lniwpdf ->
-%   bvar.ml.lniwpdf (code-identical). No evaluation-point defect (clean bill,
-%   step-8 audit): every piece is evaluated at the same (A,Sig).
+% Body from chan2020_jbes_kronecker/legacy/BVAR.m lines 36-47, wrapped as a
+% function: model 1 has no separate ml_* script, and lniwpdf is called through
+% bvar.ml.lniwpdf. Every piece is evaluated at the same (A,Sig).
+% Equivalence: tests/unit/test_kron_equivalence.m. Record: tests/variant_map.md.
 %
 %   [ML, out] = bvar.ml.kron_bvar(shortY, X, pri, est)
 %

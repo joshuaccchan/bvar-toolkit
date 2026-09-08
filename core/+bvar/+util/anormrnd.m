@@ -5,13 +5,10 @@
 % (else the positive mode mu2 = mu/2 + sqrt(mu^2+4)/2), each with variance
 % muj^2*rho/(1+muj^2). Consumes exactly one rand THEN one randn per call.
 %
-% Extracted 2026-09-02 (step 7, OISV family pass). Canonical source (body
-% verbatim): chan_koop_yu2024_jbes_oisv/legacy/utility/anormrnd.m (single copy;
-% called by SVARSV_MH.m line 63 and forecast_SVARSV_MH.m line 57, both via
-% bvar.structural.b0_row_sampler's canonical block). Only the namespace was
-% added; nothing renamed or parameterized. Model-specific draw - do NOT fold
-% into bvar.util.tnormrnd (a truncated-normal sampler; entirely different
-% density and rng sequence).
+% Body from chan_koop_yu2024_jbes_oisv/legacy/utility/anormrnd.m. Not a
+% truncated normal - do NOT fold into bvar.util.tnormrnd (different density,
+% different rng sequence).
+% Equivalence: tests/unit/test_anormrnd.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian

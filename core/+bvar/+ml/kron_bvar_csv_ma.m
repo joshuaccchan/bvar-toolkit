@@ -9,12 +9,11 @@
 % draws with the psi-MH warm-started at the estimation run's final psihat.
 % Consumes rng: R*T randn in the intlike, then the reduced run's draws.
 %
-% Extracted 2026-09-02 from chan2020_jbes_kronecker/legacy/ml_BVAR_CSV_MA.m,
-% body verbatim. Clean bill: every ordinate sits at the same starred point,
-% and the leftover-workspace reads are chain/optimizer continuation made
-% explicit (last stored draws, est.state.psihat, reconstructed optimset).
-% No bugcompat flag needed. Verbatim quirks (rho MH bound .9999, the dead
-% `ht = h_mean` line) are listed in tests/variant_map.md.
+% Body from chan2020_jbes_kronecker/legacy/ml_BVAR_CSV_MA.m, with the
+% legacy script's leftover-workspace reads made explicit inputs (last stored
+% draws, est.state.psihat, reconstructed optimset). Every ordinate sits at the
+% same starred point: no bugcompat flag.
+% Equivalence: tests/unit/test_kron_equivalence.m. Record: tests/variant_map.md.
 %
 %   [ML, out] = bvar.ml.kron_bvar_csv_ma(shortY, X, pri, est, ...)
 %

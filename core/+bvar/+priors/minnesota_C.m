@@ -1,14 +1,10 @@
 % bvar.priors.minnesota_C - Minnesota-prior second-moment building blocks C and
 % the index sets of the own-lag (kappa1) and other-lag (kappa2) coefficients,
 % equation by equation (intercept first, then lag-1 block, lag-2 block, ...).
-% Extracted 2026-09-01 (step 4, SV/prior core): verified identical (modulo header
-% comments; comment-stripped diff + unit test) across the four legacy copies of
-% get_C.m:
-%   chan2021_ijf_mahp/legacy/get_C.m (canonical),
-%   chan2023_jbes_hybtvp/legacy/utility/get_C.m,
-%   chan2023_joe_mlvarsv/legacy/utility/get_C.m,
-%   chan_koop_yu2024_jbes_oisv/legacy/utility/get_C.m.
-% Function renamed get_C -> minnesota_C; body verbatim, nothing parameterized.
+%
+% Body from chan2021_ijf_mahp/legacy/get_C.m, renamed; the
+% hybtvp, mlvarsv and oisv packages carry copies identical modulo comments.
+% Equivalence: tests/unit/test_minnesota_C.m. Record: tests/variant_map.md.
 %
 % This function constructs the second moments of the Minnesota prior
 %

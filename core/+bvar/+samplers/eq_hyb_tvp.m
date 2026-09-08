@@ -42,15 +42,10 @@
 % configuration, which is why the equivalence test runs whole chains rather than
 % single blocks.
 %
-% Extracted 2026-09-05 (step 11, HYB family pass). Canonical source (body
-% verbatim): chan2023_jbes_hybtvp/legacy/utility/sample_gam_thetai_ver2.m, the
-% only copy in the repository. Edits made, in full: function renamed
-% sample_gam_thetai_ver2 -> eq_hyb_tvp, and the four SURform calls routed to
-% bvar.util.surform, whose body is byte-identical to that package's SURform.m
-% (it is the canonical source for it - see tests/variant_map.md). Everything
-% else byte-verbatim, including the min(-1e10,...) guards and the sparse
-% zero-padding of the unused half of tilde_thetai.
-% Draw-for-draw equivalence: tests/unit/test_hybtvp_equivalence.m.
+% Body from chan2023_jbes_hybtvp/legacy/utility/sample_gam_thetai_ver2.m,
+% renamed, with the four SURform calls routed to bvar.util.surform (a
+% byte-identical copy of that package's SURform.m).
+% Equivalence: tests/unit/test_hybtvp_equivalence.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C. (2023). Large Hybrid Time-Varying Parameter VARs, Journal of

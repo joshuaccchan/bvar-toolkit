@@ -13,9 +13,10 @@
 % default path uses psi_mean throughout. tests/variant_map.md has the audit
 % and the effect on the published values.
 %
-% Extracted 2026-09-02 from chan2020_jbes_kronecker/legacy/ml_BVAR_MA.m,
-% body verbatim (lniwpdf/llike_MA -> the bvar.ml equivalents; the lpri_psi
-% handle reconstructed from pri.psi0/pri.Vpsi).
+% Body from chan2020_jbes_kronecker/legacy/ml_BVAR_MA.m apart from the
+% defect fix above (lniwpdf and llike_MA via bvar.ml; the lpri_psi handle
+% reconstructed from pri.psi0/pri.Vpsi).
+% Equivalence: tests/unit/test_kron_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

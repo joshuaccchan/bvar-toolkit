@@ -6,7 +6,7 @@
 % For averaging log predictive-likelihood draws, use
 %   logsumexp(logdraws) - log(M)
 % which replaces the ad-hoc max-shift blocks inlined in the legacy forecasting
-% scripts. New in the consolidated toolkit (2026-09-01, step 3).
+% scripts. New in the consolidated toolkit; tests/unit/test_logsumexp.m.
 
 function y = logsumexp(x, dim)
     if nargin < 2

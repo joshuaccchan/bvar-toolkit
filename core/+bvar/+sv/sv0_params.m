@@ -1,18 +1,12 @@
 % bvar.sv.sv0_params - posterior draw of the SV state-equation parameters
 % (phi, sig2) for stationary zero-mean AR(1) log-volatilities.
 %
-% Extracted 2026-09-01 (step 4, SV/prior core). Canonical source (body verbatim):
-% chan_koop_yu2024_jbes_oisv/legacy/utility/sample_SV0para.m (single copy).
-% Edits made: function renamed sample_SV0para -> sv0_params; the phi-candidate
-% MH truncation bound (hard-coded .99 in the canonical copy) is promoted to the
-% optional 4th argument phi_bnd, DEFAULTING to .99, so the default call
-% reproduces the OISV copy exactly - same outputs and the same sequence and
-% count of gamrnd/randn/rand calls under the same rng seed.
-%
-% This is NOT a special case of bvar.sv.sv_params to be merged away: the OISV
-% pair deliberately splits the zero-mean sampler into its own file with a
-% DIFFERENT phi truncation bound (.99 here vs .999 in sample_SVpara); see the
-% never-merge section of tests/variant_map.md.
+% Body from chan_koop_yu2024_jbes_oisv/legacy/utility/sample_SV0para.m,
+% renamed, with the phi-candidate MH truncation bound (hard-coded .99) promoted
+% to the optional 4th argument phi_bnd, default .99. Not a special case of
+% bvar.sv.sv_params: the OISV pair keeps the zero-mean sampler separate with a
+% different bound (.99 here vs .999 in sample_SVpara).
+% Equivalence: tests/unit/test_sv0_params.m. Record: tests/variant_map.md.
 %
 % This function samples the SV parameters phi, and sig2
 

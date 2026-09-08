@@ -6,14 +6,15 @@
 % conditional NIW densities, the nu ordinate as the mean of grid-normalized
 % conditional densities. Deterministic given the stores: consumes NO rng.
 %
-% Extracted 2026-09-02 (step 8, Kronecker family pass). Canonical source:
-%   chan2020_jbes_kronecker/legacy/ml_BVAR_t.m  (body verbatim; lniwpdf ->
-%   bvar.ml.lniwpdf). CLEAN BILL (step-8 audit): every ordinate is evaluated
-% at the same (A_mean, Sig_mean, nu_mean); no leftover-workspace reads beyond
-% the stores and the priors, so no bugcompat flag is needed. (Inherent legacy
-% quirk kept verbatim: the nu grid normalization divides by
-% nugrid(2)-nugrid(1) although inserting nu_mean makes the sorted grid
-% non-uniform in one interval - shared by every grid ordinate in the family.)
+% Body from chan2020_jbes_kronecker/legacy/ml_BVAR_t.m, wrapped as a function:
+% that file is a script, so its opening disp and closing fprintf are replaced by
+% the signature, the unpacking of pri/est, and the out struct; lniwpdf is called
+% through bvar.ml. The arithmetic between is verbatim. Every ordinate is
+% evaluated at the same (A_mean, Sig_mean, nu_mean) and nothing is read outside
+% the stores and the priors: no bugcompat flag.
+% Verbatim family quirk: the nu grid normalization divides by
+% nugrid(2)-nugrid(1) although inserting nu_mean leaves one interval unequal.
+% Equivalence: tests/unit/test_kron_equivalence.m. Record: tests/variant_map.md.
 %
 %   [ML, out] = bvar.ml.kron_bvar_t(shortY, X, pri, est)
 %

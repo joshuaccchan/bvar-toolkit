@@ -1,4 +1,5 @@
-% Extracted 2026-09-01 (step 3, zero-risk core): verified identical (modulo comments/whitespace). Canonical source: chan2023_joe_mlvarsv/legacy/utility/mgammaln.m (also code-identical in cjz2019_ad_opthyper/legacy).
+% Body from chan2023_joe_mlvarsv/legacy/utility/mgammaln.m (identical modulo comments).
+% Equivalence: tests/unit/test_util_small.m. Record: tests/variant_map.md.
 % This function evaluates the multivariate gamma function (in log)
 %
 % See:

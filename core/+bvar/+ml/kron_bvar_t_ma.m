@@ -8,12 +8,11 @@
 % mode psihat. Consumes rng in the reduced run only (gamrnd, randn, rand);
 % fminunc/fminbnd are deterministic.
 %
-% Extracted 2026-09-02 from chan2020_jbes_kronecker/legacy/ml_BVAR_t_MA.m,
-% body verbatim. Clean bill: every ordinate sits at the same starred point -
-% in particular line 19 uses s2(1)/(1+psi_mean^2), the term ml_BVAR_MA.m
-% gets wrong. Leftover-workspace reads are chain/optimizer continuation made
-% explicit (store_theta(nsims,1), est.state.psihat, reconstructed optimset).
-% No bugcompat flag needed; verbatim quirks are in tests/variant_map.md.
+% Body from chan2020_jbes_kronecker/legacy/ml_BVAR_t_MA.m, with the
+% legacy script's leftover-workspace reads made explicit inputs
+% (store_theta(nsims,1), est.state.psihat, reconstructed optimset). Every
+% ordinate sits at the same starred point: no bugcompat flag.
+% Equivalence: tests/unit/test_kron_equivalence.m. Record: tests/variant_map.md.
 %
 %   [ML, out] = bvar.ml.kron_bvar_t_ma(shortY, X, pri, est)
 %

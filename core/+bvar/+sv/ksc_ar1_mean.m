@@ -7,16 +7,11 @@
 % Returns the new path h AND the mixture indicators S.
 % Consumes rand(T,1) then randn(T,1) - one of each per call.
 %
-% Extracted 2026-09-01 (step 4, SV/prior core). Canonical body:
-% chan2023_joe_mlvarsv/legacy/utility/sample_SV.m, verbatim. Also canonicalizes
-% chan_koop_yu2024_jbes_oisv/legacy/utility/sample_SV.m (header-comment-only
-% diff; bodies byte-identical, draw-for-draw bitwise equality verified in
-% R2025b and by tests/unit/test_ksc_ar1_mean.m).
-% Function renamed sample_SV -> ksc_ar1_mean; nothing parameterized.
-% NEVER merge with the random-walk variants (bvar.sv.ksc_rw_h0 / ksc_rw_diffuse):
-% different state equations. The companion parameter samplers sample_SVpara /
-% sample_SV0para differ across packages and are NOT consolidated here (see
-% tests/variant_map.md never-merge list).
+% Body from chan2023_joe_mlvarsv/legacy/utility/sample_SV.m, renamed;
+% also stands in for the identical copy in chan_koop_yu2024_jbes_oisv. Not
+% interchangeable with the random-walk variants ksc_rw_h0 / ksc_rw_diffuse:
+% different state equations.
+% Equivalence: tests/unit/test_ksc_ar1_mean.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for

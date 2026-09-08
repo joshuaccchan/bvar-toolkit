@@ -1,7 +1,6 @@
 % bvar.forecast.tables - forecast-evaluation accumulation and RMSFE / average
 % log predictive likelihood (ALPL) table construction, replicated VERBATIM from
-% the recursive-forecasting driver tails. Extracted 2026-09-01 (step 6,
-% forecast engine). Three named actions:
+% the recursive-forecasting driver tails. Three named actions:
 %
 %   row = bvar.forecast.tables('accum_row', tmpyhat, obs)
 %     One accumulation row for one vintage and one horizon:
@@ -19,9 +18,6 @@
 %     imaginary part (see bvar.forecast.iterate header; on R2025b diag() demotes
 %     it back to real) and max() then compares by magnitude - the formula is
 %     reproduced verbatim so this behavior is preserved exactly either way.
-%     NOT covered (deferred to the kronecker family pass): the subsetted
-%     accumulation of chan2020_jbes_kronecker/legacy/main_forecasting.m
-%     (columns [n+var_small, 2*n+1] only, 3*4+1-wide rows).
 %
 %   S = bvar.forecast.tables('springer', yhat0, yhat1, var_core)
 %     RMSFE / ALPL tables of chan2020_springer_largebvar/legacy/
@@ -42,6 +38,8 @@
 %
 % The legacy fprintf display blocks (headline-variable pretty-printing) are
 % formatting only and are not reproduced; callers print from S.
+%
+% Equivalence: tests/unit/test_forecast_tables.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian Vector Autoregressions. In: P. Fuleky (Ed.),

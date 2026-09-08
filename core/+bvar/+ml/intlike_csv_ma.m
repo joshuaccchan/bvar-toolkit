@@ -5,11 +5,10 @@
 % observation carries the (1+psi^2) initialization variance both in the mode
 % search and inside the deny_h likelihood evaluation. Consumes R*T randn calls.
 %
-% Extracted 2026-09-02 (step 8, Kronecker family pass). Canonical source:
-%   chan2020_jbes_kronecker/legacy/intlike_BVAR_CSV_MA.m  (body verbatim;
-%   renamed intlike_BVAR_CSV_MA -> intlike_csv_ma). Called by the BVAR-CSV-MA
-% marginal likelihood with R = 5000 (legacy ml_BVAR_CSV_MA.m lines 10-11).
-% Verified by tests/unit/test_kron_intlike.m (bitwise, seeded).
+% Body from chan2020_jbes_kronecker/legacy/intlike_BVAR_CSV_MA.m,
+% renamed, apart from two syntax-only edits: a stray semicolon after a while
+% condition, and a comma in [T, n] = size(shortY).
+% Equivalence: tests/unit/test_kron_intlike.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

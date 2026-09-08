@@ -23,13 +23,12 @@
 % identical to eq_svar_oi, so under a common seed the two functions return the
 % same draw to floating-point precision (tests/unit/test_eq_var_oi.m).
 %
-% New in the consolidated toolkit (2026-09-06); it canonicalizes no legacy file
-% and replaces nothing. eq_svar_oi remains the verbatim CKY24 block
-% (SVARSV_MH.m lines 76-87) and the bitwise anchor of the
-% chan_koop_yu2024_jbes_oisv replication; this function is for new code. The
-% name says what is drawn - the reduced-form coefficients A - whereas "svar" in
-% the legacy name refers to the structural parameterization of the error
-% covariance, not to the coefficients.
+% New in the consolidated toolkit; it canonicalizes no legacy file and replaces
+% nothing. eq_svar_oi remains the verbatim CKY24 block (SVARSV_MH.m lines 76-87)
+% and the bitwise anchor of the chan_koop_yu2024_jbes_oisv replication; use this
+% one in new code. "svar" in the legacy name refers to the structural
+% parameterization of the error covariance, not to the coefficients, which are
+% reduced-form in both. Record: tests/variant_map.md.
 %
 % Why it is faster. Column ii of A enters structural equation j with the
 % coefficient B0(j,ii), so its conditional precision is

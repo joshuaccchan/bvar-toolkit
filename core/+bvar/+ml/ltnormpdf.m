@@ -1,10 +1,8 @@
 % bvar.ml.ltnormpdf - log density of the normal N(mu,sig2) truncated to (lb,ub).
 %
-% Extracted 2026-09-03 (step 10, ml_varsv marginal-likelihood pass). Canonical
-% source: chan2023_joe_mlvarsv/legacy/utility/ltnormpdf.m (body verbatim; the
-% only copy). Used by the phi prior and importance-sampling ordinates of
-% bvar.ml.mlvarsv_csv. The density counterpart of bvar.util.tnormrnd.
-% Verified bitwise by tests/unit/test_mlvarsv_ml_densities.m.
+% Body from chan2023_joe_mlvarsv/legacy/utility/ltnormpdf.m; the
+% density counterpart of bvar.util.tnormrnd.
+% Equivalence: tests/unit/test_mlvarsv_ml_densities.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

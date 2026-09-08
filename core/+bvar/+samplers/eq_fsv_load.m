@@ -12,10 +12,9 @@
 %
 % rng: randn(k+min(ii-1,r),1) per equation, ii = 1:n. The caller keeps alp = A(:).
 %
-% Extracted 2026-09-03 (step 9). Canonical source, body verbatim:
-% chan2023_joe_mlvarsv/legacy/VAR_FSV.m lines 48-71 (single copy in the repo).
-% Wrapped as a function with T, n, k, r taken from the arguments and Hyper.*
-% passed explicitly.
+% Body from chan2023_joe_mlvarsv/legacy/VAR_FSV.m lines 48-71, wrapped as a
+% function: T, n, k, r taken from the arguments, Hyper.* passed explicitly.
+% Equivalence: tests/unit/test_mlvarsv_equivalence.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

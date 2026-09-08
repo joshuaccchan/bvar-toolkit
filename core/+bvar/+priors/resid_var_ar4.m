@@ -1,16 +1,13 @@
 % bvar.priors.resid_var_ar4 - residual variances of univariate AR(4) models,
 % used to set the Minnesota-prior scalings.
-% Extracted 2026-09-01 (step 4, SV/prior core): verified identical (modulo header
-% comments and a closing `end`; comment-stripped diff + unit test) across the four
-% legacy copies of get_resid_var.m:
-%   chan2021_ijf_mahp/legacy/get_resid_var.m (canonical),
-%   chan2019wp_acp/legacy/get_resid_var.m,
-%   chan2022_qe_acp/legacy/utility/get_resid_var.m,
-%   chan_koop_yu2024_jbes_oisv/legacy/utility/get_resid_var.m.
-% Function renamed get_resid_var -> resid_var_ar4; body verbatim, nothing
-% parameterized. NEVER merge with bvar.priors.resid_var_allvars_ridge (legacy
-% get_resid_var_v2, HYB): that one regresses each variable on 4 lags of ALL
-% variables with a 1e-4 ridge - numerically different sig2.
+%
+% Body from chan2021_ijf_mahp/legacy/get_resid_var.m,
+% renamed; the acp (2019wp and QE) and oisv packages carry copies identical
+% modulo comments and an optional terminating `end`. NEVER merge with
+% bvar.priors.resid_var_allvars_ridge (legacy get_resid_var_v2, HYB): that one
+% regresses each variable on 4 lags of ALL variables with a 1e-4 ridge -
+% numerically different sig2.
+% Equivalence: tests/unit/test_resid_var_ar4.m. Record: tests/variant_map.md.
 %
 % This function computes the residuals of univariate AR(4) models
 %

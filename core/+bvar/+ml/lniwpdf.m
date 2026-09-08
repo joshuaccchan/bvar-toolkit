@@ -3,12 +3,10 @@
 % Kronecker-structured conjugate form, with iVA0 the PRECISION (inverse prior
 % covariance) of each column's coefficients.
 %
-% Extracted 2026-09-02 (step 8, Kronecker family pass). Canonical source:
-%   chan2020_jbes_kronecker/legacy/lniwpdf.m  (body verbatim; the only copy).
-% Used by every marginal-likelihood ordinate in that package (prior ordinate
-% with iVA0 = sparse diag(1./VA0), posterior ordinate with iVA0 = KA).
-% Verified by tests/unit/test_kron_ml_densities.m (bitwise against the legacy
-% copy) and end-to-end through the ML equivalence tests.
+% Body from chan2020_jbes_kronecker/legacy/lniwpdf.m. Used by every
+% marginal-likelihood ordinate in that package: prior ordinate with
+% iVA0 = sparse diag(1./VA0), posterior ordinate with iVA0 = KA.
+% Equivalence: tests/unit/test_kron_ml_densities.m. Record: tests/variant_map.md.
 %
 % Inputs:  A    - k x n evaluation point (VAR coefficients)
 %          Sig  - n x n evaluation point (error covariance)

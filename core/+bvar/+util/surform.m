@@ -1,7 +1,8 @@
 % bvar.util.surform - T x Tk BLOCK-DIAGONAL sparse SUR expansion (TVP state stacking).
 % NOT the same operator as bvar.util.surform2 (n-row Kronecker expansion) - see headers.
-% Extracted 2026-09-01 (step 3, zero-risk core): verified identical (modulo comments/whitespace) across chan2023_jbes_hybtvp/legacy/utility/SURform.m (canonical, this copy)
-% and chan_jeliazkov2009_statespace/legacy/sp_code/SURform.m. Function renamed SURform -> surform.
+% Body from chan2023_jbes_hybtvp/legacy/utility/SURform.m, renamed (identical
+% modulo comments).
+% Equivalence: tests/unit/test_surform.m. Record: tests/variant_map.md.
 % Support function for estimating the hybrid TVP-VAR in Chan (2022)
 %
 % See:

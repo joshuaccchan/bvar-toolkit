@@ -4,12 +4,9 @@
 % (R draws), with the EM-within-Newton mode search of the t-CSV case run on
 % the MA(1)-transformed residuals Utld = Hpsi\U. Consumes R*T randn calls.
 %
-% Extracted 2026-09-02 (step 8, Kronecker family pass). Canonical source:
-%   chan2020_jbes_kronecker/legacy/intlike_BVAR_CSV_t_MA.m  (body verbatim;
-%   renamed intlike_BVAR_CSV_t_MA -> intlike_csv_t_ma). Called by the
-% BVAR-CSV-t-MA marginal likelihood with R = 10000 (legacy
-% ml_BVAR_CSV_t_MA.m lines 20-21). Verified by tests/unit/test_kron_intlike.m
-% (bitwise, seeded) and end-to-end through the ML equivalence tests.
+% Body from chan2020_jbes_kronecker/legacy/intlike_BVAR_CSV_t_MA.m,
+% renamed.
+% Equivalence: tests/unit/test_kron_intlike.m.
 %
 % Known legacy quirk (kept verbatim in both bugcompat and corrected ML modes -
 % it is a likelihood-formula property, not an evaluation-point inconsistency):
@@ -22,7 +19,7 @@
 % line 59) gives it variance (1+psi^2)*exp(h_1)*lam_1*Sig. A one-observation
 % (out of T) mismatch between the estimated model and this likelihood
 % ordinate; the published BVAR-CSV-t-MA marginal likelihood includes it.
-% Recorded in tests/variant_map.md (step-8 audit).
+% Recorded in tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

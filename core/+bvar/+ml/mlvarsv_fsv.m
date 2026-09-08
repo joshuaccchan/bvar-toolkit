@@ -8,14 +8,15 @@
 % additionally integrates out the log-volatility variances; flag_marg = 1 keeps
 % them as drawn parameters (both branches are in the legacy; main_varsv sets 2).
 %
-% Clean bill from the step-10 audit. One thing that looks like a defect and is
+% Clean bill from the audit. One thing that looks like a defect and is
 % not: lh_prior and lh_g both omit the same T(n+r)/2*log(2*pi), and the two
 % omissions cancel in llike + lh_prior - lh_g, in both flag_marg branches.
 % Quirk: big_sig2 is drawn even under flag_marg = 2, where nothing reads it -
 % rng-consuming, numerically inert. tests/variant_map.md has the audit.
 %
-% Extracted 2026-09-03 from chan2023_joe_mlvarsv/legacy/utility/ml_var_fsv.m
-% (body verbatim; helper calls redirected to core).
+% Body from chan2023_joe_mlvarsv/legacy/utility/ml_var_fsv.m, renamed,
+% with helper calls redirected to core (listed below).
+% Equivalence: tests/unit/test_mlvarsv_ml.m.
 %
 %   [lml,lmlstd,out] = bvar.ml.mlvarsv_fsv(X,Y,Y0,M,Hyper,flag_marg,store_h,...
 %       store_hpara,store_l,store_kappa,is_kappafixed,is_kappasym)

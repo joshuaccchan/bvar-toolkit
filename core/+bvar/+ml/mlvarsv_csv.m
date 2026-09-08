@@ -6,11 +6,12 @@
 % moment/ML fit - and the M log weights are averaged in 50 batches, which also
 % gives the numerical standard error.
 %
-% Clean bill from the step-10 audit. tests/variant_map.md has the audit and the
+% Clean bill from the audit. tests/variant_map.md has it and the
 % family-wide quirks.
 %
-% Extracted 2026-09-03 from chan2023_joe_mlvarsv/legacy/utility/ml_var_csv.m
-% (body verbatim; helper calls redirected to core - see below).
+% Body from chan2023_joe_mlvarsv/legacy/utility/ml_var_csv.m, renamed,
+% with helper calls redirected to core (listed below).
+% Equivalence: tests/unit/test_mlvarsv_ml.m.
 %
 %   [lml,lmlstd,out] = bvar.ml.mlvarsv_csv(X,Y,Y0,M,Hyper,store_h,store_hpara,...
 %                                         store_kappa,is_kappafixed)

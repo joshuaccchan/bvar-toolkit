@@ -2,12 +2,12 @@
 % variable on 4 lags of ALL variables (VAR(4)-style regressor set) with a 1e-4
 % ridge on the normal equations; used to set the Minnesota-prior scalings in the
 % hybrid TVP-VAR.
-% Extracted 2026-09-01 (step 4, SV/prior core). Single legacy copy:
-%   chan2023_jbes_hybtvp/legacy/utility/get_resid_var_v2.m (canonical).
-% Function renamed get_resid_var_v2 -> resid_var_allvars_ridge; body verbatim,
-% nothing parameterized. NEVER merge with bvar.priors.resid_var_ar4 (legacy
-% get_resid_var): that one runs univariate AR(4) regressions with no ridge -
-% numerically different sig2, hence different Minnesota scalings.
+%
+% Body from chan2023_jbes_hybtvp/legacy/utility/get_resid_var_v2.m,
+% renamed. NEVER merge with bvar.priors.resid_var_ar4 (legacy get_resid_var):
+% that one runs univariate AR(4) regressions with no ridge - numerically
+% different sig2, hence different Minnesota scalings.
+% Equivalence: tests/unit/test_resid_var_allvars_ridge.m. Record: tests/variant_map.md.
 %
 % Support function for estimating the hybrid TVP-VAR in Chan (2022)
 %

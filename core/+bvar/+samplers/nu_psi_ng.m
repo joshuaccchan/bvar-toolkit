@@ -7,18 +7,12 @@
 % rng consumption: one randn always, then one rand IFF the candidate is
 % positive (Newton/fminbnd are deterministic).
 %
-% Extracted 2026-09-01 (step 5, MAHP flagship functionization). Canonical
-% source: chan2021_ijf_mahp/legacy/sample_nu_psi.m - the ONLY copy in the
-% package; it already is a function (not an inline workspace block). Called by
-% BVAR_MNG.m line 86, BVAR_NG.m line 83, and forecast_BVAR_NG.m line 89 with
-% two outputs (the forecast call captures flag but never accumulates it), and
-% by forecast_BVAR_MNG.m line 88 with one output - all four call sites are
-% served by this single function unchanged.
-% Edits made: provenance header prepended; function renamed
-% sample_nu_psi -> nu_psi_ng. Body verbatim, including the inert `count`
-% logic: count is initialized to 0 and never incremented, so the
-% `count < 100` condition in the while loop and the `if count == 100` fminbnd
-% fallback are dead code - kept verbatim rather than cleaned up.
+% Body from chan2021_ijf_mahp/legacy/sample_nu_psi.m, renamed; it was
+% already a function there, and all four legacy call sites are served unchanged.
+% The inert `count` logic is kept verbatim: count is initialized to 0 and never
+% incremented, so the `count < 100` guard in the while loop and the
+% `if count == 100` fminbnd fallback are dead code.
+% Equivalence: tests/unit/test_mahp_equivalence.m. Record: tests/variant_map.md.
 %
 % Inputs:  psi_kappa1, psi_kappa2 - local scale draws (n*p x 1, (n-1)*n*p x 1)
 %          nu_psi                 - current draw

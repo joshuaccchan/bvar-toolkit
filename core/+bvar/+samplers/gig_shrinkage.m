@@ -4,37 +4,27 @@
 % coefficient-specific local scales psi_kappa1/psi_kappa2 (one gigrnd call
 % each, floored at psi_floor).
 %
-% Extracted 2026-09-01 (step 5, MAHP flagship functionization). One function,
-% three explicitly NAMED variants; each branch is verbatim from its legacy
-% source (the blocks are numerically DIFFERENT across models - never unify):
-%   variant 'mng'  -> chan2021_ijf_mahp/legacy/BVAR_MNG.m  lines 68-81:
-%                     kappa(1) ~ GIG(c01(1)-n*p/2,       2*c01(2), sum(beta1.^2./(2*psi1.*C1)))
-%                     kappa(2) ~ GIG(c02(1)-(n-1)*n*p/2, 2*c02(2), sum(beta2.^2./(2*psi2.*C2)))
-%                     psi_j(i) = max(GIG(nu_psi-1/2, nu_psi, beta_j(i)^2/(2*C_j(i)*kappa_j)), psi_floor)
-%   variant 'ng'   -> chan2021_ijf_mahp/legacy/BVAR_NG.m   lines 66-78:
-%                     single kappa ~ GIG(c01(1)-n^2*p/2, 2*c01(2), sum(beta1.^2./psi1)+sum(beta2.^2./psi2))
-%                     psi_j(i) = max(GIG(nu_psi-1/2, nu_psi, beta_j(i)^2/kappa), psi_floor)
-%                     (no Minnesota C, no factor 2 - the NG prior variance is kappa*psi)
-%   variant 'minn' -> chan2021_ijf_mahp/legacy/BVAR_Minn.m lines 59-62:
-%                     kappa(1)/kappa(2) draws only, chi = sum(beta_j.^2./C_j);
-%                     no psi block (psi_kappa1/psi_kappa2 pass through untouched;
-%                     callers may pass [], and nu_psi/psi_floor are not referenced).
-% Documented settings reproducing each legacy copy exactly:
-%   estimation BVAR_MNG : 'mng' with psi_floor = 1e-10 (its lines 77/80);
-%   estimation BVAR_NG  : 'ng'  with psi_floor = 1e-10 (its lines 74/77);
-%   estimation BVAR_Minn: 'minn' (floor unused);
-%   forecast_BVAR_MNG   : 'mng' with psi_floor = 1e-16 (its lines 79/82; the
-%                         kappa/psi conditionals are otherwise identical);
-%   forecast_BVAR_Minn  : 'minn' (identical block, its lines 65-68).
+% One function, three explicitly NAMED variants, each body verbatim from its own
+% legacy source; the blocks are numerically DIFFERENT across models - never
+% unify them:
+%   'mng'  -> chan2021_ijf_mahp/legacy/BVAR_MNG.m  lines 68-81 (kappa(1:2) with
+%             the Minnesota C, then the psi block);
+%   'ng'   -> chan2021_ijf_mahp/legacy/BVAR_NG.m   lines 66-78 (a single kappa,
+%             no Minnesota C and no factor 2 - the NG prior variance is kappa*psi);
+%   'minn' -> chan2021_ijf_mahp/legacy/BVAR_Minn.m lines 59-62 (kappa draws only,
+%             no psi block: psi_kappa1/psi_kappa2 pass through untouched, callers
+%             may pass [], and nu_psi/psi_floor are not referenced).
+% Wrapped as a function with kappa/psi state passed in and returned; the
+% hard-coded 1e-10 psi floor is promoted to the argument psi_floor; the Psi(idx)
+% reassembly (BVAR_MNG lines 82-83) stays with the caller. Settings reproducing
+% each legacy copy exactly: estimation BVAR_MNG and BVAR_NG use their own variant
+% with psi_floor = 1e-10; forecast_BVAR_MNG uses 'mng' with psi_floor = 1e-16;
+% BVAR_Minn and forecast_BVAR_Minn use 'minn' (floor unused).
 % NEVER-MERGE: forecast_BVAR_NG.m is NOT reproduced by 'ng' at any psi_floor -
-% its conditionals carry an extra factor 2 (tmpc_j = sum(beta_j.^2./(2*psi_j)),
-% tmpv_j = beta_j.^2/(2*kappa), lines 72-78), pairing with its doubled
-% Valp/Vbeta (line 43); a numerically different parameterization, to be
-% functionized separately if the forecast pipeline is ever consolidated.
-% Edits made: wrapped as a function; kappa/psi state passed in and returned;
-% the hard-coded 1e-10 floor promoted to the argument psi_floor (settings
-% above); the Psi(idx) reassembly (BVAR_MNG lines 82-83) stays with the caller.
-% Branch bodies otherwise verbatim, including the 1:1:n*p loop stride.
+% its conditionals carry an extra factor 2 (lines 72-78), pairing with its
+% doubled Valp/Vbeta (line 43); functionize it separately if the forecast
+% pipeline is ever consolidated.
+% Equivalence: tests/unit/test_mahp_equivalence.m. Record: tests/variant_map.md.
 %
 % rng consumption (all draws through gigrnd, resolved from third_party/):
 %   'mng' : 2 + n*p + (n-1)*n*p gigrnd calls, in that order;

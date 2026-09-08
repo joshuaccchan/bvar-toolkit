@@ -1,19 +1,15 @@
 % bvar.priors.acp_stru - asymmetric conjugate prior elicited directly on the
 % structural parameterization of the VAR.
-% Extracted 2026-09-01 (step 4, SV/prior core). Canonical source:
-% replications/chan2022_qe_acp/legacy/utility/prior_ACP_stru.m (R1, the
-% published QE version). Body verbatim, including its local helper
-% prior_ACPi; only the top-level function was renamed
-% prior_ACP_stru -> acp_stru. No parameterization was added.
-% Relationship to chan2019wp_acp/legacy/prior_ACPi.m (working-paper
-% version, single copy, NOT canonicalized here): the 2019wp standalone
-% prior_ACPi computes the SAME mi/Vi/nui/Si values as the local prior_ACPi
-% below with is_ns = false (its mi is always zero - it has no
-% nonstationary unit-mean option on the first own lag), but returns Vi
-% packaged as a sparse diagonal matrix instead of a vector. Strictly an
-% earlier subset in values, not output-identical in type; the 2019wp
-% replication keeps its legacy copy. Cross-checked in
-% tests/unit/test_acp_2019wp_relationship.m.
+%
+% Body from chan2022_qe_acp/legacy/utility/prior_ACP_stru.m
+% (R1, the published QE version), renamed, including its local helper prior_ACPi.
+% Do not merge chan2019wp_acp/legacy/prior_ACPi.m into it: that one computes the
+% same mi/Vi/nui/Si as the local prior_ACPi at is_ns = false (it has no
+% nonstationary unit-mean option on the first own lag), but returns Vi as a
+% sparse diagonal matrix rather than a vector, so the 2019wp replication keeps
+% its own copy.
+% Equivalence: tests/unit/test_acp_stru.m, test_acp_2019wp_relationship.m.
+% Record: tests/variant_map.md.
 %
 % This function directly elicits the asymmetric conjugate prior on the
 % strucutural parameterization

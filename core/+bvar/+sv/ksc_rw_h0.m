@@ -5,16 +5,12 @@
 %   h_t = h_{t-1} + v_t,    v_t ~ N(0,sig),   with sig a VARIANCE.
 % Consumes rand(T,1) then randn(T,1) - one of each per call.
 %
-% Extracted 2026-09-01 (step 4, SV/prior core). Canonical body:
-% chan2020_springer_largebvar/legacy/SVRW.m, verbatim. Also canonicalizes
-%   - chan2020_jbes_kronecker/legacy/realtime_forecasts/SVRW.m (comment-only diff),
-%   - chan2021_ijf_mahp/legacy/SVRW.m (comment-only diff),
-%   - chan2023_jbes_hybtvp/legacy/utility/sample_SVRW.m (algebraically identical
-%     code path: its sparse()/spdiags() constructors build bitwise-identical
-%     matrices and its chol(Kh,'lower')' equals this chol(Ph) bitwise for sparse
-%     inputs (CHOLMOD); verified draw-for-draw bitwise in R2025b over 20 seeded
-%     trials and by tests/unit/test_ksc_rw_h0.m).
-% Function renamed SVRW -> ksc_rw_h0; nothing parameterized.
+% Body from chan2020_springer_largebvar/legacy/SVRW.m, renamed. Also
+% stands in for the SVRW copies in chan2020_jbes_kronecker and chan2021_ijf_mahp,
+% and for chan2023_jbes_hybtvp/legacy/utility/sample_SVRW.m, which spells the same
+% algorithm differently (sparse vs spdiags, chol(Kh,'lower')' vs chol(Ph)) and was
+% verified bitwise-equal.
+% Equivalence: tests/unit/test_ksc_rw_h0.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian Vector Autoregressions. In: P. Fuleky (Eds),

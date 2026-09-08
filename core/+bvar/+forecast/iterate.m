@@ -1,10 +1,9 @@
 % bvar.forecast.iterate - one iterated-forecast + predictive-likelihood step for
-% ONE posterior draw. Extracted 2026-09-01 (step 6, forecast engine). The entry
-% point dispatches to internal NAMED branches whose bodies are VERBATIM copies
-% of the legacy inline per-draw forecast blocks (same randn/rand/gamrnd call
-% order and count, same expressions, same storage classes), so a caller that
-% replays the legacy MCMC draw-for-draw and calls iterate once per kept draw
-% reproduces the legacy tmpyhat arrays bitwise.
+% ONE posterior draw. The entry point dispatches to internal NAMED branches
+% whose bodies are VERBATIM copies of the legacy inline per-draw forecast blocks
+% (same randn/rand/gamrnd call order and count, same expressions, same storage
+% classes), so a caller that replays the legacy MCMC draw-for-draw and calls
+% iterate once per kept draw reproduces the legacy tmpyhat arrays bitwise.
 %
 %   fc = bvar.forecast.iterate(branch, draw, cfg)
 %
@@ -59,13 +58,12 @@
 % from the legacy scripts, including the rng draws consumed by the extra step.
 %
 % ---------------------------------------------------------------------------
-% BRANCH MAP (which legacy inline blocks each branch canonicalizes; "body" =
-% the per-draw forecast block copied verbatim, tmpyhat*(i,:) renamed fc(r,:)):
+% BRANCH MAP: the legacy block each branch's body is copied from (verbatim,
+% with tmpyhat*(i,:) renamed fc(r,:)), and the draw/cfg fields it reads.
 %
-% 'mahp_sv'   chan2021_ijf_mahp/legacy/forecast_BVAR_MNG.m, body of the
-%             forecast loop (lines 112-147; the CANONICAL copy). Textually
-%             identical copies: forecast_BVAR_NG.m lines 113-148 and
-%             forecast_BVAR_Minn.m lines 92-128. Structural BVAR with
+% 'mahp_sv'   chan2021_ijf_mahp/legacy/forecast_BVAR_MNG.m lines 112-147; the
+%             tails of forecast_BVAR_NG.m (113-148) and forecast_BVAR_Minn.m
+%             (92-128) are textually identical. Structural BVAR with
 %             per-variable random-walk SV: transforms (alp, beta, h_T, Sigh)
 %             to reduced form, innovates all n log-volatilities each step.
 %             draw: alp (k_alp x 1), beta (k_beta x 1), h_T (n x 1), Sigh (n x 1)
@@ -74,11 +72,9 @@
 %                   p, t, T
 %
 % 'springer_gauss'  chan2020_springer_largebvar/legacy/forecast_BVAR_Minn.m
-%             lines 36-57 (CANONICAL). Textually identical bodies (given the
-%             caller-supplied A/CSig/dSig and outturn subsetting):
-%             forecast_BVAR_small.m 41-62 (caller passes data_tpk(:,var_small)),
-%             forecast_BVAR_NCP.m 40-61, forecast_BVAR_IP.m 45-66,
-%             forecast_BVAR_SSVS.m 52-73. Homoskedastic Gaussian errors.
+%             lines 36-57. Homoskedastic Gaussian errors. Also stands in for
+%             forecast_BVAR_small.m 41-62, _NCP.m 40-61, _IP.m 45-66 and
+%             _SSVS.m 52-73, whose bodies differ only in what the caller passes:
 %             draw: A (k x n; Minn/small/IP/SSVS callers reshape(beta,k,n)),
 %                   CSig - IN THE LEGACY STORAGE CLASS: sparse(1:n,1:n,
 %                   sqrt(Sig_hat)) for Minn/small, dense chol(Sig,'lower')
@@ -112,16 +108,11 @@
 %                   Tt x Tt MA rotation held by the sampler)
 %             cfg:  shortYt, Z (the Tt x k estimation design), data_tpk,
 %                   is_last_miss, p, t, T
-%
-% NOT covered here (deferred to their family passes; the audit's remaining
-% inline blocks): the 9 chan2020_jbes_kronecker/realtime_forecasts scripts
-% (same skeleton at tt = 1:5 evaluating tt = 1,2,3,5, plus homoskedastic-t /
-% MA / t-CSV / t-MA / CSV-MA / t-CSV-MA / n-variate-SV-small error families),
-% cjz2019_ad_opthyper/forecast_BVAR_NCP.m (Gaussian, tt = 1:4 evaluating
-% tt = 1 and 4, final-vintage data, no is_last_miss step), and the two
-% chan_koop_yu2024_jbes_oisv cluster fragments forecast_CS_MH.m /
-% forecast_SVARSV_MH.m (12-horizon monthly design, 2n+3-column rows).
 % ---------------------------------------------------------------------------
+%
+% Equivalence: tests/unit/test_forecast_iterate_mahp.m (mahp_sv) and
+% tests/unit/test_forecast_iterate_springer.m (springer_*).
+% Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C. (2021). Minnesota-Type Adaptive Hierarchical Priors for

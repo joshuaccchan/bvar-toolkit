@@ -1,26 +1,20 @@
 % bvar.priors.vtheta - conditional Minnesota-type prior variances of the VAR
 % coefficients (Vbeta) and the free elements of the impact matrix (Valp), given
 % the shrinkage hyperparameters kappa and the AR(4) residual variances sig2.
-% Extracted 2026-09-01 (step 4, SV/prior core). Canonical source (body verbatim,
-% renamed getVtheta -> vtheta, MAHP semantics):
-%   chan2021_ijf_mahp/legacy/getVtheta.m.
-% Also canonicalizes chan2023_jbes_hybtvp/legacy/utility/getVtheta.m, whose only
-% differences (comment-stripped diff) are that it hard-codes kappa_3 = .2 (impact
-% matrix) and kappa_4 = 1 (intercepts) inside the body and reads only kappa(1:2).
-% Parameterization: kappa here is ALWAYS a 4-vector,
-%   kappa(1) own lags, kappa(2) other lags, kappa(3) impact matrix, kappa(4) intercepts.
-% Documented settings reproducing each legacy copy exactly:
-%   MAHP: pass its kappa 4-vector unchanged;
-%   HYB : pass [kappa(1), kappa(2), .2, 1].
-% (kappa(3)=.2 and kappa(4)=1 give bit-identical products to the HYB hard-coded
-% constants; verified by unit test under both settings.)
 %
-% Added 2026-09-02 (step 7, OISV family pass): the Vbeta output also
-% canonicalizes chan_koop_yu2024_jbes_oisv/legacy/utility/getVbeta.m - that
-% function is exactly the three Vbeta assignment lines below (same inputs,
-% same order, no Valp); OISV callers use `[~,Vbeta] = bvar.priors.vtheta(...)`
-% and discard Valp (NaN under the OI kappa(3) = NaN, never read). Verified
-% draw-for-draw through tests/unit/test_oisv_equivalence.m.
+% Body from chan2021_ijf_mahp/legacy/getVtheta.m (MAHP
+% semantics), renamed. kappa here is ALWAYS a 4-vector - kappa(1) own lags,
+% kappa(2) other lags, kappa(3) impact matrix, kappa(4) intercepts - which also
+% covers chan2023_jbes_hybtvp/legacy/utility/getVtheta.m, whose only
+% difference is that it hard-codes kappa_3 = .2 and kappa_4 = 1 and reads only
+% kappa(1:2): pass [kappa(1), kappa(2), .2, 1] to reproduce it.
+% The Vbeta output additionally covers
+% chan_koop_yu2024_jbes_oisv/legacy/utility/getVbeta.m, which is
+% exactly the three Vbeta assignment lines below; OISV callers use
+% [~,Vbeta] = bvar.priors.vtheta(...) and discard Valp (NaN under the OI
+% kappa(3) = NaN, never read).
+% Equivalence: tests/unit/test_vtheta.m (both kappa settings),
+% tests/unit/test_oisv_equivalence.m. Record: tests/variant_map.md.
 %
 % This function constructs the conditional prior of the VAR coefficients
 % and the impact matrix

@@ -11,9 +11,9 @@
 %
 % rng: one randn(T*r,1) per call.
 %
-% Extracted 2026-09-03 (step 9). Canonical source, body verbatim:
-% chan2023_joe_mlvarsv/legacy/VAR_FSV.m lines 38-44 (single copy in the repo).
-% Wrapped as a function with T, n, r taken from the arguments.
+% Body from chan2023_joe_mlvarsv/legacy/VAR_FSV.m lines 38-44, wrapped as a
+% function with T, n, r taken from the arguments.
+% Equivalence: tests/unit/test_mlvarsv_equivalence.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

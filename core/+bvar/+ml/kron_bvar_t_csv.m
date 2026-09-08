@@ -8,12 +8,11 @@
 % draws. Consumes rng: R*T randn in the intlike, then the reduced run's
 % draws.
 %
-% Extracted 2026-09-02 from chan2020_jbes_kronecker/legacy/ml_BVAR_t_CSV.m,
-% body verbatim. Clean bill: every ordinate sits at the same starred point;
-% the leftover-workspace reads are chain continuation from the last stored
-% (h, lam, rho), made explicit here. No bugcompat flag needed. Verbatim
-% quirks (reduced-run rho bound .999 vs the estimation script's .9999) are
-% listed in tests/variant_map.md.
+% Body from chan2020_jbes_kronecker/legacy/ml_BVAR_t_CSV.m, with the
+% legacy script's leftover-workspace reads made explicit inputs (the reduced run
+% continues from the last stored h, lam and rho). Every ordinate sits at the
+% same starred point: no bugcompat flag.
+% Equivalence: tests/unit/test_kron_equivalence.m. Record: tests/variant_map.md.
 %
 %   [ML, out] = bvar.ml.kron_bvar_t_csv(shortY, X, pri, est, ...)
 %

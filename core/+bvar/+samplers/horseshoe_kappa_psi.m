@@ -21,21 +21,16 @@
 % drawn at chain init and leaves every call as a 1x2 row (gamrnd inherits the
 % shape of kappa(1:2)).
 %
-% Extracted 2026-09-02 (step 7, OISV family pass). Canonical source (body
-% verbatim): chan_koop_yu2024_jbes_oisv/legacy/SVARSV_MH.m lines 102-120
-% (theta = alpha there). Also canonicalizes the textually identical blocks in
-% CS_MH.m lines 102-120 (theta = beta), forecast_SVARSV_MH.m lines 96-114 and
-% forecast_CS_MH.m lines 93-111 - the ONLY difference across the four copies
-% is the coefficient vector's name, unified as theta.
-% Edits made, in full: wrapped as a function with np = numel(idx_kappa1) and
-% nnp = numel(idx_kappa2) replacing the workspace n*p and (n-1)*n*p (identical
-% integers - one own-lag index per equation-lag pair, (n-1) other-lag indices);
-% alpha/beta renamed theta; the Psi reassembly left with the caller (see
-% above). Everything else byte-verbatim.
+% Body from chan_koop_yu2024_jbes_oisv/legacy/SVARSV_MH.m lines 102-120 (theta =
+% alpha there), wrapped as a function: np = numel(idx_kappa1) and
+% nnp = numel(idx_kappa2) replace the workspace n*p and (n-1)*n*p, and the Psi
+% reassembly is left with the caller (see above). Also covers the textually
+% identical blocks in CS_MH.m 102-120 (theta = beta), forecast_SVARSV_MH.m
+% 96-114 and forecast_CS_MH.m 93-111 - the only difference across the four is
+% the coefficient vector's name, unified as theta.
 % NEVER merge with bvar.samplers.gig_shrinkage: that is the MAHP normal-gamma
-% (GIG) block - a different prior family with a different draw sequence; see
-% tests/variant_map.md. Draw-for-draw equivalence:
-% tests/unit/test_oisv_equivalence.m.
+% (GIG) block, a different prior family with a different draw sequence.
+% Equivalence: tests/unit/test_oisv_equivalence.m. Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian

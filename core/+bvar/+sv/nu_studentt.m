@@ -3,26 +3,15 @@
 % under a uniform prior on (2, nu_ub): Newton-Raphson mode nut, Gaussian
 % N(nut, -1/H) proposal, MH accept-reject.
 %
-% Extracted 2026-09-01 (step 4, SV/prior core). Canonical source:
-%   chan2020_springer_largebvar/legacy/sample_nu.m  (renamed sample_nu ->
-%   nu_studentt; body verbatim EXCEPT the duplicated recomputation of
-%   T/sum1/sum2 - three lines that reassigned identical values to the same
-%   names, deterministically, with no rng calls - was removed).
-% Also canonicalizes exactly (verified draw-for-draw under fixed seeds across
-% accept and reject branches, identical terminal rng state):
-%   chan2020_jbes_kronecker/legacy/realtime_forecasts/sample_nu.m
-%     (executably identical body; old `[nu flag f_nu]` output syntax, no header)
-%   chan2020_jbes_kronecker/legacy/sample_nu.m
-%     (same Newton iterates and proposal bitwise; the MH ratio is computed as
-%     exp(fnu(nuc)-fnu(nu)) * normpdf(nu,nut,sqrtDnu)/normpdf(nuc,nut,sqrtDnu)
-%     instead of the log-form used here - mathematically identical, floating-
-%     point-different in the last bits. Decisions verified identical over all
-%     tested seeds/regimes. The normpdf form can yield Inf*0 = NaN (-> reject)
-%     when |nu - nut| is extreme AND fnu(nuc)-fnu(nu) > ~709; the log-form
-%     rejects there too in every reachable case tested, but the two forms are
-%     not bitwise-identical in alpha. The log-form is kept: 2 of 3 legacy
-%     copies use it and it has no Inf*0 hazard.)
-% Nothing was parameterized.
+% Body from chan2020_springer_largebvar/legacy/sample_nu.m, renamed, with one
+% deviation: a duplicated recomputation of T/sum1/sum2 - three lines reassigning
+% identical values, no rng calls - was removed. Also stands in for the two
+% sample_nu copies in chan2020_jbes_kronecker; one of those forms the MH ratio
+% from normpdf ratios rather than in logs. That is mathematically identical and
+% its accept/reject decisions matched on every seed tested, but the two are not
+% bitwise-identical in alpha; the log-form is kept because it has no Inf*0 = NaN
+% hazard when |nu - nut| is extreme.
+% Equivalence: tests/unit/test_nu_studentt.m. Record: tests/variant_map.md.
 %
 % Inputs:  lam   - T x 1 latent scale draws
 %          nu    - current df draw
