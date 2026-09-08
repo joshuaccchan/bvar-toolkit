@@ -32,6 +32,11 @@
 %   store_kappa - nsim x 3, columns [kappa1 kappa2 kappa4] [13]
 %   out: store_w, bigml (the 50 batch values), and the fitted IS parameters
 %
+% rng consumption: all of it inside the importance-sampling loops - gamrnd(M,1) per
+% kappa block and randn(M,n) for mu while fitting the IS density, then randn(T*n,1)
+% for the log-volatility path and randn(k_beta,1) for the coefficients per draw. A
+% top-level estimator rather than a Gibbs block.
+%
 % Core used: bvar.priors.minn (legacy prior_Minn, n0pre = 4), bvar.priors.impact_B0
 % (prior_B0), bvar.util.tnormrnd, bvar.util.vec, bvar.util.ldet, bvar.ml.isden_arss.
 %

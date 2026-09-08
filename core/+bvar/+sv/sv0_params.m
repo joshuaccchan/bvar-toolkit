@@ -7,8 +7,14 @@
 % bvar.sv.sv_params: the OISV pair keeps the zero-mean sampler separate with a
 % different bound (.99 here vs .999 in sample_SVpara).
 % Equivalence: tests/unit/test_sv0_params.m. Record: tests/variant_map.md.
+% rng consumption: one gamrnd for sig2, one randn(n,1) for the phi candidates,
+% then one rand per candidate falling inside phi_bnd - so that count is
+% data-dependent.
 %
-% This function samples the SV parameters phi, and sig2
+% See:
+% Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian
+% VARs with Stochastic Volatility, Journal of Business and Economic
+% Statistics, 42(2): 825-837.
 
 function [phi,sig2,flag_phi] = sv0_params(h,phi,Hyper,phi_bnd)
 if nargin < 4

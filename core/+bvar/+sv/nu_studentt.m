@@ -12,6 +12,8 @@
 % bitwise-identical in alpha; the log-form is kept because it has no Inf*0 = NaN
 % hazard when |nu - nut| is extreme.
 % Equivalence: tests/unit/test_nu_studentt.m. Record: tests/variant_map.md.
+% rng consumption: one randn for the candidate, then one rand only if that candidate
+% falls in (2, nu_ub).
 %
 % Inputs:  lam   - T x 1 latent scale draws
 %          nu    - current df draw

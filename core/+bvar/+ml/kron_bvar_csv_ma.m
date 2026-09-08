@@ -7,7 +7,7 @@
 % ordinates from a reduced run of nsims2 sweeps re-drawing (h, rho, psi) at
 % fixed (A_mean, Sig_mean, sigh2_mean), continuing from the last stored
 % draws with the psi-MH warm-started at the estimation run's final psihat.
-% Consumes rng: R*T randn in the intlike, then the reduced run's draws.
+% rng consumption: R*T randn in the intlike, then the reduced run's draws.
 %
 % Body from chan2020_jbes_kronecker/legacy/ml_BVAR_CSV_MA.m, with the
 % legacy script's leftover-workspace reads made explicit inputs (last stored

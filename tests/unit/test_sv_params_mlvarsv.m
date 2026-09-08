@@ -8,11 +8,11 @@ function test_sv_params_mlvarsv
 % and VAR_ARSVO_redu.m 91: h is T x n, mu is n x 1; VAR_FSV.m 82: h is
 % T x (n+r), mu is (n+r) x 1 - so r = 0 inside sv_params there too). The phi
 % truncation bound (.998 here vs the OISV default .999) is the only difference
-% that can bite; the last block below shows it biting.
+% that can change the output; the last block below shows it doing so.
 %
-% NOT claimed: r > 0. With numel(mu) < size(h,2) the two bodies genuinely
-% differ - sv_params demeans only the first n columns, sample_SVpara demeans
-% all of them.
+% NOT claimed: r > 0. With numel(mu) < size(h,2) the two bodies do differ -
+% sv_params demeans only the first n columns, sample_SVpara demeans all of
+% them.
 root = getappdata(0, 'bvar_repo_root');
 leg = fullfile(root, 'replications', 'chan2023_joe_mlvarsv', 'legacy', 'utility');
 addpath(leg); c = onCleanup(@() rmpath(leg)); %#ok<NASGU>

@@ -10,7 +10,7 @@
 %   Valp, alp0 : k*n x 1 stacked prior variances / means of A
 %   Vl, l0     : scalar prior variance / mean of every free loading
 %
-% rng: randn(k+min(ii-1,r),1) per equation, ii = 1:n. The caller keeps alp = A(:).
+% rng consumption: randn(k+min(ii-1,r),1) per equation, ii = 1:n. The caller keeps alp = A(:).
 %
 % Body from chan2023_joe_mlvarsv/legacy/VAR_FSV.m lines 48-71, wrapped as a
 % function: T, n, k, r taken from the arguments, Hyper.* passed explicitly.

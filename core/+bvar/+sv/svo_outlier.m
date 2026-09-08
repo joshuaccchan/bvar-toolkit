@@ -10,7 +10,7 @@
 %   po     : current outlier probability (in), new draw (out)
 %   p0a,p0b: beta prior parameters
 %
-% rng: rand once per period t = 1:T, then one betarnd.
+% rng consumption: rand once per period t = 1:T, then one betarnd.
 %
 % Body from chan2023_joe_mlvarsv/legacy/VAR_ARSVO_redu.m lines 112-124, wrapped
 % as a function: T, n, ngrid taken from the arguments, Hyper.p0a/p0b passed

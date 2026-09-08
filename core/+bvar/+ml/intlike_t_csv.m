@@ -4,7 +4,7 @@
 % importance sampling, R draws) are integrated out. The mode search is an
 % EM-within-Newton scheme (E-step over lam, inner NR over h) and the IS
 % covariance uses the exact negative Hessian of the t-marginal conditional.
-% Consumes R*T randn calls.
+% rng consumption: R*T randn calls.
 %
 % Body from chan2020_jbes_kronecker/legacy/intlike_BVAR_t_CSV.m,
 % renamed.

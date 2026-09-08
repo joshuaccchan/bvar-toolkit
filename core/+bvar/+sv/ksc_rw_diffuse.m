@@ -5,7 +5,7 @@
 %             7-component normal mixture,
 %   h_t = h_{t-1} + v_t,    v_t ~ N(0,omega2h),   h_1 ~ N(0,Vh).
 % Returns the new path h AND the mixture indicators S.
-% Consumes rand(T,1) then randn(T,1) - one of each per call.
+% rng consumption: rand(T,1) then randn(T,1), one of each per call.
 %
 % Body from chan_jeliazkov2009_statespace/legacy/sp_code/SVRW.m, renamed;
 % the output list is written [h,S] where the legacy has [h S], which is syntax only.

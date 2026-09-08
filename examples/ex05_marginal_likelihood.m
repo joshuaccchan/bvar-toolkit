@@ -86,7 +86,7 @@ fprintf('  ------------------------------------------------------------\n');
 fprintf('  log marginal likelihood                       : %12.4f\n', o2.ML);
 fprintf('  (posterior mean of the t degrees of freedom nu : %.2f - well below\n', o2.ml.nu_mean);
 fprintf('   the ~30 at which a t is indistinguishable from a normal, so the\n');
-fprintf('   data are asking for fat tails.)\n');
+fprintf('   posterior concentrates on fat tails.)\n');
 
 fprintf('\nNote the two ordinate blocks are SUBTRACTED. A model can raise its\n');
 fprintf('likelihood by fitting the sample more closely and still lose, because\n');
@@ -115,9 +115,10 @@ fprintf('%s\n', repmat('-', 1, 66));
 fprintf('\nHow to read the middle column: it is a log Bayes factor against the\n');
 fprintf('plain Gaussian VAR. On Kass and Raftery''s scale a log BF above 5 is\n');
 fprintf('"very strong" evidence, and these are far larger - allowing for fat\n');
-fprintf('tails or time-varying volatility buys an enormous amount, which is\n');
-fprintf('the paper''s point. The full-length ranking puts the model that does\n');
-fprintf('BOTH (plus an MA term) on top; see tests/golden/ for those tables.\n');
+fprintf('tails or time-varying volatility improves the fit by a wide margin,\n');
+fprintf('which is the paper''s main finding. The full-length ranking puts the\n');
+fprintf('model that does BOTH (plus an MA term) on top; see tests/golden/ for\n');
+fprintf('those tables.\n');
 
 %% ------------------------------------------------------------------
 %  3. Using the ml functions on your own model

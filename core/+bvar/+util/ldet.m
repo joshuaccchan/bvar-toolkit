@@ -1,6 +1,8 @@
+% bvar.util.ldet - log determinant of a symmetric positive definite matrix, taken
+% from its Cholesky factor.
+%
 % Body from chan2023_joe_mlvarsv/legacy/utility/ldet.m (identical modulo comments).
 % Equivalence: tests/unit/test_util_small.m. Record: tests/variant_map.md.
-% This function evaluates the log determinant
 %
 % See:
 % Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for 

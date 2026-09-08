@@ -34,6 +34,10 @@
 %   out: store_w, bigml, store_lr_o, store_lJ_o (the o Jacobian actually
 %        applied; all zeros under bugcompat), o_hat, and the fitted IS parameters
 %
+% rng consumption: as bvar.ml.mlvarsv_arsv_redu, plus betarnd(M,1) for the outlier
+% probability while fitting the IS density and one rand(T,1) per draw for the
+% outlier-scale grid. A top-level estimator rather than a Gibbs block.
+%
 % Core used: bvar.priors.minn (legacy prior_Minn, n0pre = 4), bvar.priors.impact_B0
 % (prior_B0), bvar.util.tnormrnd, bvar.util.vec, bvar.util.ldet, bvar.ml.isden_arss.
 %

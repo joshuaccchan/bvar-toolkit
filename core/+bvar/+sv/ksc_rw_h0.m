@@ -3,7 +3,7 @@
 %   ystar_t = h_t + eps_t,  eps_t = log of a chi^2_1 draw, approximated by the
 %             Kim-Shephard-Chib (1998) 7-component normal mixture,
 %   h_t = h_{t-1} + v_t,    v_t ~ N(0,sig),   with sig a VARIANCE.
-% Consumes rand(T,1) then randn(T,1) - one of each per call.
+% rng consumption: rand(T,1) then randn(T,1), one of each per call.
 %
 % Body from chan2020_springer_largebvar/legacy/SVRW.m, renamed. Also
 % stands in for the SVRW copies in chan2020_jbes_kronecker and chan2021_ijf_mahp,

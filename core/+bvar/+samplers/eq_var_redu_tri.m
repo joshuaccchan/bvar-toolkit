@@ -12,7 +12,7 @@
 %   o    : T x 1 outlier scales, optional; default ones(T,1), which leaves the
 %          row scaling bit-for-bit unchanged (multiplication by 1)
 %
-% rng: randn(k,1) per equation, ii = 1:n. The caller keeps alp = reshape(A,k_alp,1).
+% rng consumption: randn(k,1) per equation, ii = 1:n. The caller keeps alp = reshape(A,k_alp,1).
 %
 % Sibling of bvar.samplers.eq_svar_oi (order-invariant SVAR-SV), which stacks all
 % n rows, has no prior-mean term and no o. Do not merge the two.

@@ -9,7 +9,7 @@
 %   L : n x r loading matrix (unit-lower-triangular top block)
 %   h : T x (n+r), idiosyncratic columns first
 %
-% rng: one randn(T*r,1) per call.
+% rng consumption: one randn(T*r,1) per call.
 %
 % Body from chan2023_joe_mlvarsv/legacy/VAR_FSV.m lines 38-44, wrapped as a
 % function with T, n, r taken from the arguments.

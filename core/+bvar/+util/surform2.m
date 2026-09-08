@@ -4,6 +4,10 @@
 % for the springer_largebvar, jbes_kronecker and oisv copies, which differ only
 % in variable spelling and whitespace.
 % Equivalence: tests/unit/test_surform2.m. Record: tests/variant_map.md.
+%
+% See:
+% Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large
+% Bayesian VARs, Journal of Econometrics, 235(2), 1419-1446.
 function Xout = surform2( X, n )
 repX = kron(X,ones(n,1));
 [r,c] = size( X );

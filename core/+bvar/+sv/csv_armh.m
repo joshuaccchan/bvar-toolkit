@@ -11,6 +11,9 @@
 % as csv_armh(s2,rho,sigh2,h,n,isim==1,h_mean) - for the inline h step of the
 % reduced run in chan2020_jbes_kronecker/legacy/ml_BVAR_CSV.m.
 % Equivalence: tests/unit/test_csv_armh.m. Record: tests/variant_map.md.
+% rng consumption: one randn(T,1) and one rand per accept-reject proposal, repeated
+% until one is accepted - so that count is data-dependent - then one rand for the MH
+% step, drawn even when is_ForcedAccept is true.
 %
 % Inputs:  s2    - T x 1, sum over the n series of squared (orthogonalized,
 %                  lambda-scaled) errors at each t

@@ -1,8 +1,8 @@
 % bvar.samplers.eq_hyb_tvp - the hybrid TVP-VAR block for ONE equation: draws the
 % pair of binary indicators gam_i = (gam^beta_i, gam^alpha_i) marginally of the
 % states, then draws the state path theta_i given them. This is the step that
-% makes the model "hybrid" - each equation decides separately whether its VAR
-% coefficients and its impact-matrix elements are time-varying (gam = 1) or
+% makes the model "hybrid" - each equation has its own pair of indicators for whether
+% its VAR coefficients and its impact-matrix elements are time-varying (gam = 1) or
 % constant (gam = 0), so a 20-variable VAR need not pay for time variation in
 % every equation.
 %

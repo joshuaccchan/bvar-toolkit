@@ -5,7 +5,7 @@
 %   h_t = mu + rho*(h_{t-1} - mu) + v_t,  v_t ~ N(0,sig2),
 %   h_1 ~ N(mu, sig2/(1-rho^2))  (stationary initialization).
 % Returns the new path h AND the mixture indicators S.
-% Consumes rand(T,1) then randn(T,1) - one of each per call.
+% rng consumption: rand(T,1) then randn(T,1), one of each per call.
 %
 % Body from chan2023_joe_mlvarsv/legacy/utility/sample_SV.m, renamed;
 % also stands in for the identical copy in chan_koop_yu2024_jbes_oisv. Not

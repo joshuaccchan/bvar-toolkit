@@ -3,6 +3,10 @@
 % Body from chan2020_springer_largebvar/legacy/loaddata.m, renamed (the copy at
 % chan2020_jbes_kronecker/legacy/realtime_forecasts/loaddata.m is byte-identical).
 % Equivalence: tests/unit/test_forecast_iterate_springer.m. Record: tests/variant_map.md.
+%
+% See:
+% Chan, J.C.C. (2020). Large Bayesian Vector Autoregressions. In: P. Fuleky (Eds),
+% Macroeconomic Forecasting in the Era of Big Data, 95-125, Springer, Cham.
 function [data_t,data_tpk] = realtime_loaddata(rt_data,nonrev_data,t,T0,tcode,var_type)
 n = length(var_type);
 data_t = zeros(t-2,n);

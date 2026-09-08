@@ -1,7 +1,10 @@
+% bvar.util.tnormrnd - N draws from the normal truncated to (a, b), by inverse
+% transform.
+%
 % Body from chan2023_joe_mlvarsv/legacy/utility/tnormrnd.m (identical modulo comments).
 % Equivalence: tests/unit/test_tnormrnd.m. Record: tests/variant_map.md.
-% This function samples N draws from the truncated normal
-%    
+% rng consumption: one rand(N,1) per call.
+%
 % See:
 % Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for 
 % Large Bayesian VARs, Journal of Econometrics, 235(2): 1419-1446.

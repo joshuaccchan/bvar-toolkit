@@ -16,7 +16,7 @@
 %                                   rejects the candidate at the first shock
 %                                   that fails. This is the standard scheme.
 %
-%   bvar.structural.sign_assign     asks which columns admit which shocks,
+%   bvar.structural.sign_assign     tabulates which columns admit which shocks,
 %                                   accepts whenever every shock has at least
 %                                   one, and then draws an assignment. This is
 %                                   the algorithm of Chan, Matthes and Yu (2026).

@@ -10,6 +10,9 @@
 % differ.
 % Equivalence: tests/unit/test_sv_params.m, test_sv_params_mlvarsv.m.
 % Record: tests/variant_map.md.
+% rng consumption: one gamrnd for sig2, one randn(n+r,1) for the phi candidates,
+% then one rand per candidate falling inside phi_bnd - so that count is
+% data-dependent - and finally randn(n,1) for mu when the gate below passes.
 %
 % Notes on the verbatim body:
 % - h is T x (n+r): the first n columns have mean mu (n = numel(mu)); the last
@@ -19,7 +22,10 @@
 %   Callers initialize mu from the data, so it is all-nonzero in practice and mu
 %   is drawn every sweep; the gate is kept verbatim regardless.
 %
-% This function samples the SV parameters mu, phi, and sig2
+% See:
+% Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian
+% VARs with Stochastic Volatility, Journal of Business and Economic
+% Statistics, 42(2): 825-837.
 
 function [mu,phi,sig2,flag_phi] = sv_params(h,mu,phi,Hyper,phi_bnd)
 if nargin < 5
