@@ -20,8 +20,8 @@ For the methods behind the code, see the book *Bayesian Macroeconometrics: Metho
 Applications* (Chapman & Hall/CRC, forthcoming) —
 [sample chapters](https://joshuachan.org/papers/BayesMacroBook_sample.pdf) and
 [its own code repository](https://github.com/joshuaccchan/bayesian-macroeconometrics), with
-MATLAB, R and Python for all fourteen chapters. Each example in `examples/` names the chapter
-that develops it.
+MATLAB, R and Python for all fourteen chapters. `examples/README.md` maps each example to the
+chapter that develops it.
 
 ## Two ways to use this repo
 
