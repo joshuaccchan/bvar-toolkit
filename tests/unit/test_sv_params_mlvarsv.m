@@ -83,5 +83,6 @@ rng(99,'twister'); [~,p998]  = bvar.sv.sv_params(h2, 0, .5, HyperT, .998);
 rng(99,'twister'); [~,p999]  = bvar.sv.sv_params(h2, 0, .5, HyperT);   % OISV default
 assert(isequal(pLeg, p998), 'phi_bnd = .998 must match the legacy bound');
 assert(~isequal(pLeg, p999), ...
-    'degenerate teeth: no candidate landed in [.998,.999), so the bound was never tested');
+    ['no candidate landed in [.998,.999), so the bound was never exercised ' ...
+     'and this comparison proves nothing']);
 end

@@ -79,7 +79,7 @@ h is T x n with mu n x 1; `VAR_FSV.m` 82 h is T x (n+r) with mu (n+r) x 1 - so r
 inside `sv_params` there too, the factor columns arriving as extra "series" with their
 own mu). The phi bound is the only difference that changes the output, and it does:
 `test_sv_params_mlvarsv` forces a candidate into [.998,.999) and shows .999 accepting
-where .998 and the legacy reject, and a scratch-mirror teeth check that hard-codes .999
+where .998 and the legacy reject, and a scratch-mirror perturbation check that hard-codes .999
 inside `sv_params` makes `test_mlvarsv_equivalence` fail on model 3. r > 0 remains
 uncovered by the claim: there the two bodies do differ.
 
@@ -163,7 +163,7 @@ at t = T-1 and the complex-typed `sum(diag(log(CS)))` joint-density path. The
 are not reproduced.
 
 Step-6 verification notes:
-- Teeth check passed: a 1e-7 relative perturbation of one constant in the
+- Perturbation check passed: a 1e-7 relative perturbation of one constant in the
   `mahp_sv` branch makes `test_forecast_iterate_mahp` FAIL on tmpyhat1.
 - Path nuance (same as step 5): inside both forecast equivalence tests, the
   unqualified `gigrnd` (via `bvar.samplers.gig_shrinkage`) and `llike_CSV_MA`
@@ -266,11 +266,11 @@ additionally asserted to differ exactly where each bug lives and match everywher
 | `bvar.ml.kron_bvar` | BVAR.m lines 36-47 (inline cp_ml block) | (model 1; analytic, no rng) | unit (`test_kron_equivalence` model 1) |
 | `bvar.ml.kron_bvar_t` | ml_BVAR_t.m | (model 2; deterministic given stores) - CLEAN BILL | unit (same, model 2) |
 | `bvar.ml.kron_bvar_csv` | ml_BVAR_CSV.m | (model 3) - CLEAN BILL; chain-continuation leftovers made explicit (h/rho from last stored draws; countrho continues the ESTIMATION counter via est.state.countrho); its inline reduced-run h step = `bvar.sv.csv_armh(s2,rho,sigh2,h,n,isim==1,h_mean)` (NR start promoted, see below) | unit (same, model 3) |
-| `bvar.ml.kron_bvar_ma` | ml_BVAR_MA.m | (model 4) - AFFECTED: line-17 leftover-psi llike term; `'bugcompat',true` reproduces it bitwise from est.state.psi, default corrects to psi_mean | unit (same, model 4 bugcompat bitwise + corrected-differs-only-in-llike teeth) |
+| `bvar.ml.kron_bvar_ma` | ml_BVAR_MA.m | (model 4) - AFFECTED: line-17 leftover-psi llike term; `'bugcompat',true` reproduces it bitwise from est.state.psi, default corrects to psi_mean | unit (same, model 4 bugcompat bitwise + the assertion that correcting moves only llike) |
 | `bvar.ml.kron_bvar_t_csv` | ml_BVAR_t_CSV.m | (model 5) - CLEAN BILL; reduced-run rho bound .999 vs estimation .9999 kept verbatim | unit (same, model 5) |
 | `bvar.ml.kron_bvar_t_ma` | ml_BVAR_t_MA.m | (model 6) - CLEAN BILL; optimizer warm start est.state.psihat made explicit; tmpden(psiidx)-centered den_psi normalization kept verbatim | unit (same, model 6) |
 | `bvar.ml.kron_bvar_csv_ma` | ml_BVAR_CSV_MA.m | (model 7) - CLEAN BILL; its per-draw Hpsi rebuild is the pattern model 8 violates; dead `ht = h_mean` line kept as dead assignment | unit (same, model 7) |
-| `bvar.ml.kron_bvar_csv_t_ma` | ml_BVAR_CSV_t_MA.m | (model 8) - AFFECTED twice: frozen leftover Hpsi/psi ordinate loop (lines 42-44) and leftover last-draw Sig in the reduced-run psi target (line 108); `'bugcompat',true` reproduces both bitwise from est.state.psi/est.state.Sig, default corrects (per-draw Hpsi; Sig_mean) | unit (same, model 8 bugcompat bitwise + corrected teeth: llike unchanged, lpost(1) moves, lpost(2:3) unchanged, ML moves) |
+| `bvar.ml.kron_bvar_csv_t_ma` | ml_BVAR_CSV_t_MA.m | (model 8) - AFFECTED twice: frozen leftover Hpsi/psi ordinate loop (lines 42-44) and leftover last-draw Sig in the reduced-run psi target (line 108); `'bugcompat',true` reproduces both bitwise from est.state.psi/est.state.Sig, default corrects (per-draw Hpsi; Sig_mean) | unit (same, model 8 bugcompat bitwise + corrected-mode assertions: llike unchanged, lpost(1) moves, lpost(2:3) unchanged, ML moves) |
 
 Core reuse inside the functionized estimation (`replications/chan2020_jbes_kronecker/run_all.m`):
 `bvar.priors.niw('kron_script')` (construct_prior_A + the callers' S0/nu0), `bvar.util.build_lags`
@@ -379,7 +379,7 @@ seed-line-free). cp_ml = 0 for models 2-5 so no ml_var_* routine is entered.
 | `bvar.samplers.eq_fsv_load` | `VAR_FSV.m` lines 48-71 (per-equation joint draw of A and the free loadings L) | (single copy in the repo) | unit (same test, model 4) |
 | `bvar.sv.svo_outlier` | `VAR_ARSVO_redu.m` lines 112-124 (grid draw of the outlier scales o_t, then the beta draw of po) | (single copy in the repo) | unit (same test, model 5; the test asserts at least one o_t > 1 is drawn) |
 | `bvar.samplers.alp_tri_cs` (row added; optional `o` argument added) | - | `VAR_ARSV_redu.m` 64-73 and `VAR_ARSVO_redu.m` 71-80: the step-7 OISV body verbatim modulo naming (beta/Hyper.Vbeta for alp/Hyper.Valp), the SVO copy differing only by the iD line's `./o.^2` | unit (same test, models 3 and 5) |
-| `bvar.sv.sv_params` (row amended; no code change) | - | chan2023_joe_mlvarsv `utility/sample_SVpara.m` at `phi_bnd = .998` - see the step-4 correction above | unit (`test_sv_params_mlvarsv`, all three ml_varsv shapes + the bound teeth; end-to-end in `test_mlvarsv_equivalence`) |
+| `bvar.sv.sv_params` (row amended; no code change) | - | chan2023_joe_mlvarsv `utility/sample_SVpara.m` at `phi_bnd = .998` - see the step-4 correction above | unit (`test_sv_params_mlvarsv`, all three ml_varsv shapes + the bound assertions; end-to-end in `test_mlvarsv_equivalence`) |
 
 Reused as-is: `bvar.priors.niw('mlvarsv_ncp')` (legacy prior_NCP), `bvar.priors.minn` with
 n0pre = 4 (prior_Minn), `bvar.priors.impact_B0` (prior_B0), `bvar.priors.minnesota_C` (get_C),
@@ -416,7 +416,7 @@ routines were extracted in step 10 (below); the (Sig,A) draw is still deferred.
 
 ### Step-9 verification notes (2026-09-03)
 
-- Teeth checks (scratch mirror of `core/`, prepended to the path; the real tree was never
+- Perturbation checks (scratch mirror of `core/`, prepended to the path; the real tree was never
   perturbed, and the mirror's reverted run passes): a 1e-7 relative perturbation of
   `eq_var_redu_tri` fails on model 3's store_alp, of `factor_fsv` and of `eq_fsv_load` on
   model 4's store_l, of `alp_tri_cs`'s `./o.^2` on model 5 only (model 3 unaffected, as the
@@ -481,7 +481,7 @@ and on the terminal rng state. The four ml routines and every density utility ru
 | `bvar.ml.mlvarsv_csv` | `utility/ml_var_csv.m` (incl. its `like_VAR_CSV` subfunction) | (model 2) - CLEAN BILL | unit (`test_mlvarsv_ml`, both kappa settings) |
 | `bvar.ml.mlvarsv_arsv_redu` | `utility/ml_var_arsv_redu.m` | (model 3) - CLEAN BILL | unit (same, all three switch settings) |
 | `bvar.ml.mlvarsv_fsv` | `utility/ml_var_fsv.m` (incl. its `deny_fsv` subfunction) | (model 4) - CLEAN BILL; the only routine implementing `flag_marg = 1` | unit (same, all three settings; `store_w` bitwise) |
-| `bvar.ml.mlvarsv_arsvo_redu` | `utility/ml_var_arsvo_redu.m` | (model 5) - AFFECTED three times, all in the outlier block; `'bugcompat',true` reproduces the legacy bitwise, the default corrects | unit (same, all three settings, bugcompat bitwise + corrected teeth) |
+| `bvar.ml.mlvarsv_arsvo_redu` | `utility/ml_var_arsvo_redu.m` | (model 5) - AFFECTED three times, all in the outlier block; `'bugcompat',true` reproduces the legacy bitwise, the default corrects | unit (same, all three settings, bugcompat bitwise + corrected-mode assertions) |
 
 Reused rather than re-extracted: `bvar.priors.niw('mlvarsv_ncp')` (legacy prior_NCP, called per
 IS draw to refresh VA from the drawn kappa), `bvar.priors.minn` with n0pre = 4 (prior_Minn),
@@ -590,7 +590,7 @@ additions - and `c1`, the one line the o patch should have touched and did not).
 
 ### Step-10 verification notes (2026-09-03)
 
-- Teeth checks, all seven FAILED as required (scratch mirror of `core/` appended AFTER the real
+- Perturbation checks, all seven FAILED as required (scratch mirror of `core/` appended AFTER the real
   core so the mirror wins - `addpath` prepends, so the order matters; the real tree was never
   perturbed and the suite is green): a 1e-7 relative perturbation of the `-T/2*log(2*pi)` in
   `mlvarsv_csv` fails on model 2's lml, of `c1` in `mlvarsv_arsv_redu` on model 3, of `c_hi` in
@@ -599,7 +599,7 @@ additions - and `c1`, the one line the o patch should have touched and did not).
   the three are materially separate: at the test scale (n = 4, T = 234, nsim = 40, M = 100) the
   legacy lml is -2044.06 and becomes -2040.88 with defect 1 alone corrected (+3.2), -1671.77
   with defect 2 alone (+372.3) and -2926.41 with defect 3 alone (-882.3).
-- Corrected-mode teeth INSIDE the test: the corrected VAR-SVO run is asserted to leave the
+- Corrected-mode assertions INSIDE the test: the corrected VAR-SVO run is asserted to leave the
   terminal rng state bitwise unchanged (none of the three corrections touches the stream), to
   use 31 prior atoms where bugcompat uses 32, to apply a strictly negative o Jacobian on at
   least one draw, and to move each weight by exactly `store_lJ_o + (lr_o_corrected -
@@ -837,7 +837,7 @@ A future deduplication must not unify any of these; doing so silently changes pu
   `test_mlvarsv_equivalence`). Only difference (i) is real in practice; it is a parameter, not a
   fork. OISV additionally splits the zero-mean case into `sample_SV0para.m` with bound .99
   (`bvar.sv.sv0_params`) - that one is a separate function. Do NOT merge the .998 and
-  .999 DEFAULTS: the bound changes draws (teeth-verified).
+  .999 DEFAULTS: the bound changes draws (confirmed by perturbation).
 - **`macrodata_Q_2018Q4.csv`**: byte-identical between MAHP and HYB but a DIFFERENT file in
   BVAR_ACP (md5-verified). Never key a shared data folder by this filename.
 - **MAHP `forecast_BVAR_NG.m` kappa/psi block**: NOT reproduced by
@@ -902,14 +902,14 @@ A future deduplication must not unify any of these; doing so silently changes pu
 
 ## Verification notes (step 8 self-check, 2026-09-02)
 
-- Teeth check passed: a +1e-7 perturbation of the flat-nu lpri constant in a scratch-mirror
+- Perturbation check passed: a +1e-7 perturbation of the flat-nu lpri constant in a scratch-mirror
   copy of `bvar.ml.kron_bvar_t` makes `test_kron_equivalence` FAIL with "model 2: ml lpri
   differs"; the real tree was never perturbed and its suite is green.
 - All EIGHT models are covered end-to-end bitwise (estimation + ML on one stream, terminal
   rng state included) - the fallback subset (affected paths + models 1/3/8) was not needed:
   measured runtimes m8 ~34 s/side and m7 ~26 s/side put the whole test at ~137 s, inside the
   ~4-minute budget (test_kron_intlike + test_kron_ml_densities add ~5 s).
-- Corrected-mode teeth INSIDE the test: model 4 corrected moves ONLY llike (lpri/lpost/
+- Corrected-mode assertions INSIDE the test: model 4 corrected moves ONLY llike (lpri/lpost/
   den_psi bitwise unchanged; llike and ML move); model 8 corrected leaves llike (the
   intlike, drawn first at the same stream position) and lpost(2:3) bitwise unchanged while
   lpost(1) and ML move. At the test size the model-8 ML moves -8492.1 -> -8495.8; the
@@ -929,7 +929,7 @@ A future deduplication must not unify any of these; doing so silently changes pu
 
 ## Verification notes (step 5 adversarial review, 2026-09-01)
 
-- The perturbation "teeth" check passed: altering a single preset constant (sv_offset) in a
+- Perturbation check passed: altering a single preset constant (sv_offset) in a
   scratch mirror makes test_mahp_equivalence FAIL on the stored draws - the equivalence test
   detects one-constant deviations.
 - Path nuance in test_mahp_equivalence: inside the test, the unqualified gigrnd call in
@@ -942,7 +942,7 @@ A future deduplication must not unify any of these; doing so silently changes pu
 
 ## Verification notes (step 6 adversarial review, 2026-09-01)
 
-- Verdict EQUIVALENT. Teeth checks: a horizon-index perturbation and a 1e-7 constant
+- Verdict EQUIVALENT. Perturbation checks: a horizon-index perturbation and a 1e-7 constant
   perturbation in scratch mirrors both fail the forecast tests; suite green on revert.
 - Of the 11 canonicalized blocks, 6 rest on independent byte-diffs rather than end-to-end
   tests: the MAHP NG/Minn forecast tails (byte-identical to the tested MNG canonical, so
@@ -963,7 +963,7 @@ A future deduplication must not unify any of these; doing so silently changes pu
 
 ## Verification notes (step 7 adversarial review, 2026-09-02)
 
-- Teeth check passed: a 1e-7 relative perturbation of one hierarchical-shrinkage constant in
+- Perturbation check passed: a 1e-7 relative perturbation of one hierarchical-shrinkage constant in
   `bvar.samplers.horseshoe_kappa_psi` makes `test_oisv_equivalence` FAIL on store_kappa;
   suite green on revert.
 - The six "textually identical modulo renaming" claims of the step-7 table (B0 block,
@@ -995,7 +995,7 @@ A future deduplication must not unify any of these; doing so silently changes pu
 - Verdict EQUIVALENT. The verifier independently re-derived the bug audit from the legacy
   sources (all 7 ml_* scripts, 7 estimation scripts, 4 intlike evaluators, both
   llike_CSV_MA copies): all three defects confirmed at the cited lines, all six clean
-  bills confirmed, no additional defects found. Its teeth check perturbed a DIFFERENT
+  bills confirmed, no additional defects found. Its perturbation check perturbed a DIFFERENT
   constant than the builder's (the bugcompat leftover-Sig consumption) and the equivalence
   test failed on exactly `model 8: ml lpost differs` - proving defect 3 is materially
   separate from defect 1.
