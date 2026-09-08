@@ -1,0 +1,64 @@
+% bvar.structural.sign_restrict - test one candidate rotation of the impact
+% matrix against a set of sign restrictions and row inequalities, flipping the
+% sign of any column that satisfies them in reverse.
+%
+%   [ok,L] = bvar.structural.sign_restrict(L, S, Rineq, Ridx)
+%
+%   L     : n x n candidate impact matrix, chol(Sigtilde,'lower')*Q for a random
+%           rotation Q (see bvar.structural.qr_sign)
+%   S     : n x m sign restrictions, one column per shock. +1 and -1 restrict the
+%           sign of that response on impact; NaN leaves it free
+%   Rineq : nR x n rows, each a linear combination required to be NEGATIVE
+%   Ridx  : nR x 1 column of L that each row of Rineq applies to
+%   ok    : true only if every shock satisfies its sign column AND every row
+%           inequality holds
+%   L     : the candidate with columns sign-flipped where that was what made the
+%           restriction hold; unchanged when ok is false
+%
+% A sign restriction identifies a shock only up to sign, so a column that
+% violates S may satisfy it after negation, and the negated column is then the
+% economically meaningful one. The check exits at the first shock that satisfies
+% neither, which is why acceptance rates in the caller's rejection loop can be
+% very low without any single evaluation being expensive.
+%
+% Body from the inline block at chan2022_qe_acp/legacy/main_ACP_apps.m lines
+% 103-131, wrapped as a function: m and nR now come from size(S,2) and
+% numel(Ridx), and the two counters are compared here and returned as the single
+% flag ok.
+% Equivalence: tests/unit/test_acp_equivalence.m. Record: tests/variant_map.md.
+%
+% See:
+% Chan, J.C.C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs,
+% Quantitative Economics, 13(3): 1145-1169.
+
+function [ok,L] = sign_restrict(L,S,Rineq,Ridx)
+m = size(S,2);
+nR = numel(Ridx);
+msat = 0;   % counter for the # of shocks that satisfies the sign restrictions
+nRsat = 0;  % counter for the # of satisfied row inequalities
+
+for i=1:m  % check sign restrictions
+    idx = find(S(:,i)==-1 | S(:,i)==1);
+    nidx = length(idx);
+    signL = sign(L(idx,:));
+        % check if the i-th column satisfies the sign restrictions
+    if (sum(signL(:,i) == S(idx,i)) == nidx)
+        msat = msat + 1;
+        % or if the negative of the i-th column satisfies the sign restrictions
+    elseif (sum(signL(:,i) == -S(idx,i)) == nidx)
+        L(:,i) = -L(:,i); % change the sign of the i-th column
+        msat = msat + 1;
+    else
+        break
+    end
+end
+for j=1:nR % check row inequalities
+    if Rineq(j,:)*L(:,Ridx(j)) < 0
+        nRsat = nRsat + 1;
+    else
+        nRsat = 0;
+        break
+    end
+end
+ok = (msat == m && nRsat == nR);
+end

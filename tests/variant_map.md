@@ -669,6 +669,61 @@ here when settled.
   ML phase dominates the estimation - the golden logs record 7 s (VAR-CSV), 563 s (VAR-SV),
   1769 s (VAR-FSV) and 464 s (VAR-SVO) against 11-113 s for the corresponding chains.
 
+## Canonicalized in step 12 (ACP family pass, 2026-09-07)
+
+`chan2022_qe_acp` (Chan 2022, QE 13(3): 1145-1169) is the asymmetric conjugate prior: a
+conjugate prior for the STRUCTURAL form that permits different shrinkage on own and other
+lags, which the natural conjugate prior rules out, and whose marginal likelihood is
+therefore still available in closed form. Three of its utilities were already core; seven
+more are extracted here, and this pass adds the toolkit's first identification machinery.
+
+| core | legacy source | status | test |
+|---|---|---|---|
+| `bvar.samplers.acp_theta_sig` | `utility/sample_ThetaSig.m` (only copy) | body verbatim; renamed. Draws all nsim posterior draws in one call - the prior is conjugate, so there is no chain | unit (draw-for-draw) |
+| `bvar.structural.reduced_form` | `utility/getReducedForm.m` (only copy) | body verbatim; renamed | unit (same) |
+| `bvar.structural.irf_redu` | `utility/IRredu.m` (only copy) | body verbatim; renamed. **This is the corrected copy** - see the note below | unit (same) |
+| `bvar.structural.qr_sign` | `utility/QR.m` (only copy) | body verbatim; renamed QR -> qr_sign, which also stops the legacy name shadowing MATLAB's built-in `qr` whenever the utility folder is on the path | unit (same) |
+| `bvar.structural.sign_restrict` | the inline block, `main_ACP_apps.m` 103-131 | body verbatim; wrapped as a function, with the two counters compared to m and nR inside and returned as one flag | unit (same) |
+| `bvar.ml.acp` | `utility/ml_VAR_ACP.m` (only copy) | body verbatim; renamed, and the file's four-space blanket indentation removed | unit (same) |
+| `bvar.priors.acp_opt_kappa` | `utility/get_OptKappa.m` and `utility/get_OptSymKappa.m` | both bodies verbatim behind one name, `'symmetric', true` selecting the second. They are NOT the same optimization: the asymmetric branch runs fminsearch over (log kappa1, log kappa2), the symmetric one fminbnd over kappa1 in (0,1) with kappa1 = kappa2 | unit (both branches) |
+| `bvar.priors.resid_var_ar4` | `utility/get_resid_var.m` | already core (step 4); differs from this copy only by the optional function-terminating `end`, and reproduces it exactly on this package's data | verified in the pass |
+| `bvar.priors.acp_redu` / `acp_stru` | `utility/prior_ACP_redu.m` / `prior_ACP_stru.m` | already core (step 4, R1 canonical); all six fields of each reproduce exactly on this package's settings | verified in the pass |
+
+`plotCI.m` is not extracted: it is four lines of `fill` with no statistical content, and the
+drivers here return arrays rather than drawing figures.
+
+- Functionized: `run_all.m` (main_ACP_apps.m, the sign-restricted impulse responses) and
+  `run_jointden.m` (main_ACP_jointden.m, the marginal-likelihood surface over the two
+  shrinkage hyperparameters), plus `preset.m`.
+- **The impulse-response copy here is the fixed one.** Two other copies of this routine in
+  the wider codebase start the response loop at the wrong index and report every horizon
+  shifted by one period. The BVAR_ACP_R1 zip of 2026-08-27, which this repository archives,
+  carries the correction, which is why it rather than another copy is canonical. Anyone
+  comparing figures against an older run should establish which copy produced them.
+- **`run_all` must not stop mid-batch.** The legacy rejection loop has no `count_sat < nsim`
+  guard inside the batch, so the final batch runs to its end and `store_response` finishes
+  with MORE rows than nsim. The median and the 16/84 percentiles are taken over all of them.
+  Truncating at nsim would change the reported responses, so the driver reproduces the
+  overshoot deliberately.
+- **The data must be read with `xlsread`, and here the reason is not subtle.** On
+  `database_2019Q4.xlsx`, `readmatrix` returns a 141 x 16 array where `xlsread` returns
+  140 x 15: it keeps a header row and an index column that the legacy numeric read drops.
+  This is a shape difference, not a last-bit difference as in the hybtvp package.
+- Neither legacy driver seeds the generator, so a run of either is irreproducible as
+  shipped and the equivalence test has no clock-seed line to remove. `run_all` takes a seed
+  argument, which is the only way to get a repeatable answer out of this exercise.
+- Equivalence test `test_acp_equivalence` runs main_ACP_apps.m wholesale from a tempdir copy
+  at nsim = 30, nbatch = 400, and asserts isequal on store_response, the median and
+  percentile summaries, `count_total` (which pins the rejection loop's arithmetic, not just
+  its output), the accepted-draw count and the terminal rng state; it then checks
+  `acp_opt_kappa` against both legacy optimizers and `bvar.ml.acp` against `ml_VAR_ACP`.
+  Four patches, each asserted to occur exactly once: `clear; clc;`, nsim, nbatch, and the
+  trailing figure block. None touches an arithmetic line. Runtime ~17 s.
+- Perturbation check: a 1e-9 change to the impact response in a scratch mirror of
+  `irf_redu` makes the test fail on `store_response`. The real tree was never modified.
+- Dataset 2 (n = 15) is not covered end to end: its published run needs days of rejection
+  sampling. Its distinguishing step, the kappa optimization, is covered directly.
+
 ## NEVER MERGE - same name, numerically different
 
 A future deduplication must not unify any of these; doing so silently changes published results.
