@@ -16,6 +16,14 @@
 %           Pass an m x n matrix when k = 1
 %   k     : number of ranking restrictions per shock
 %   ok    : true if an admissible assignment exists
+%
+%   The ranking test here is Rineq*L(:,j) <= 0, so a ROW OF ZEROS is satisfied
+%   and imposes nothing. That makes zeros(m,n) the natural way to say "sign
+%   restrictions only". bvar.structural.sign_restrict tests the same quantity
+%   STRICTLY, < 0, where a zero row instead rejects every candidate and yields an
+%   empty identified set with no error. The two are not interchangeable on this
+%   point: with no ranking restrictions, pass zeros(m,n) here and an EMPTY Ridx
+%   there.
 %   L     : on acceptance, the columns reordered so that column i is the shock-i
 %           column, with signs flipped where that is what made the restrictions
 %           hold, and the remaining n-m columns randomly permuted and re-signed;

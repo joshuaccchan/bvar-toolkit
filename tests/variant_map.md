@@ -804,6 +804,12 @@ A future deduplication must not unify any of these; doing so silently changes pu
   neither is wrong, but they consume the rng differently and reproduce different published
   code. `sign_assign` also requires the paper's separability condition on the restrictions,
   which `sign_restrict` does not. Keep both.
+  **They also differ on an empty ranking set**, which is a trap rather than a design choice:
+  `sign_restrict` tests `Rineq*L < 0` strictly, so a row of zeros rejects every candidate and
+  returns an empty identified set with no error; `sign_assign` tests `<= 0`, where a zero row
+  imposes nothing. To use `sign_restrict` with sign restrictions only, pass an EMPTY `Ridx`
+  and a `0 x n` `Rineq`. Both headers now say so. `examples/ex07_dynamic_sign_restrictions.m`
+  calls both functions side by side and shows the two spellings.
 
 - **`SVRW.m`**: sp_code's variant uses a DIFFUSE initial condition h_1 ~ N(0,Vh), lower-Cholesky,
   returns `[h S]`; the large_BVAR/BVAR_code/MAHP variant takes a KNOWN h0, upper-Cholesky.

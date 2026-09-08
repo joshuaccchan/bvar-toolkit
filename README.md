@@ -95,9 +95,10 @@ a never-merge list of the pairs that must stay apart.
 
 ## Examples
 
-`examples/` holds six short scripts, each runnable in seconds: from the precision sampler up
-to a BVAR with stochastic volatility assembled from core blocks, then marginal likelihoods
-and model comparison, and finally identification by sign restrictions. See
+`examples/` holds seven short scripts, each runnable in seconds: from the precision sampler
+up to a BVAR with stochastic volatility assembled from core blocks, then marginal
+likelihoods and model comparison, and finally identification by sign restrictions — on
+impact in ex06, and over a stretch of the impulse response in ex07. See
 `examples/README.md`.
 
 ## Verification

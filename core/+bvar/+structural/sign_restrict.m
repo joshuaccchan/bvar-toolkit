@@ -10,6 +10,13 @@
 %           sign of that response on impact; NaN leaves it free
 %   Rineq : nR x n rows, each a linear combination required to be NEGATIVE
 %   Ridx  : nR x 1 column of L that each row of Rineq applies to
+%
+%   The test is STRICT: every row must give Rineq(j,:)*L(:,Ridx(j)) < 0. A row of
+%   zeros therefore fails, and rejects every candidate, producing an empty
+%   identified set with no error raised. To impose no ranking restrictions, pass
+%   an empty Ridx and a 0 x n Rineq, NOT a zero row. bvar.structural.sign_assign
+%   tests the same quantity as <= 0, where a zero row is harmless, so the two
+%   differ on exactly this input.
 %   ok    : true only if every shock satisfies its sign column AND every row
 %           inequality holds
 %   L     : the candidate with columns sign-flipped where that was what made the
