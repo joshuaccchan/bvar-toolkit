@@ -1,0 +1,21 @@
+main_ACP_apps.m, dataset 2 (n = 15), as shipped.
+
+This is the paper's 15-variable sign-restricted application: 1000 posterior draws
+satisfying five sign restrictions and three row inequalities, found by rejection
+sampling. It is the longest single run in the repository.
+
+  started            2026-09-01 22:18
+  finished           2026-09-08 01:35
+  wall clock         8837.3498 minutes (147.3 hours, 6.1 days)
+  posterior draws    3,783 million examined
+  accepted           1000
+  acceptance rate    about 1 in 3,783,000
+
+The model selector was left at the shipped dataset = 2; nothing else was patched.
+The run was launched detached on 2026-09-01 and outlived two harness timeout
+wrappers, which is why the log is the only artifact: main_ACP_apps.m saves no
+.mat, it draws figures, so there is nothing else to capture. The acceptance
+trajectory in the log is the substance - it is what makes the cost of this
+identification scheme concrete, and it is the regression anchor for
+replications/chan2022_qe_acp/run_all.m at dataset 2, which the unit test cannot
+reach (test_acp_equivalence covers dataset 1 at nsim = 30).
