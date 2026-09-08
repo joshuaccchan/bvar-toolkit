@@ -29,7 +29,10 @@ legacy copy in `tests/unit/` (stochastic functions compared draw-for-draw under 
 New functions with no legacy counterpart (behavior fixed by unit tests only):
 `bvar.util.build_lags` (codifies the inline `Z=[1, lags]` construction repeated in every
 package - test reproduces the inline pattern exactly), `bvar.util.logsumexp`,
-`bvar.samplers.eq_var_oi` (2026-09-06; see the note at the end of this file).
+`bvar.util.diffmat` (the state-equation difference matrix that makes the precision samplers
+banded), `bvar.util.igrnd`, `bvar.samplers.eq_var_oi` (2026-09-06; see the note at the end of
+this file). None of these is retrofitted into a legacy body: they exist for new code, and the
+legacy spellings they generalize stay as they are.
 
 Edits made during extraction, in full: provenance header prepended; function renamed where
 the table says so (surform, surform2, init_approx1N, realtime_loaddata, heatmap_fx). Bodies
@@ -37,10 +40,28 @@ are otherwise verbatim from the canonical source.
 
 ## Canonicalized in step 4 (SV/prior core, 2026-09-01)
 
+The volatility samplers and the prior constructors. Sixteen functions came out of this pass;
+the rows below are the whole of it, so a reader looking for where a step-4 function came from
+does not have to find it named in a later pass's table.
+
 | Core function | Canonical source (legacy) | Also canonicalizes | Verified |
 |---|---|---|---|
+| `bvar.sv.ksc_rw_h0` | chan2020_springer_largebvar `SVRW.m` | chan2021_ijf_mahp `SVRW.m`, chan2020_jbes_kronecker `realtime_forecasts/SVRW.m`, chan2023_jbes_hybtvp `utility/sample_SVRW.m` (the last verified bitwise over 200 randomized inputs in step 11) | unit (`test_ksc_rw_h0`) |
+| `bvar.sv.ksc_rw_diffuse` | chan_jeliazkov2009_statespace `sp_code/SVRW.m` | none - of the four files named `SVRW.m`, this is the only diffuse-initialization one; the other three go to `ksc_rw_h0` above. NEVER merge the two: this variant takes h_1 ~ N(0,Vh) and returns `[h S]`, the other a known `h0`. See the never-merge list | unit (`test_ksc_rw_diffuse`) |
+| `bvar.sv.ksc_ar1_mean` | chan2023_joe_mlvarsv `utility/sample_SV.m` | chan_koop_yu2024_jbes_oisv `utility/sample_SV.m` | unit (`test_ksc_ar1_mean`) |
+| `bvar.sv.csv_armh` | chan2023_joe_mlvarsv `utility/sample_CSV.m` (the only file of that name) | the three `sample_h.m` copies - chan2020_jbes_kronecker `sample_h.m` and `realtime_forecasts/sample_h.m`, chan2020_springer_largebvar `sample_h.m` - and the inline h step of chan2020_jbes_kronecker `ml_BVAR_CSV.m`. `is_ForcedAccept` defaults to false, which is the legacy `sample_h` behavior | unit (`test_csv_armh`) |
+| `bvar.sv.nu_studentt` | chan2020_springer_largebvar `sample_nu.m` | chan2020_jbes_kronecker `sample_nu.m` and `realtime_forecasts/sample_nu.m` | unit (`test_nu_studentt`) |
 | `bvar.sv.sv_params` | chan_koop_yu2024_jbes_oisv `utility/sample_SVpara.m` | chan2023_joe_mlvarsv `utility/sample_SVpara.m` at `phi_bnd = .998` (established in step 9 - the original "never-merge" verdict here was WRONG, see the step-9 correction below) | unit (seeded draws, 3 cases: r=0, r>0, mu gated at zero; ml_varsv in `test_sv_params_mlvarsv`) |
 | `bvar.sv.sv0_params` | chan_koop_yu2024_jbes_oisv `utility/sample_SV0para.m` | (single copy) | unit (seeded draws) |
+| `bvar.priors.resid_var_ar4` | chan2021_ijf_mahp `get_resid_var.m` | four more copies - chan2019wp_acp, chan2022_qe_acp `utility/`, chan_koop_yu2024_jbes_oisv `utility/`, chan_matthes_yu2026_qe_svarsign `utility/` - all identical up to comments and an optional terminating `end` | unit (`test_resid_var_ar4`) + the ACP and OISV family passes |
+| `bvar.priors.resid_var_allvars_ridge` | chan2023_jbes_hybtvp `utility/get_resid_var_v2.m` | (single copy) NEVER merge with `resid_var_ar4`: this one regresses on 4 lags of ALL variables plus a 1e-4 ridge, giving numerically different sig2 | unit (`test_resid_var_allvars_ridge`) |
+| `bvar.priors.minnesota_C` | chan2021_ijf_mahp `get_C.m` | chan2023_jbes_hybtvp, chan2023_joe_mlvarsv and chan_koop_yu2024_jbes_oisv, all `utility/get_C.m` | unit (`test_minnesota_C`) |
+| `bvar.priors.vtheta` | chan2021_ijf_mahp `getVtheta.m` | chan2023_jbes_hybtvp `utility/getVtheta.m`, which hard-codes kappa_3 = .2 and kappa_4 = 1 | unit (`test_vtheta`, both settings) |
+| `bvar.priors.minn` | chan2023_joe_mlvarsv `utility/prior_Minn.m` (the superset, with U_hat) | chan2020_springer_largebvar `prior_Minn.m` at `n0pre = p` with three outputs | unit (`test_prior_minn_mlvarsv`, `test_prior_minn_largebvar`) |
+| `bvar.priors.niw` | chan2023_joe_mlvarsv `utility/prior_NCP.m` (the superset, with U_hat) | three more legacy copies behind one `variant` argument - chan2020_springer_largebvar `prior_NC.m`, cjz2019_ad_opthyper `prior_NCP.m`, chan2020_jbes_kronecker `construct_prior_A.m` (a workspace script). The svarsign `utility/prior_NCP.m` is a fourth, identical to the ml_varsv copy | unit, one per variant (`test_prior_niw_largebvar_nc`, `_mlvarsv_ncp`, `_opthyper_ncp`, `_kron_script`) |
+| `bvar.priors.acp_stru` | chan2022_qe_acp `utility/prior_ACP_stru.m` | chan_matthes_yu2026_qe_svarsign `utility/prior_ACP_stru.m` | unit (`test_acp_stru`) |
+| `bvar.priors.acp_redu` | chan2022_qe_acp `utility/prior_ACP_redu.m` | chan_matthes_yu2026_qe_svarsign `utility/prior_ACP_redu.m`. Calls `acp_stru` internally, so keep that one frozen | unit (`test_acp_redu`) |
+| `bvar.priors.impact_B0` | chan2023_joe_mlvarsv `utility/prior_B0.m` | (single copy) | unit (`test_impact_B0`) |
 
 Edits made during extraction, in full: provenance header prepended; functions renamed
 (`sample_SVpara` -> `sv_params`, `sample_SV0para` -> `sv0_params`); the hard-coded phi
@@ -56,11 +77,11 @@ demeans ALL columns of h)" is refuted. Those structural differences are no-ops w
 (`VAR_CSV.m` 61 h is T x 1 with mu = 0; `VAR_ARSV_redu.m` 84 and `VAR_ARSVO_redu.m` 91
 h is T x n with mu n x 1; `VAR_FSV.m` 82 h is T x (n+r) with mu (n+r) x 1 - so r = 0
 inside `sv_params` there too, the factor columns arriving as extra "series" with their
-own mu). The phi bound is the only difference that can bite, and it does bite:
+own mu). The phi bound is the only difference that changes the output, and it does:
 `test_sv_params_mlvarsv` forces a candidate into [.998,.999) and shows .999 accepting
 where .998 and the legacy reject, and a scratch-mirror teeth check that hard-codes .999
 inside `sv_params` makes `test_mlvarsv_equivalence` fail on model 3. r > 0 remains
-uncovered by the claim: there the two bodies genuinely differ.
+uncovered by the claim: there the two bodies do differ.
 
 ## Canonicalized in step 5 (MAHP flagship functionization, 2026-09-01)
 
@@ -235,7 +256,7 @@ additionally asserted to differ exactly where each bug lives and match everywher
 | Core function | Canonical source (legacy) | Also canonicalizes | Verified |
 |---|---|---|---|
 | `bvar.ml.lniwpdf` | chan2020_jbes_kronecker `lniwpdf.m` (single copy) | all prior/posterior NIW ordinates in the 8 ML computations | unit (`test_kron_ml_densities` bitwise + end-to-end) |
-| `bvar.ml.linvgammpdf` | `linvgammpdf.m` (single copy) | the sigh2 ordinates (models 3/5/7/8) | unit (same tests) |
+| `bvar.ml.linvgammpdf` | `linvgammpdf.m`; cjz2021_jae_ad_ml `AD_code/linvgammpdf.m` is the same one-line body, differing only by whitespace in the signature | the sigh2 ordinates (models 3/5/7/8) | unit (same tests) |
 | `bvar.ml.llike_ma` | `llike_MA.m` (root; body verbatim incl. its `chol(Sig)'` upper-transposed Cholesky) | BVAR_MA.m + ml_BVAR_MA.m psi targets. realtime_forecasts/llike_MA.m is NOT canonicalized (its function line is named llike_MA1; part 2). | unit (same tests) |
 | `bvar.ml.llike_csv_ma` | `llike_CSV_MA.m` (package ROOT copy WITH the -n/2*sum(h) term) | the psi targets of BVAR_t_MA/BVAR_CSV_MA/BVAR_CSV_t_MA and ml_BVAR_t_MA/ml_BVAR_CSV_MA/ml_BVAR_CSV_t_MA (with h := log(lam) / U pre-scaled by sqrt(lam) in the t models, exactly as the legacy calls do). The realtime/springer reduced copies stay never-merge (below). | unit (`test_kron_ml_densities`: bitwise vs root AND asserted to differ from the realtime copy by n/2*sum(h)) + end-to-end |
 | `bvar.ml.intlike_csv` | `intlike_BVAR_CSV.m` (renamed; body verbatim) | (single copy) | unit (`test_kron_intlike` bitwise seeded, real data, + end-to-end model 3) |
@@ -605,11 +626,11 @@ additions - and `c1`, the one line the o patch should have touched and did not).
 ## Canonicalized in step 11 (HYB family pass, 2026-09-05)
 
 `chan2023_jbes_hybtvp` (Chan 2023, JBES 41(3): 890-905) is the hybrid TVP-VAR: each
-equation decides separately whether its VAR coefficients and its impact-matrix elements
-are time-varying, so the four (gam^beta, gam^alpha) configurations are compared on
-marginal likelihoods with the states integrated out. Six of its nine utilities were
-already core before this pass; two more are extracted here, and `gigrnd.m` is the
-third-party copy.
+equation has its own indicators for whether its VAR coefficients and its impact-matrix
+elements are time-varying, so the four (gam^beta, gam^alpha) configurations are compared on
+marginal likelihoods with the states integrated out. Of its nine utilities, five were
+already core before this pass and two more are extracted here; `gigrnd.m` is the third-party
+copy, and `initialize.m` is not extracted for the reason given below the table.
 
 | core | legacy source | status | test |
 |---|---|---|---|
@@ -679,12 +700,12 @@ more are extracted here, and this pass adds the toolkit's first identification m
 
 | core | legacy source | status | test |
 |---|---|---|---|
-| `bvar.samplers.acp_theta_sig` | `utility/sample_ThetaSig.m` (only copy) | body verbatim; renamed. Draws all nsim posterior draws in one call - the prior is conjugate, so there is no chain | unit (draw-for-draw) |
-| `bvar.structural.reduced_form` | `utility/getReducedForm.m` (only copy) | body verbatim; renamed | unit (same) |
-| `bvar.structural.irf_redu` | `utility/IRredu.m` (only copy) | body verbatim; renamed. **This is the corrected copy** - see the note below | unit (same) |
-| `bvar.structural.qr_sign` | `utility/QR.m` (only copy) | body verbatim; renamed QR -> qr_sign, which also stops the legacy name shadowing MATLAB's built-in `qr` whenever the utility folder is on the path | unit (same) |
+| `bvar.samplers.acp_theta_sig` | `utility/sample_ThetaSig.m` | body verbatim; renamed. Draws all nsim posterior draws in one call - the prior is conjugate, so there is no chain | unit (draw-for-draw) |
+| `bvar.structural.reduced_form` | `utility/getReducedForm.m` | body verbatim; renamed | unit (same) |
+| `bvar.structural.irf_redu` | `utility/IRredu.m` | body verbatim; renamed. **This is the corrected copy** - see the note below | unit (same) |
+| `bvar.structural.qr_sign` | `utility/QR.m` | body verbatim; renamed QR -> qr_sign, which also stops the legacy name shadowing MATLAB's built-in `qr` whenever the utility folder is on the path | unit (same) |
 | `bvar.structural.sign_restrict` | the inline block, `main_ACP_apps.m` 103-131 | body verbatim; wrapped as a function, with the two counters compared to m and nR inside and returned as one flag | unit (same) |
-| `bvar.ml.acp` | `utility/ml_VAR_ACP.m` (only copy) | body verbatim; renamed, and the file's four-space blanket indentation removed | unit (same) |
+| `bvar.ml.acp` | `utility/ml_VAR_ACP.m` | body verbatim; renamed, and the file's four-space blanket indentation removed. The SVAR-sign package holds a second copy that adds a ridge - see step 13 | unit (same) |
 | `bvar.priors.acp_opt_kappa` | `utility/get_OptKappa.m` and `utility/get_OptSymKappa.m` | both bodies verbatim behind one name, `'symmetric', true` selecting the second. They are NOT the same optimization: the asymmetric branch runs fminsearch over (log kappa1, log kappa2), the symmetric one fminbnd over kappa1 in (0,1) with kappa1 = kappa2 | unit (both branches) |
 | `bvar.priors.resid_var_ar4` | `utility/get_resid_var.m` | already core (step 4); differs from this copy only by the optional function-terminating `end`, and reproduces it exactly on this package's data | verified in the pass |
 | `bvar.priors.acp_redu` / `acp_stru` | `utility/prior_ACP_redu.m` / `prior_ACP_stru.m` | already core (step 4, R1 canonical); all six fields of each reproduce exactly on this package's settings | verified in the pass |
@@ -723,10 +744,68 @@ drivers here return arrays rather than drawing figures.
   `irf_redu` makes the test fail on `store_response`. The real tree was never modified.
 - Dataset 2 (n = 15) is not covered end to end: its published run needs days of rejection
   sampling. Its distinguishing step, the kappa optimization, is covered directly.
+- **None of the four sources above is the only copy in the repository**, which is why the
+  "(only copy)" tags they used to carry have been dropped. `chan_matthes_yu2026_qe_svarsign`
+  holds `sample_ThetaSig.m`, `getReducedForm.m`, `IRredu.m` and `QR.m`, every one identical to
+  the ACP copy after comment stripping, so these same core functions stand in for them (step
+  13). `chan2019wp_acp` holds a third `sample_ThetaSig.m` and `getReducedForm.m`, but those are
+  the working-paper versions and are NOT canonicalized: they carry different signatures, and
+  `getReducedForm.m` writes `store_Btilde(isim,:) = Btilde(:)` where the R1 copy writes
+  `reshape(Btilde,n^2*p+n,1)`.
+
+## Canonicalized in step 13 (SVAR sign restrictions, 2026-09-08)
+
+`chan_matthes_yu2026_qe_svarsign` (Chan, Matthes and Yu 2026, QE 17(3): 709-740) shares its
+`utility/` folder with the ACP package almost exactly: ten of its eleven common files are
+byte-identical after comment stripping, `IRredu.m` included, so step 12 already covers them.
+Only the paper's own contribution is extracted here.
+
+| core | legacy source | status | test |
+|---|---|---|---|
+| `bvar.structural.sign_assign` | the inline block at `proposed_15var.m` 72-113 | body verbatim; wrapped as a function, with m and n taken from the arguments and the acceptance test returned as a flag | unit (draw-for-draw, 400 draws) |
+
+- Example `examples/ex06_sign_restrictions.m` runs both acceptance rules over one batch of
+  posterior draws, so the comparison is of the rules rather than of the sampling. At n = 6
+  with five sign-restricted shocks and three row inequalities, 50000 rotations yield 7
+  acceptances under the strict rule and 2544 under `sign_assign`. The batch is that large
+  because the strict rule needs it: its rate is 0.01%, so 10000 draws would expect a single
+  acceptance and can easily return none, leaving nothing to form a ratio from.
+- **`ml_VAR_ACP.m` differs from the ACP copy**: this package adds `1e-6*speye(ki)` to the
+  posterior precision, a ridge that keeps the Cholesky alive at n = 35. `bvar.ml.acp` now
+  takes an optional `ridge` argument covering both copies. The default of zero reproduces
+  the ACP copy and is asserted in `test_acp_equivalence`; `'ridge', 1e-6` reproduces this
+  one and is asserted in `test_sign_assign`, which also asserts that the default does NOT
+  reproduce it, so the option cannot quietly become a no-op. The setting is not innocuous:
+  on the ACP package's 15-variable data at its own kappa = (.04, .0016, 1, 100) the two
+  differ by 1.99 in the log marginal likelihood, so a model comparison must hold it fixed
+  across the models compared.
+- `auxFunctions/` is third-party (Read 2022, copied from that paper's code) and is not a
+  consolidation candidate. `provenance.md` and LICENSE record it.
+- Not functionized: the five main programs, `RWZ_15var.m`, `proposed_15var.m` and
+  `Application_Uhlig2005.m`. They depend on `auxFunctions`, so a driver could not be a
+  core-only entry point, and their output is figures rather than reusable computation.
+- Five `utility/` files have no ACP counterpart and are not extracted: `FEVD`,
+  `get_OptKappa_ver2`, `sample_BSig_NCP`, `sample_ThetaSig_NCP`, `plotCI_othercolor`. Note
+  that `sample_ThetaSig_NCP.m` and `sample_BSig_NCP.m` are the same 26 lines and both declare
+  `function sample_BSig_NCP`, so the first file's name disagrees with the function inside it.
+- `prior_NCP.m` is a sixth file with no ACP counterpart, but it is NOT unextracted: it is
+  identical after comment stripping to the chan2023_joe_mlvarsv copy, so
+  `bvar.priors.niw('mlvarsv_ncp')` already covers it. Recording which family it belongs to
+  matters here, because the never-merge list keeps two incompatible `prior_NCP` signatures
+  apart: this one is the ml_varsv signature, not the cjz2019 one.
 
 ## NEVER MERGE - same name, numerically different
 
 A future deduplication must not unify any of these; doing so silently changes published results.
+
+- **`sign_restrict` / `sign_assign`**: two correct algorithms for the same job, with very
+  different acceptance rates. `sign_restrict` (chan2022_qe_acp) requires column i to satisfy
+  shock i and rejects at the first failure; `sign_assign` (chan_matthes_yu2026_qe_svarsign)
+  accepts whenever every shock has an admissible column and then draws an assignment.
+  Proposition 1 of the 2026 paper shows the second still targets a uniform rotation, so
+  neither is wrong, but they consume the rng differently and reproduce different published
+  code. `sign_assign` also requires the paper's separability condition on the restrictions,
+  which `sign_restrict` does not. Keep both.
 
 - **`SVRW.m`**: sp_code's variant uses a DIFFUSE initial condition h_1 ~ N(0,Vh), lower-Cholesky,
   returns `[h S]`; the large_BVAR/BVAR_code/MAHP variant takes a KNOWN h0, upper-Cholesky.
@@ -759,7 +838,7 @@ A future deduplication must not unify any of these; doing so silently changes pu
   ml_varsv copy draw-for-draw (`test_sv_params_mlvarsv`, plus end-to-end in
   `test_mlvarsv_equivalence`). Only difference (i) is real in practice; it is a parameter, not a
   fork. OISV additionally splits the zero-mean case into `sample_SV0para.m` with bound .99
-  (`bvar.sv.sv0_params`) - that one is a genuinely separate function. Do NOT merge the .998 and
+  (`bvar.sv.sv0_params`) - that one is a separate function. Do NOT merge the .998 and
   .999 DEFAULTS: the bound changes draws (teeth-verified).
 - **`macrodata_Q_2018Q4.csv`**: byte-identical between MAHP and HYB but a DIFFERENT file in
   BVAR_ACP (md5-verified). Never key a shared data folder by this filename.

@@ -5,7 +5,9 @@ function test_sign_assign
 % properties the function relies on: that an accepted L has each shock's
 % restrictions satisfied by ITS OWN column after the reordering, and that
 % sign_assign accepts strictly more often than bvar.structural.sign_restrict,
-% which is the reason it exists.
+% which is the reason it exists. Finally, because this package's ml_VAR_ACP
+% carries a ridge the ACP package's does not, bvar.ml.acp is checked against it
+% under 'ridge', 1e-6.
 root = getappdata(0, 'bvar_repo_root');
 leg = fullfile(root, 'replications', 'chan_matthes_yu2026_qe_svarsign', 'legacy');
 addpath(fullfile(leg, 'utility'));
@@ -69,6 +71,21 @@ end
 assert(nacc > 0, 'no candidate was accepted - the comparison proves nothing');
 assert(nacc > nacc_strict, ...
     'sign_assign (%d) did not accept more often than sign_restrict (%d)', nacc, nacc_strict);
+
+    % This package's ml_VAR_ACP is not the ACP package's: it adds 1e-6*speye(ki)
+    % to the posterior precision. bvar.ml.acp covers both copies, the ridge one
+    % under 'ridge', 1e-6, so both are checked here - the default against this
+    % copy to confirm the two really do differ, and the option against it to
+    % confirm it reproduces. test_acp_equivalence covers the default separately
+    % against the ACP package's own copy.
+[~,Z] = bvar.util.build_lags([Y0(end-p+1:end,:); Y], p);
+l_legacy  = ml_VAR_ACP(p,Y,Z,prior_redu);
+l_ridge   = bvar.ml.acp(p,Y,Z,prior_redu,'ridge',1e-6);
+l_default = bvar.ml.acp(p,Y,Z,prior_redu);
+assert(isequal(l_ridge, l_legacy), ...
+    'bvar.ml.acp with ridge 1e-6 differs from this package''s ml_VAR_ACP');
+assert(l_default ~= l_legacy, ...
+    'the default and ridge paths agree - the ridge option is doing nothing');
 end
 
 % -------------------------------------------------------------------------
