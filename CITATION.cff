@@ -13,7 +13,7 @@ repository-code: "https://github.com/joshuaccchan/bvar-toolkit"
 url: "https://joshuachan.org/code.html"
 abstract: >-
   MATLAB code for estimating large Bayesian vector autoregressions. The
-  repository archives twelve published replication packages verbatim and
+  repository archives thirteen published replication packages verbatim and
   consolidates their shared machinery into a single tested library: samplers
   for stochastic volatility and VAR coefficients, shrinkage and asymmetric
   conjugate priors, forecasting routines, and marginal-likelihood estimators.

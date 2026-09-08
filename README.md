@@ -43,23 +43,27 @@ a template.
 | Non-Gaussian / serially dependent errors, and marginal likelihoods | Chan (2020, JBES) | `chan2020_jbes_kronecker` | `run_all`, `run_ml` |
 | Asymmetric conjugate prior, closed-form ML, sign restrictions | Chan (2022, QE) | `chan2022_qe_acp` | `run_all`, `run_jointden` |
 | Which SV specification for a large VAR? | Chan (2023, JoE) | `chan2023_joe_mlvarsv` | `run_all('VAR-SV',…)`, `run_ml` |
-| Time-varying parameters, decided per equation | Chan (2023, JBES) | `chan2023_jbes_hybtvp` | `run_all` |
+| Time-varying parameters, equation by equation | Chan (2023, JBES) | `chan2023_jbes_hybtvp` | `run_all` |
 | Forecast comparison across priors and volatility models | Chan (2020, Springer) | `chan2020_springer_largebvar` | legacy only |
 | The precision sampler for state space models | Chan & Jeliazkov (2009) | `chan_jeliazkov2009_statespace` | legacy only |
-| Sign and ranking restrictions in a large structural VAR | Chan, Matthes & Yu (2026, QE) | `chan_matthes_yu2026_qe_svarsign` | legacy only |
+| Sign and ranking restrictions in a large structural VAR | Chan, Matthes & Yu (2026, QE) | `chan_matthes_yu2026_qe_svarsign` | legacy; algorithm in `bvar.structural.sign_assign` |
 | Prior sensitivity by automatic differentiation | Chan, Jacobi & Zhu (2019/2020/2022) | `cjz2018_ad_var`, `cjz2019_ad_opthyper`, `cjz2021_jae_ad_ml` | legacy only |
 
-"Legacy only" means the package has not been functionized yet — the original code is there and
-runs; a `run_all.m` will follow. Full citations are in `provenance.md`.
+"Legacy only" means the package has not been functionized: the original code is there, and a
+`run_all.m` may follow. Read it with two qualifications. The SVAR-sign package is not slated
+for one, because its main programs depend on third-party code and produce figures rather than
+reusable computation, so only its algorithm was extracted. And a few legacy scripts do not run
+as shipped; `tests/golden_runs/manifest.md` names them and says why. Full citations are in
+`provenance.md`.
 
 ## The `bvar` library
 
 A Bayesian VAR is estimated by Markov chain Monte Carlo. Once the prior has been
 constructed, each sweep draws the VAR coefficients, the log-volatility path and the
 shrinkage hyperparameters in turn, each conditional on the rest; forecasts and marginal
-likelihoods are computed afterwards from the stored draws. Across the twelve packages
+likelihoods are computed afterwards from the stored draws. Across the thirteen packages
 those steps were written out again and again — the auxiliary mixture sampler that draws
-the log-volatility path appears in eight of them, under four names. `bvar` is those steps
+the log-volatility path appears in seven of them, under three names. `bvar` is those steps
 factored into one function each.
 
 They are not rewrites. Each function's body is taken from a specific published package,
@@ -73,23 +77,28 @@ instead to the inline spelling they generalize.
 |---|---|
 | `bvar.priors` | Building priors. `resid_var_ar4`, `minnesota_C` and `vtheta` compute the Minnesota scaling every prior here rests on; `minn`, `niw` and `acp_stru`/`acp_redu` are the prior constructors themselves — Minnesota, natural conjugate, and the asymmetric conjugate prior of Chan (2022), whose marginal likelihood is available in closed form; `acp_opt_kappa` uses that to choose the shrinkage hyperparameters by maximizing it. |
 | `bvar.sv` | Drawing stochastic volatility. The `ksc_*` functions are the Kim–Shephard–Chib auxiliary-mixture sampler, one per state equation (random walk with a known initial value, random walk with a diffuse one, stationary AR(1)); `csv_armh` draws a single common volatility factor; `sv_params` and `nu_studentt` draw the parameters governing them. |
-| `bvar.samplers` | Drawing everything else in the Gibbs loop: VAR coefficients equation by equation (`eq_gauss` for the structural form, `eq_var_redu_tri` and `eq_svar_oi` for the reduced form, `eq_var_oi` for the same order-invariant conditional as `eq_svar_oi` at `O(T k^2 + k^3)` per equation instead of `O(T n k^2 + k^3)`, `eq_tri_cs` for the Cholesky benchmark), the factor blocks (`factor_fsv`, `eq_fsv_load`), `eq_hyb_tvp` for the hybrid TVP-VAR, where each equation's coefficients are drawn jointly with the indicators that decide whether they vary at all, `acp_theta_sig` for the asymmetric conjugate prior, whose conjugacy means it returns every draw in one call rather than a chain, and the hierarchical shrinkage blocks (`gig_shrinkage`, `horseshoe_kappa_psi`, `nu_psi_ng`). |
+| `bvar.samplers` | Drawing everything else in the Gibbs loop: VAR coefficients equation by equation (`eq_gauss` for the structural form, `eq_var_redu_tri` and `eq_svar_oi` for the reduced form, `eq_var_oi` for the same order-invariant conditional as `eq_svar_oi` at `O(T k^2 + k^3)` per equation instead of `O(T n k^2 + k^3)`, `eq_tri_cs` for the Cholesky benchmark), the factor blocks (`factor_fsv`, `eq_fsv_load`), `eq_hyb_tvp` for the hybrid TVP-VAR, where each equation's coefficients are drawn jointly with the indicators for whether they vary at all, `acp_theta_sig` for the asymmetric conjugate prior, whose conjugacy means it returns every draw in one call rather than a chain, and the hierarchical shrinkage blocks (`gig_shrinkage`, `horseshoe_kappa_psi`, `nu_psi_ng`). |
 | `bvar.forecast` | Producing forecasts from a chain. `iterate` runs one draw forward and scores it, `tables` accumulates RMSFEs and log predictive likelihoods, `realtime_loaddata` assembles a real-time data vintage. |
-| `bvar.structural` | Contemporaneous structure and identification. `construct_Sigt` builds the time-varying covariance from the impact matrix and `b0_row_sampler` draws that matrix row by row for the order-invariant model; `reduced_form` maps structural draws to their reduced form, and `qr_sign`, `sign_restrict` and `irf_redu` are the three steps of a sign-restricted SVAR - draw a rotation, test it against the sign and inequality restrictions, and compute the impulse responses of the draws that survive. |
+| `bvar.structural` | Contemporaneous structure and identification. `construct_Sigt` builds the time-varying covariance from the impact matrix and `b0_row_sampler` draws that matrix row by row for the order-invariant model; `reduced_form` maps structural draws to their reduced form, and `qr_sign`, `sign_restrict` and `irf_redu` are the three steps of a sign-restricted SVAR - draw a rotation, test it against the sign and inequality restrictions, and compute the impulse responses of the draws that survive. `sign_assign` replaces the middle step with the search of Chan, Matthes and Yu (2026), which accepts a rotation whenever every shock has some admissible column rather than requiring the columns to arrive in order. |
 | `bvar.ml` | Marginal likelihoods, for model comparison. Chib's method for the VARs with non-Gaussian, heteroscedastic and serially dependent innovations of Chan (2020), adaptive importance sampling for the stochastic volatility specifications of Chan (2023), and `acp`, which is closed form - the property that motivates the asymmetric conjugate prior of Chan (2022), and the reason selecting its hyperparameters is an optimization rather than a second round of estimation. Plus the integrated-likelihood evaluators and log densities the simulation-based ones share. |
 | `bvar.util` | The small shared pieces: `build_lags` (the lag matrix, intercept first), `diffmat` (the state-equation difference matrix that makes the precision samplers banded), `surform`/`surform2` (two different sparse expansions — see their headers), `logsumexp`, `igrnd`, and a few one-liners. |
 
 Where two legacy versions of a step turned out to differ numerically, both survive under
 separate names rather than being merged: `ksc_rw_h0` and `ksc_rw_diffuse` are the same
 sampler under different initial conditions, `resid_var_ar4` and `resid_var_allvars_ridge`
-compute the same scaling from different regressions. `tests/variant_map.md` records for
-every function which legacy copies it stands in for, how that was checked, and a
-never-merge list of the pairs that must stay apart.
+compute the same scaling from different regressions. Where the two differ by a single
+setting rather than by the computation, one function takes an option instead, with the
+legacy behaviour as the default: `bvar.ml.acp` has a `ridge` argument because one package
+adds a jitter to the posterior precision that another does not. `tests/variant_map.md`
+records for every function which legacy copies it stands in for, how that was checked, and
+a never-merge list of the pairs that must stay apart.
 
 ## Examples
 
-`examples/` holds short scripts, each runnable in seconds, from the precision sampler up to a
-BVAR with stochastic volatility assembled from core blocks. See `examples/README.md`.
+`examples/` holds six short scripts, each runnable in seconds: from the precision sampler up
+to a BVAR with stochastic volatility assembled from core blocks, then marginal likelihoods
+and model comparison, and finally identification by sign restrictions. See
+`examples/README.md`.
 
 ## Verification
 
