@@ -26,6 +26,10 @@ Import date: 2026-09-01. `.gitattributes` sets `* -text` so git stores every byt
   file of 76: `utility/IRredu.m` advanced the companion matrix before using it, reporting
   every impulse response after impact one horizon early. Expect that one-period shift when
   comparing output with the published figures.
+  Its `auxFunctions/` folder is THIRD-PARTY: 25 files implementing the algorithm of Read
+  (2022), copied from that paper's own code, as the package README states. They are archived
+  here like the rest of the package but are outside the repository license and are not
+  candidates for consolidation into `core/`.
 
 - **chan2022_qe_acp**: Zip updated 2026-08-27; includes the IRredu h=1 fix applied on that date.
 - **Git LFS decision**: not used. Largest file is 6.2 MB (`replications/chan_koop_yu2024_jbes_oisv/legacy/results_mat/forecastingOI2-cluster.mat`), total working tree 55.3 MB - both well under GitHub limits (100 MB/file). Revisit only if a future artifact exceeds 50 MB.

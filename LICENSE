@@ -13,7 +13,10 @@ a licensing condition.
 
 NOT COVERED. Third-party code retains its original license and authorship:
 everything under third_party/, and the third-party files bundled inside some
-legacy packages, including gigrnd.m (Makalic and Schmidt, 2015), EvalFore.m
+legacy packages. That includes the whole of
+replications/chan_matthes_yu2026_qe_svarsign/legacy/auxFunctions/ - 25 files
+implementing the algorithm of Read (2022), copied from the code that paper
+provides - as well as gigrnd.m (Makalic and Schmidt, 2015), EvalFore.m
 (Roque Montero, 2016) and heatmap.m (MathWorks File Exchange). See those
 files' own headers.
 
