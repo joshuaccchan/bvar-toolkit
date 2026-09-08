@@ -38,7 +38,7 @@
 %
 % WHAT TO LOOK AT: the posterior mean of h should track the simulated truth
 % closely (correlation well above 0.9), the posterior of sigh2 should cover the
-% true value, and the LAST section shows a trap that bites in practice - the
+% true value, and the LAST section shows a trap that catches people - the
 % offset inside log(y^2 + c) is not scale-free.
 
 run(fullfile(fileparts(fileparts(mfilename('fullpath'))),'setup.m'))

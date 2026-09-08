@@ -6,7 +6,7 @@
 % to the optional 5th argument phi_bnd, default .999. At phi_bnd = .998 it also
 % stands in for chan2023_joe_mlvarsv/legacy/utility/sample_SVpara.m, but only for
 % callers with r = 0 - every ml_varsv call site - where that copy's missing n+r
-% column split and 1:n indexing are no-ops; for r > 0 the two bodies genuinely
+% column split and 1:n indexing are no-ops; for r > 0 the two bodies
 % differ.
 % Equivalence: tests/unit/test_sv_params.m, test_sv_params_mlvarsv.m.
 % Record: tests/variant_map.md.

@@ -74,7 +74,7 @@ p = pr.p;
     % last bit of some cells (max absolute difference 6.9e-18 over the 238 x 248
     % block - they parse a few decimal strings to adjacent doubles). That is
     % numerically nothing, but it is enough to break the draw-for-draw guarantee
-    % against the legacy script, which is the point of this driver. Keep the
+    % against the legacy script, which is what this driver exists for. Keep the
     % legacy call even though xlsread is deprecated.
 data = xlsread(fullfile(thisdir, 'legacy', pr.data_file), pr.data_range); %#ok<XLSRD>
 Y0 = data(1:4, varid);      % first 4 obs as initial conditions
