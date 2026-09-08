@@ -92,7 +92,7 @@ fprintf('\nNote the two ordinate blocks are SUBTRACTED. A model can raise its\n'
 fprintf('likelihood by fitting the sample more closely and still lose, because\n');
 fprintf('a sharper posterior means a larger ordinate at theta*. That subtraction\n');
 fprintf('is the Ockham factor: the marginal likelihood prices complexity\n');
-fprintf('automatically, with no penalty term put in by hand.\n');
+fprintf('automatically, with no penalty term added to it.\n');
 
 %% ------------------------------------------------------------------
 %  2. The comparison

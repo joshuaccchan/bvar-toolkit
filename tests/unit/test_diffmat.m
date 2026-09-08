@@ -1,6 +1,6 @@
 function test_diffmat
 % bvar.util.diffmat must reproduce the inline state-equation matrices that the
-% legacy-derived core functions build by hand, exactly.
+% legacy-derived core functions build inline, exactly.
 
 T = 40;
 

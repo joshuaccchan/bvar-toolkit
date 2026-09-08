@@ -1,7 +1,7 @@
 # Examples
 
-Seven short scripts that build up from the one computational idea the toolkit rests on
-to model comparison and structural identification. They are teaching material, not
+Eight short scripts that build up from the one computational idea the toolkit rests on
+to model comparison, structural identification and forecast evaluation. They are teaching material, not
 replications: each works on data small enough that you can check the numbers against the
 truth, and each prints its reasoning as it goes. For reproducing a published table, use
 `replications/<paper>/` instead.
@@ -24,17 +24,19 @@ Read them in order. Each one uses what the last one built.
 | 5 | `ex05_marginal_likelihood.m` | Marginal likelihoods and model comparison: the three pieces of Chib's identity, why the posterior ordinate is *subtracted* (the Ockham factor), and a three-model comparison from Chan (2020, JBES). | Ch. 5 | 1 s |
 | 6 | `ex06_sign_restrictions.m` | Identifying a structural VAR by sign restrictions, and the cost of the search: two acceptance rules run over the same posterior draws and the same rotations, one requiring each shock in its own column and one searching over assignments. | &mdash; | 5 s |
 | 7 | `ex07_dynamic_sign_restrictions.m` | Sign restrictions imposed over a stretch of the impulse response rather than on impact alone — Uhlig's (2005) agnostic identification of a monetary shock. Collects 1000 accepted draws under each acceptance rule and compares the resulting credible bands, which coincide: the rules differ in cost, not in answer. | &mdash; | 13 s |
+| 8 | `ex08_forecast_evaluation.m` | A recursive forecasting exercise end to end: the structural VAR with stochastic volatility and the Minnesota-type adaptive hierarchical prior of Chan (2021), estimated at each vintage, forecast one and four quarters ahead, and scored by RMSFE and log predictive likelihood. The only example that uses `bvar.forecast`. | Ch. 14 | 15 s |
 
 Timings are from one warm R2025b session on a desktop machine; treat them as orders of
-magnitude. ex01 to ex04 and ex07 draw figures as well as printing. The chapter column
+magnitude. ex01 to ex04, ex07 and ex08 draw figures as well as printing. The chapter column
 refers to *Bayesian Macroeconometrics: Methods and Applications* (Chan, Chapman &
 Hall/CRC, forthcoming), whose [sample chapters](https://joshuachan.org/papers/BayesMacroBook_sample.pdf)
 and [code repository](https://github.com/joshuaccchan/bayesian-macroeconometrics) are
 online: 9 Linear Gaussian State Space Models, 10 Stochastic Volatility Models, 12
 Vector Autoregressions, 14 Large VARs with Stochastic Volatility, 5 Bayesian Model
 Comparison. The auxiliary mixture ex02 uses is developed in Chapter 4, Mixture Models.
-Each script repeats its chapter in the header. ex06 and ex07 have no entry because the
-book has no chapter on structural VARs.
+Each script repeats its chapter in the header. ex04 and ex08 both draw on Chapter 14,
+one for the sampler and one for the forecasting exercise built on it. ex06 and ex07
+have no entry because the book has no chapter on structural VARs.
 
 ## What each one exercises
 
@@ -49,8 +51,9 @@ Useful if you are looking for a worked call of a particular core function.
 | ex05 | `replications/chan2020_jbes_kronecker/run_ml.m`, which calls the `bvar.ml.*` evaluators | that package's `data_Q.csv` |
 | ex06 | `bvar.priors.resid_var_ar4`, `bvar.priors.acp_redu`, `bvar.samplers.acp_theta_sig`, `bvar.structural.reduced_form`, `bvar.structural.qr_sign`, `bvar.structural.sign_restrict`, `bvar.structural.sign_assign` | `replications/chan_matthes_yu2026_qe_svarsign/legacy/data/database_2019Q4.csv`, read-only |
 | ex07 | the same seven, plus `bvar.structural.irf_redu` — the only example that computes an impulse response | that package's `data/Uhlig_monthly.csv`, read-only |
+| ex08 | `bvar.forecast.iterate`, `bvar.forecast.tables`, `bvar.samplers.eq_gauss`, `bvar.samplers.gig_shrinkage`, `bvar.samplers.nu_psi_ng`, `bvar.priors.minnesota_C`, `bvar.priors.vtheta`, `bvar.priors.resid_var_ar4`, `bvar.sv.ksc_rw_h0`, `bvar.util.build_lags` | `replications/chan2021_ijf_mahp/legacy/macrodata_Q_2018Q4.csv`, read-only |
 
-We note two points about reading these scripts. First, ex01 and ex04 write out by hand what a
+We note two points about reading these scripts. First, ex01 and ex04 spell out inline what a
 core function would otherwise do in one call: the precision-sampler draw in ex01, and the
 equation-by-equation coefficient block in ex04. The construction is what these two scripts
 teach, and their headers name the packaged version to use in practice. Second, the settings in
