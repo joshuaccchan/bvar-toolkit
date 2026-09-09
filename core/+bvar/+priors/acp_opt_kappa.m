@@ -15,8 +15,8 @@
 % optimization over a smooth objective rather than a search requiring repeated
 % estimation. The asymmetric case optimizes log kappa1 and log kappa2 with
 % fminsearch, so the arguments stay positive without a constrained solver; the
-% symmetric case imposes kappa1 = kappa2 and uses fminbnd on (0,1), a different
-% optimizer over a different parameterization. The paper compares the two to
+% symmetric case imposes kappa1 = kappa2 and uses fminbnd on (0,1). The paper
+% compares the two to
 % measure what the asymmetry contributes, so the symmetric variant is reached
 % through this same function rather than duplicated elsewhere.
 %

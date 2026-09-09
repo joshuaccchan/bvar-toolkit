@@ -11,8 +11,9 @@
 % Clean bill from the audit. One thing that looks like a defect and is
 % not: lh_prior and lh_g both omit the same T(n+r)/2*log(2*pi), and the two
 % omissions cancel in llike + lh_prior - lh_g, in both flag_marg branches.
-% Quirk: big_sig2 is drawn even under flag_marg = 2, where nothing reads it -
-% rng-consuming, numerically inert. tests/variant_map.md has the audit.
+% Quirk: big_sig2 is drawn even under flag_marg = 2, where nothing reads it; the
+% draw shifts the rng stream without changing any value.
+% tests/variant_map.md has the audit.
 %
 % Body from chan2023_joe_mlvarsv/legacy/utility/ml_var_fsv.m, renamed,
 % with helper calls redirected to core (listed below).

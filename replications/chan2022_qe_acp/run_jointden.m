@@ -6,7 +6,7 @@
 %   out = run_jointden()
 %   out = run_jointden(kappa1_grid, kappa2_grid)
 %
-% The point of the exercise is that no simulation is involved. bvar.ml.acp gives
+% No simulation is involved. bvar.ml.acp gives
 % the marginal likelihood in closed form, so the surface is evaluated directly,
 % once per grid point, and the optimum found by bvar.priors.acp_opt_kappa can be
 % placed on it. The default grid is the paper's: kappa1 over 0.01:0.001:0.2 and

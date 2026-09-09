@@ -8,17 +8,17 @@
 %   prior : the struct from bvar.priors.acp_redu or acp_stru
 %   ridge : added to the diagonal of the posterior precision; default 0
 %
-% TWO LEGACY COPIES, and the ridge is what separates them. chan2022_qe_acp forms
-% the posterior precision as iVi + Xi'*Xi, which is the default here.
+% TWO LEGACY COPIES, which differ in the ridge. chan2022_qe_acp forms the
+% posterior precision as iVi + Xi'*Xi, which is the default here.
 % chan_matthes_yu2026_qe_svarsign adds 1e-6*speye(ki) to it, a jitter that keeps
 % the Cholesky alive at n = 35. Pass 'ridge', 1e-6 to reproduce that copy. The
 % default path is left arithmetically untouched, so it still reproduces the 2022
 % package bit for bit.
 %
-% The choice is not innocuous. On the ACP package's 15-variable dataset at its own
-% kappa = (.04, .0016, 1, 100), the two settings give log marginal likelihoods 1.99
-% apart, which is large enough to affect a model comparison. Hold the setting fixed
-% across the models being compared, and report which one was used.
+% On the ACP package's 15-variable dataset at its own kappa = (.04, .0016, 1, 100),
+% the two settings give log marginal likelihoods 1.99 apart, which is large enough
+% to affect a model comparison. Hold the setting fixed across the models being
+% compared, and report which one was used.
 %
 % This is the property that motivates the prior. Conjugacy makes each equation's
 % marginal likelihood a ratio of normal-inverse-gamma normalizing constants, so
@@ -26,8 +26,7 @@
 % factor of the posterior precision, and gammaln - no simulation, no importance
 % sampling, no second pass over stored draws. Selecting the lag length or the
 % shrinkage hyperparameters by maximizing it is then a small optimization
-% problem rather than a research project; bvar.priors.acp_opt_kappa does exactly
-% that.
+% problem; bvar.priors.acp_opt_kappa does exactly that.
 %
 % Contrast the other entries in this namespace, which exist because their models
 % have no such expression: the kron_bvar family needs Chib's method and the

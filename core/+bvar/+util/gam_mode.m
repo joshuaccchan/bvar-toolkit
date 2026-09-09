@@ -12,8 +12,8 @@
 % Each row is keyed by its binary expansion gam*2.^(0:nmodel-1)', counts are
 % accumulated by growing a table, and ties are broken by whichever configuration
 % sortrows leaves on top. The loop over draws is the legacy implementation and is
-% O(nsim x distinct configurations); it is quick at the sizes used here but is
-% not the way to count a long chain over many equations.
+% O(nsim x distinct configurations); it is quick at the sizes used here but slows
+% down for a long chain over many equations.
 %
 % Body from chan2023_jbes_hybtvp/legacy/utility/get_gammode.m, renamed.
 % Equivalence: tests/unit/test_hybtvp_equivalence.m. Record: tests/variant_map.md.

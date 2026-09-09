@@ -190,8 +190,7 @@ fprintf('  LAPACK''s fixed overheads keep it below that at these small sizes.\n'
 fprintf('  At T = 16000 the dense route needs a %.1f GB matrix, which is why it\n', ...
     8*16000^2/2^30);
 fprintf('  is skipped above; the sparse draw there still takes under a\n');
-fprintf('  millisecond. That is the difference between a feasible and an\n');
-fprintf('  infeasible sampler.\n');
+fprintf('  millisecond.\n');
 
 %% ------------------------------------------------------------------
 %  5. The same trick with a k-DIMENSIONAL state: bvar.util.surform

@@ -4,8 +4,8 @@
 % coefficient-specific local scales psi_kappa1/psi_kappa2 (one gigrnd call
 % each, floored at psi_floor).
 %
-% One function, three explicitly NAMED variants, each body verbatim from its own
-% legacy source; the blocks are numerically DIFFERENT across models - never
+% The function has three explicitly NAMED variants, each body verbatim from its
+% own legacy source; the blocks are numerically DIFFERENT across models - never
 % unify them:
 %   'mng'  -> chan2021_ijf_mahp/legacy/BVAR_MNG.m  lines 68-81 (kappa(1:2) with
 %             the Minnesota C, then the psi block);

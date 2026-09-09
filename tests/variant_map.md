@@ -77,8 +77,7 @@ demeans ALL columns of h)" is refuted. Those structural differences are no-ops w
 (`VAR_CSV.m` 61 h is T x 1 with mu = 0; `VAR_ARSV_redu.m` 84 and `VAR_ARSVO_redu.m` 91
 h is T x n with mu n x 1; `VAR_FSV.m` 82 h is T x (n+r) with mu (n+r) x 1 - so r = 0
 inside `sv_params` there too, the factor columns arriving as extra "series" with their
-own mu). The phi bound is the only difference that changes the output, and it does:
-`test_sv_params_mlvarsv` forces a candidate into [.998,.999) and shows .999 accepting
+own mu). The phi bound is the only difference that changes the output: `test_sv_params_mlvarsv` forces a candidate into [.998,.999) and shows .999 accepting
 where .998 and the legacy reject, and a scratch-mirror perturbation check that hard-codes .999
 inside `sv_params` makes `test_mlvarsv_equivalence` fail on model 3. r > 0 remains
 uncovered by the claim: there the two bodies do differ.
@@ -197,6 +196,16 @@ script-tail summaries, the six func_main outputs, and the terminal rng state.
 | `bvar.samplers.alp_tri_cs` | CS_MH.m lines 77-87 (inline "sample alp" count_alp loop; caller computes E = Y-XB and keeps A(A_id) = alp) | forecast_CS_MH.m lines 68-78 (identical modulo Tt); plus, from step 9, chan2023_joe_mlvarsv `VAR_ARSV_redu.m` 64-73 and `VAR_ARSVO_redu.m` 71-80 (the latter through the new optional `o` argument) | unit (same test; ml_varsv in `test_mlvarsv_equivalence`) |
 | `bvar.samplers.horseshoe_kappa_psi` | SVARSV_MH.m lines 102-120 (psi -> z_psi -> kappa(1:2) -> z_kappa block, theta = alpha) | CS_MH.m lines 102-120 (theta = beta), forecast_SVARSV_MH.m lines 96-114, forecast_CS_MH.m lines 93-111 - all four textually identical modulo the coefficient vector's name. NEVER merge with `bvar.samplers.gig_shrinkage` (MAHP normal-gamma GIG block - different prior family). | unit (same test) |
 | `bvar.priors.vtheta` (Vbeta output; row added, no new function) | - | chan_koop_yu2024_jbes_oisv `utility/getVbeta.m`: exactly vtheta's three Vbeta assignment lines on the same inputs; OISV callers use `[~,Vbeta] = bvar.priors.vtheta(...)` and discard Valp (NaN under the OI kappa(3) = NaN, never read) | diff + unit (same test) |
+
+The CS block is the CORRECTED triangular algorithm of Carriero, Chan, Clark and Marcellino
+(2022), the corrigendum to Carriero, Clark and Marcellino (2019, JoE 212(1): 137-154). The
+original drew equation j from a conditional that omitted part of the information,
+conditioning on y(1),...,y(j-1) instead of the whole of y, so it did not sample the
+triangular factorization it was aiming at; the corrigendum restores the missing term at the
+same complexity. In `bvar.samplers.eq_tri_cs` the correction is the stacking of rows ii:n
+rather than equation ii alone, and the legacy package says as much - `forecast_CS_MH.m`
+line 2 reads "using CCCM algorithm". Anyone porting this block to another package should
+check which version they are copying from.
 
 Reused as-is (extracted in steps 3-4, headers already list the OISV copies): `bvar.priors.resid_var_ar4`
 (legacy get_resid_var), `bvar.priors.minnesota_C` (get_C), `bvar.sv.ksc_ar1_mean` (sample_SV),
@@ -420,9 +429,8 @@ routines were extracted in step 10 (below); the (Sig,A) draw is still deferred.
   perturbed, and the mirror's reverted run passes): a 1e-7 relative perturbation of
   `eq_var_redu_tri` fails on model 3's store_alp, of `factor_fsv` and of `eq_fsv_load` on
   model 4's store_l, of `alp_tri_cs`'s `./o.^2` on model 5 only (model 3 unaffected, as the
-  o == 1 identity predicts), and of `alp_tri_cs`'s shared `X_alpi'*iD*X_alpi` on BOTH
-  `test_mlvarsv_equivalence` (model 3) and `test_oisv_equivalence` (CS) - which is what proves
-  the two packages share that block rather than merely resembling each other. Hard-coding .999
+  o == 1 identity predicts), and of `alp_tri_cs`'s shared `X_alpi'*iD*X_alpi` on BOTH `test_mlvarsv_equivalence` (model 3) and `test_oisv_equivalence` (CS), which proves
+  that both packages call the same block. Hard-coding .999
   inside a mirrored `sv_params` fails on model 3.
 - **Sensitivity floor of the outlier block.** `svo_outlier`'s o_t draw is discrete (a 32-point
   grid), so small perturbations are absorbed: 1e-7, 1e-6 and 1e-4 relative changes to its
@@ -515,8 +523,8 @@ re-hard-coded inside each routine.
 
 Verified line-by-line from source. The three defects are confined to VAR-SVO's outlier block
 and are exactly the o-specific lines the routine gained when it was copied from
-`ml_var_arsv_redu.m` (a comment-stripped diff of the two files returns only the o/po
-additions - and `c1`, the one line the o patch should have touched and did not).
+`ml_var_arsv_redu.m` (a comment-stripped diff of the two files returns only the o/po additions; `c1`, which the o
+patch should have touched, is not among them).
 
 - **`ml_var_arsvo_redu.m` line 12 with line 180 (defect 1, prior mass):** line 12 sets
   `ngrid = size(o_grid,1)` = **32**, the number of ATOMS in `o_grid = [1;linspace(2,20,31)']`;
@@ -530,8 +538,8 @@ additions - and `c1`, the one line the o patch should have touched and did not).
   `lr_o = sum(o_lpri(o_idx) - log(o_hat(o_idx)));`. `o_hat` is T x 32 (line 68) and `o_idx` is
   T x 1 with values in 1..32, so `o_hat(o_idx)` is a LINEAR index into a T-row matrix: for
   T >= 32 (T = 234 published) every index lands in column 1. It reads the smoothed probability
-  of the atom o = 1 at PERIOD `o_idx(t)` instead of the probability of the drawn atom at period
-  t - the importance density's own ordinate, evaluated at the wrong entry. Correct:
+  of the atom o = 1 at PERIOD `o_idx(t)` instead of the probability of the drawn atom at period t, so the importance density's ordinate
+is evaluated at the wrong entry. Correct:
   `o_hat(sub2ind(size(o_hat),(1:T)',o_idx))`. (Below T = 32 the linear indices spill into
   column 2 and the behaviour changes; the test therefore runs at the full T.)
 - **`ml_var_arsvo_redu.m` line 153 (defect 3, missing Jacobian):**
@@ -558,7 +566,7 @@ additions - and `c1`, the one line the o patch should have touched and did not).
 - **`ml_var_fsv.m` (model 4): CLEAN.** `deny_fsv` marginalizes the factors through
   `Sy = (I kron L) Omega (I kron L') + Sig` with row-major stacking consistent with
   `SURform2(X,n)` and `reshape(Y',T*n,1)`; the free-loading index set matches the sampler's.
-  **The one thing that looks like a defect and is not:** `c_hi = .5*ldet(Kh_hat)` (line 125)
+  **The constant that cancels between `c_hi` and `lh_prior`:** `c_hi = .5*ldet(Kh_hat)` (line 125)
   omits the `-T*(n+r)/2*log(2*pi)` of the h importance density, and `lh_prior` (lines 156-161)
   omits exactly the same constant, once per series, in BOTH `flag_marg` branches - the two
   omissions cancel in `llike + lh_prior - lh_g`, so the level is right. (The VAR-SV routine
@@ -658,7 +666,7 @@ inlined in `run_all` where it belongs to that driver's setup.
 - **The data must be read with `xlsread`, not `readmatrix`.** On
   `macrodata_Q_2018Q4.csv` the two disagree in the last bit of some cells (max absolute
   difference 6.9e-18 across the 238 x 248 block - a few decimal strings parse to adjacent
-  doubles). Numerically nothing; enough to break draw-for-draw equivalence. `run_all`
+  doubles). The difference is numerically negligible but breaks draw-for-draw equivalence. `run_all`
   keeps the legacy `xlsread` call for that reason, deprecation notwithstanding.
 - Equivalence test `test_hybtvp_equivalence` runs the legacy script wholesale from a
   tempdir copy at n = 3, nsim = 25, and asserts isequal on all thirteen store arrays, on
@@ -724,7 +732,7 @@ drivers here return arrays rather than drawing figures.
   with MORE rows than nsim. The median and the 16/84 percentiles are taken over all of them.
   Truncating at nsim would change the reported responses, so the driver reproduces the
   overshoot deliberately.
-- **The data must be read with `xlsread`, and here the reason is not subtle.** On
+- **The data must be read with `xlsread` here too.** On
   `database_2019Q4.xlsx`, `readmatrix` returns a 141 x 16 array where `xlsread` returns
   140 x 15: it keeps a header row and an index column that the legacy numeric read drops.
   This is a shape difference, not a last-bit difference as in the hybtvp package.
@@ -773,8 +781,7 @@ Only the paper's own contribution is extracted here.
   takes an optional `ridge` argument covering both copies. The default of zero reproduces
   the ACP copy and is asserted in `test_acp_equivalence`; `'ridge', 1e-6` reproduces this
   one and is asserted in `test_sign_assign`, which also asserts that the default does NOT
-  reproduce it, so the option cannot quietly become a no-op. The setting is not innocuous:
-  on the ACP package's 15-variable data at its own kappa = (.04, .0016, 1, 100) the two
+  reproduce it, so the option cannot quietly become a no-op. On the ACP package's 15-variable data at its own kappa = (.04, .0016, 1, 100) the two
   differ by 1.99 in the log marginal likelihood, so a model comparison must hold it fixed
   across the models compared.
 - `auxFunctions/` is third-party (Read 2022, copied from that paper's code) and is not a
@@ -786,8 +793,7 @@ Only the paper's own contribution is extracted here.
   `get_OptKappa_ver2`, `sample_BSig_NCP`, `sample_ThetaSig_NCP`, `plotCI_othercolor`. Note
   that `sample_ThetaSig_NCP.m` and `sample_BSig_NCP.m` are the same 26 lines and both declare
   `function sample_BSig_NCP`, so the first file's name disagrees with the function inside it.
-- `prior_NCP.m` is a sixth file with no ACP counterpart, but it is NOT unextracted: it is
-  identical after comment stripping to the chan2023_joe_mlvarsv copy, so
+- `prior_NCP.m` is a sixth file with no ACP counterpart, but it needs no extraction: it is identical after comment stripping to the chan2023_joe_mlvarsv copy, so
   `bvar.priors.niw('mlvarsv_ncp')` already covers it. Recording which family it belongs to
   matters here, because the never-merge list keeps two incompatible `prior_NCP` signatures
   apart: this one is the ml_varsv signature, not the cjz2019 one.
@@ -804,7 +810,7 @@ A future deduplication must not unify any of these; doing so silently changes pu
   neither is wrong, but they consume the rng differently and reproduce different published
   code. `sign_assign` also requires the paper's separability condition on the restrictions,
   which `sign_restrict` does not. Keep both.
-  **They also differ on an empty ranking set**, which is a trap rather than a design choice:
+  **They also differ on an empty ranking set**, and this difference is unintended:
   `sign_restrict` tests `Rineq*L < 0` strictly, so a row of zeros rejects every candidate and
   returns an empty identified set with no error; `sign_assign` tests `<= 0`, where a zero row
   imposes nothing. To use `sign_restrict` with sign restrictions only, pass an EMPTY `Ridx`
@@ -813,7 +819,7 @@ A future deduplication must not unify any of these; doing so silently changes pu
 
 - **`SVRW.m`**: sp_code's variant uses a DIFFUSE initial condition h_1 ~ N(0,Vh), lower-Cholesky,
   returns `[h S]`; the large_BVAR/BVAR_code/MAHP variant takes a KNOWN h0, upper-Cholesky.
-  Different model, same name.
+  The two implement different models under the same file name.
 - **`sample_SV` / `sample_SVRW`**: OISV/ml_varsv stationary AR(1)-with-mean vs HYB random-walk -
   different state equations.
 - **`llike_CSV_MA.m`**: the BVAR_code ROOT copy includes the `-n/2*sum(h)` term; the large_BVAR
@@ -836,12 +842,11 @@ A future deduplication must not unify any of these; doing so silently changes pu
   not re-derived): the ml_varsv and OISV copies differ in (i) phi truncation bound .998
   (ml_varsv) vs .999 (OISV); (ii) OISV takes h with n+r columns and demeans only the first n,
   ml_varsv demeans all columns; (iii) OISV's mu block indexes phi(1:n)/sig2(1:n), ml_varsv uses
-  full vectors. BOTH copies carry the `if mu ~= 0` vectorized gate (2026-09-01 correction) - the
-  gate is not what separates them. Differences (ii) and (iii) are no-ops at r = 0, which is what
+  full vectors. BOTH copies carry the `if mu ~= 0` vectorized gate (2026-09-01 correction). Differences (ii) and (iii) are no-ops at r = 0, which is what
   every ml_varsv call site passes, so `bvar.sv.sv_params(h,mu,phi,Hyper,.998)` reproduces the
   ml_varsv copy draw-for-draw (`test_sv_params_mlvarsv`, plus end-to-end in
-  `test_mlvarsv_equivalence`). Only difference (i) is real in practice; it is a parameter, not a
-  fork. OISV additionally splits the zero-mean case into `sample_SV0para.m` with bound .99
+  `test_mlvarsv_equivalence`). Only difference (i) is real in practice, and the shared function takes the bound as an
+  argument. OISV additionally splits the zero-mean case into `sample_SV0para.m` with bound .99
   (`bvar.sv.sv0_params`) - that one is a separate function. Do NOT merge the .998 and
   .999 DEFAULTS: the bound changes draws (confirmed by perturbation).
 - **`macrodata_Q_2018Q4.csv`**: byte-identical between MAHP and HYB but a DIFFERENT file in
@@ -871,7 +876,7 @@ A future deduplication must not unify any of these; doing so silently changes pu
   sample_SVpara keeps updating mu and the predictive recursion uses muh (preset
   `pr.forecast.cs_h_mu_zero`). A forecast functionization must NOT reuse the estimation
   call as-is.
-- **`eq_var_redu_tri` vs `eq_svar_oi`**: siblings, not duplicates. `eq_svar_oi` (OISV
+- **`eq_var_redu_tri` vs `eq_svar_oi`**: not interchangeable. `eq_svar_oi` (OISV
   SVARSV_MH.m 76-87) stacks ALL n rows of the rotated system - `yi = vec((Y-X*A)*B0')`,
   `Wi = kron(B0(:,ii),X)` - and has no prior-mean term. `eq_var_redu_tri` (ml_varsv
   VAR_ARSV_redu.m 44-57) stacks only rows `ii:n` (valid because B0 is unit lower triangular,
@@ -1040,8 +1045,7 @@ call), two seeds per affected model; log
 straddle zero across seeds, while BVAR-CSV-t-MA leads the second-best model (BVAR-CSV-MA)
 by ~17.5 points and BVAR-MA sits ~24 points above BVAR and ~161 below BVAR-t. Both
 corrections are also smaller than the estimator's own seed-to-seed Monte Carlo spread
-(model 8's bugcompat ML varies by 4.2 points across the two seeds), i.e. the defects move
-these marginal likelihoods by less than the noise already inherent in reporting them. The
+(model 8's bugcompat ML varies by 4.2 points across the two seeds). The
 model-7 control confirms the flag is a bitwise no-op where no defect exists.
 
 ## New core function (2026-09-06): `bvar.samplers.eq_var_oi`

@@ -49,7 +49,8 @@
 % A NAMING TRAP. In this paper's code `alp` is vec(A), the VAR coefficients, and
 % `beta` collects the free elements of B0 - the opposite of the MAHP convention
 % used in replications/chan2021_ijf_mahp and in bvar.priors.vtheta. The names
-% below follow the legacy file. Read the comments, not the letters.
+% below follow the legacy file, and each block comment states which object its
+% variables hold.
 %
 % WHAT TO LOOK AT: the row-count line printed in block 1, the coefficient RMSE
 % against ordinary least squares, the recovered B0 elements, and the correlation

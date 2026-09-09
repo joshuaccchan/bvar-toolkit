@@ -27,10 +27,9 @@
 % The labelling of the columns of Q is arbitrary. A rotation whose fourth column
 % satisfies the monetary restrictions is just as admissible as one where the
 % first column satisfies them, and accept-reject discards the former. Both target
-% the same identified set. They differ in how many candidates are wasted, and the
-% difference is not small: the run behind this repository's
-% tests/golden/chan2022_qe_acp/main_ACP_apps_15var capture needed 3.8 million
-% draws for each acceptance at n = 15.
+% the same identified set, and their acceptance rates differ widely: the run behind
+% this repository's tests/golden/chan2022_qe_acp/main_ACP_apps_15var capture needed
+% 3.8 million draws for each acceptance at n = 15.
 %
 % WHAT THIS SCRIPT DOES. Draws one batch from the posterior of a 6-variable VAR
 % under the asymmetric conjugate prior, then runs BOTH acceptance rules over the

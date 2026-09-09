@@ -75,9 +75,9 @@ those steps were written out again and again — the auxiliary mixture sampler t
 the log-volatility path appears in seven of them, under three names. `bvar` is those steps
 factored into one function each.
 
-They are not rewrites. Each function's body is taken from a specific published package,
-and a unit test runs the original code alongside it and requires identical output — draw
-for draw, bitwise, under a fixed seed. Calling `bvar.sv.ksc_rw_h0` runs the computation
+Each function's body is taken from a specific published package, and a unit test runs the
+original code alongside it and requires identical output — draw for draw, bitwise, under
+a fixed seed. Calling `bvar.sv.ksc_rw_h0` runs the computation
 the paper ran. A small number of functions are new code rather than extractions — they are
 marked as such in their headers and listed in `tests/variant_map.md`, and are pinned
 instead to the inline spelling they generalize.

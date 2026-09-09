@@ -18,7 +18,9 @@
 % arguments, vec -> bvar.util.vec. It does NOT cover forecast_SVARSV_MH.m lines
 % 69-81, which rewrites this step with time-interleaved stacking
 % (Wi = kron(Xt,B0(:,ii))) and an explicit exp(-h) weighting matrix in place of
-% the ./Lambda row scaling - same conditional, different floating-point path.
+% the ./Lambda row scaling. That block draws from the same conditional but orders
+% the floating-point operations differently, so its draws are not bitwise equal
+% to these.
 % Equivalence: tests/unit/test_oisv_equivalence.m. Record: tests/variant_map.md.
 %
 % See:

@@ -15,6 +15,16 @@
 % rng consumption: randn(k,1) per equation, equations in order ii = 1:n.
 % The caller keeps `beta = reshape(B',k_beta,1)` (legacy line 73).
 %
+% THIS IS THE CORRECTED TRIANGULAR ALGORITHM of Carriero, Chan, Clark and
+% Marcellino (2022), the corrigendum to Carriero, Clark and Marcellino (2019).
+% The original algorithm drew equation j from a conditional that omitted part of
+% the information - it conditioned on y(1),...,y(j-1) rather than on the whole of
+% y - so it did not sample the intended triangular factorization. The corrigendum
+% keeps that factorization and restores the missing term at the same O(n^4) cost.
+% Stacking rows ii:n above, rather than equation ii alone, is that correction.
+% The legacy package labels it so: forecast_CS_MH.m line 2 reads "using CCCM
+% algorithm".
+%
 % Body from chan_koop_yu2024_jbes_oisv/legacy/CS_MH.m lines 54-72 (the inline
 % "sample B" block), wrapped as a function: T, n, k from the arguments,
 % Hyper.beta0 -> beta0. Also covers forecast_CS_MH.m lines 45-63 (Y/X/T ->
@@ -22,6 +32,9 @@
 % Equivalence: tests/unit/test_oisv_equivalence.m. Record: tests/variant_map.md.
 %
 % See:
+% Carriero, A., Chan, J.C.C., Clark, T.E. and Marcellino, M. (2022). Corrigendum
+% to: Large Bayesian Vector Autoregressions with Stochastic Volatility and
+% Non-Conjugate Priors, Journal of Econometrics, 227(2): 506-512.
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian
 % VARs with Stochastic Volatility, Journal of Business and Economic
 % Statistics, 42(2): 825-837.

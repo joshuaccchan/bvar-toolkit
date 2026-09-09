@@ -15,9 +15,9 @@
 % response(:,:,it) for it >= 2 applies the (1:n,1:n) block of the companion
 % matrix raised to the (it-1)th power. Two other copies of this routine in the
 % wider codebase start the loop at the wrong index and so report every response
-% shifted one period; this package's copy is the corrected one and is the reason
-% it, rather than another copy, is canonical here. Anyone comparing figures with
-% an older run should check which copy produced them.
+% shifted one period; this package's copy is the corrected one and is canonical
+% here. Anyone comparing figures with an older run should check which copy
+% produced them.
 %
 % Body from chan2022_qe_acp/legacy/utility/IRredu.m (the BVAR_ACP_R1
 % zip of 2026-08-27, the copy carrying the fix), renamed.

@@ -38,11 +38,10 @@
 % m x n table of which columns admit which shocks, accepts whenever every shock
 % has at least one, and draws an assignment uniformly from those available.
 %
-% It is not merely a heuristic that keeps more draws. Proposition 1 of the paper
-% establishes that the accepted R* equals L*Q* for a Q* that is still uniform on
-% the orthogonal group, so the target distribution is unchanged; the proof turns
-% on the Haar measure being invariant to right multiplication by a permutation
-% and a sign matrix. The reported gain at n = 15 with 1000 admissible draws is
+% Proposition 1 of the paper establishes that the accepted R* equals L*Q* for a Q*
+% that is still uniform on the orthogonal group, so the target distribution is
+% unchanged; the proof turns on the Haar measure being invariant to right
+% multiplication by a permutation and a sign matrix. The reported gain at n = 15 with 1000 admissible draws is
 % about 3.6 billion candidate rotations and six days for the rejection scheme
 % against about 31,000 and sixteen seconds here.
 %
@@ -53,9 +52,8 @@
 % take ONE draw per accepted pair, not several: two assignments from the same
 % (Sigma,Q) differ only by a permutation and sign flips, so they are dependent.
 %
-% Both functions are correct and neither replaces the other: sign_restrict is
-% the scheme the earlier papers use and the one their replication code
-% reproduces, so it stays. See the never-merge list in tests/variant_map.md.
+% Both functions are correct: sign_restrict is the scheme the earlier papers use
+% and the one their replication code reproduces, so it stays. See the never-merge list in tests/variant_map.md.
 %
 % rng consumption on ACCEPTANCE, in order: one unidrnd per shock (m draws,
 % choosing among that shock's admissible columns), then randperm(n-m) and

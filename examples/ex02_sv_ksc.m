@@ -141,8 +141,8 @@ fprintf('  share of periods with h_true in the 90%% band: %.2f\n', ...
 %
 %     Multiplying y by a constant a shifts the true log-variance path by the
 %     constant 2*log(a) and changes NOTHING else - the shape of h, its
-%     innovation variance sigh2, everything else is invariant. That is true
-%     of the model. It is NOT true of the sampler, because the offset c in
+%     innovation variance sigh2, everything else is invariant. That invariance
+%     holds for the model but not for the sampler, because the offset c in
 %     ystar = log(y^2 + c) has fixed units. Once y^2 falls to the order of c,
 %     the transformed data stop responding to y at all and the estimated
 %     path is dragged towards a constant.
