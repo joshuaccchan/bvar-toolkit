@@ -2,10 +2,14 @@
 % model at (A,Sig,rho,sigh2): the common log-volatility path h is integrated
 % out by importance sampling with R draws from a Gaussian approximation
 % N(ht, inv(Kh)) built at the Newton-Raphson mode of the conditional density
-% of h. Consumes R*T randn calls (one CKh'\randn(T,1) per draw).
+% of h.
 %
-% Body from chan2020_jbes_kronecker/legacy/intlike_BVAR_CSV.m, renamed.
-% Equivalence: tests/unit/test_kron_intlike.m. Record: tests/variant_map.md.
+%   [intlike,store_llike] = bvar.ml.intlike_csv(shortY,X,A,Sig,rho,sigh2,R)
+%
+% rng consumption: R*T randn calls (one CKh'\randn(T,1) per draw).
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_kron_intlike.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

@@ -1,36 +1,31 @@
 % bvar.samplers.horseshoe_kappa_psi - one sweep of the Minnesota-type HORSESHOE
-% hierarchical shrinkage block shared verbatim by both OISV samplers: given the current
-% coefficient vector theta (stacked k*n, intercept first per equation), draw
-% the local scales psi (inverse-gamma), their auxiliaries z_psi, the global
-% own-lag/other-lag scales kappa(1:2) (inverse-gamma), and their auxiliaries
-% z_kappa, in exactly that order. kappa(3:4) pass through untouched (the OI
-% model carries kappa(3) = NaN, the CS model kappa(3) = 1; kappa(4) = 100
-% intercepts in both). The caller keeps the Psi reassembly
-% (Psi(idx_kappa1) = psi_kappa1; Psi(idx_kappa2) = psi_kappa2) - legacy
-% position is between the psi and z_psi draws, but it consumes no rng and Psi
-% is not read inside the block, so the move is draw-neutral.
+% hierarchical shrinkage block: given the current coefficient vector theta
+% (stacked k*n, intercept first per equation), draw the local scales psi
+% (inverse-gamma), their auxiliaries z_psi, the global own-lag/other-lag scales
+% kappa(1:2) (inverse-gamma), and their auxiliaries z_kappa, in exactly that
+% order. kappa(3:4) pass through untouched (the OI model carries
+% kappa(3) = NaN, the CS model kappa(3) = 1; kappa(4) = 100 intercepts in both).
 %
 %   [psi_kappa1,psi_kappa2,z_psi1,z_psi2,kappa,z_kappa] = ...
 %       bvar.samplers.horseshoe_kappa_psi(theta,idx_kappa1,idx_kappa2,C, ...
 %                                        kappa,z_psi1,z_psi2,z_kappa)
 %
+% Caller contract: the Psi reassembly, Psi(idx_kappa1) = psi_kappa1 and
+% Psi(idx_kappa2) = psi_kappa2, stays with the caller. It consumes no rng and
+% Psi is not read inside the block, so where the caller puts it in the sweep is
+% draw-neutral.
+%
 % rng consumption, in order: gamrnd n*p-vector (psi1), gamrnd (n-1)*n*p-vector
 % (psi2), gamrnd n*p-vector (z_psi1), gamrnd (n-1)*n*p-vector (z_psi2), two
-% scalar gamrnd (kappa1, kappa2), one 1x2 gamrnd (z_kappa). NOTE the legacy
-% shape quirk kept verbatim: z_kappa enters the FIRST call as the 2x1 column
-% drawn at chain init and leaves every call as a 1x2 row (gamrnd inherits the
-% shape of kappa(1:2)).
+% scalar gamrnd (kappa1, kappa2), one 1x2 gamrnd (z_kappa). NOTE the shape
+% quirk: z_kappa may enter the FIRST call as the 2x1 column drawn at chain
+% init, and leaves every call as a 1x2 row (gamrnd inherits the shape of
+% kappa(1:2)).
 %
-% Body from chan_koop_yu2024_jbes_oisv/legacy/SVARSV_MH.m lines 102-120 (theta =
-% alpha there), wrapped as a function: np = numel(idx_kappa1) and
-% nnp = numel(idx_kappa2) replace the workspace n*p and (n-1)*n*p, and the Psi
-% reassembly is left with the caller (see above). Also covers the textually
-% identical blocks in CS_MH.m 102-120 (theta = beta), forecast_SVARSV_MH.m
-% 96-114 and forecast_CS_MH.m 93-111 - the only difference across the four is
-% the coefficient vector's name, unified as theta.
 % NEVER merge with bvar.samplers.gig_shrinkage: that is the MAHP normal-gamma
 % (GIG) block, a different prior family with a different draw sequence.
-% Equivalence: tests/unit/test_oisv_equivalence.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_oisv_equivalence.m.
 %
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian

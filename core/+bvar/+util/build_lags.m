@@ -4,13 +4,15 @@
 % [Y, Z] = bvar.util.build_lags(Yfull, p)
 %
 %   Yfull : T0 x n data matrix (the first p rows serve as initial conditions)
+%   p     : lag length, a positive integer strictly less than T0
 %   Y     : (T0-p) x n left-hand-side observations, Yfull(p+1:end,:)
 %   Z     : (T0-p) x (1+n*p) regressor matrix [1, y_{t-1}, ..., y_{t-p}]
 %
-% New in the consolidated toolkit: codifies the inline construction repeated in
-% every legacy package (same convention in all 12); where a legacy driver keeps
-% separate initial conditions Y0, call build_lags([Y0(end-p+1:end,:); Y], p).
-% Equivalence: tests/unit/test_build_lags.m. Record: tests/variant_map.md.
+% If a driver holds its initial conditions separately as Y0, pass them in the
+% same matrix: build_lags([Y0(end-p+1:end,:); Y], p).
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_build_lags.m.
 
 function [Y, Z] = build_lags(Yfull, p)
     [T0, n] = size(Yfull);

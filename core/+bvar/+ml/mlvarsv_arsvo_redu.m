@@ -5,41 +5,41 @@
 % (o_hat, one categorical distribution per period over the 32 grid atoms) and po
 % from a fitted beta.
 %
-% Three legacy defects, all in the o block, all reproduced by 'bugcompat', true:
-% (1) legacy line 180 spreads the outlier prior mass over numel(o_grid) = 32
-%     atoms where the sampler spreads it over 31 (VAR_ARSVO_redu.m 8/112);
-% (2) line 181 indexes the T x 32 o_hat linearly, so for T >= 32 every index
-%     lands in column 1 instead of at (t, o_idx(t));
-% (3) line 153 omits -n*sum(log(o)), the Jacobian of the outlier scaling that
-%     line 155 applies and the sampler's o step carries (VAR_ARSVO_redu.m 115).
-% The default path fixes all three. None consumes rng, so both modes draw the
-% identical stream and differ only in the weights. tests/variant_map.md has the
-% audit, the effect on the published value and the family-wide quirks.
-%
-% Body from chan2023_joe_mlvarsv/legacy/utility/ml_var_arsvo_redu.m, verbatim
-% apart from the three defect fixes above, with helper calls redirected to core.
-% Equivalence: tests/unit/test_mlvarsv_ml.m.
-%
 %   [lml,lmlstd,out] = bvar.ml.mlvarsv_arsvo_redu(X,Y,Y0,M,Hyper,flag_marg,...
 %       store_h,store_beta,store_hpara,store_kappa,store_o,store_po,o_grid,...
 %       is_kappafixed,is_kappasym, 'bugcompat',false)
 %
-%   flag_marg - 2 only (as in the legacy switch)
+%   flag_marg - 2 only; any other value raises an error
 %   Hyper: as bvar.ml.mlvarsv_arsv_redu plus p0a, p0b (the beta prior on po)
-%   store_o  - nsim x T outlier scales      [VAR_ARSVO_redu.m 15]
-%   store_po - nsim x 1                     [16]
-%   o_grid   - the 32-atom grid [1; linspace(2,20,31)'] the sampler used [9].
-%              o_hat is built by exact == against store_o, so this must be the
-%              same grid the chain drew from (run_ml passes out.o_grid)
+%   store_o  - nsim x T outlier scales
+%   store_po - nsim x 1
+%   o_grid   - the 32-atom grid [1; linspace(2,20,31)'] the sampler used. o_hat
+%              is built by exact == against store_o, so this must be the same
+%              grid the chain drew from (run_ml passes out.o_grid)
+%   bugcompat - default false. True reproduces three defects of the published
+%              code, all in the o block: (1) the outlier prior mass is spread
+%              over all 32 grid atoms where the sampler spreads it over 31;
+%              (2) the T x 32 o_hat is indexed linearly, so for T >= 32 every
+%              index lands in column 1 instead of at (t, o_idx(t)); (3) the
+%              Jacobian -n*sum(log(o)) of the outlier scaling is omitted. The
+%              default fixes all three. None of the fixes consumes rng, so both
+%              modes draw the identical stream and differ only in the weights.
 %   out: store_w, bigml, store_lr_o, store_lJ_o (the o Jacobian actually
 %        applied; all zeros under bugcompat), o_hat, and the fitted IS parameters
+%
+% Under is_kappasym the kappa prior is scored with rows 2:3 of Hyper.c0 while
+% the sampler draws kappa1 from row 1, so rows 1 and 2 of c0 must be equal for
+% the weights to be right.
 %
 % rng consumption: as bvar.ml.mlvarsv_arsv_redu, plus betarnd(M,1) for the outlier
 % probability while fitting the IS density and one rand(T,1) per draw for the
 % outlier-scale grid. A top-level estimator rather than a Gibbs block.
 %
-% Core used: bvar.priors.minn (legacy prior_Minn, n0pre = 4), bvar.priors.impact_B0
-% (prior_B0), bvar.util.tnormrnd, bvar.util.vec, bvar.util.ldet, bvar.ml.isden_arss.
+% Core used: bvar.priors.minn (n0pre = 4), bvar.priors.impact_B0,
+% bvar.util.tnormrnd, bvar.util.vec, bvar.util.ldet, bvar.ml.isden_arss.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_mlvarsv_ml.m.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large
@@ -63,13 +63,13 @@ p = (k-1)/n;
 k_beta = n*(n-1)/2;       % dimension of B0
 ngrid = size(o_grid,1);   % number of atoms (32); the sampler ngrid is one fewer
 M = 50*ceil(M/50);
-kappa3 = 100;             % [ml_var_arsvo_redu.m 14]
+kappa3 = 100;
 B0_id = nonzeros(tril(reshape(1:n^2,n,n),-1)');
 B0 = eye(n);
 
     % how the prior mass po is split, and how o_hat is indexed (defects 1-2)
 if bugcompat
-    n_pri = ngrid;                        % legacy: po/32, o_lpri a 33-vector
+    n_pri = ngrid;                        % all 32 atoms: po/32, o_lpri a 33-vector
 else
     n_pri = ngrid - 1;                    % the sampler's 31 outlier atoms
 end
@@ -106,7 +106,7 @@ phihat = mean(store_hpara(:,n+1:2*n))';
 phivar = var(store_hpara(:,n+1:2*n))';
 tmp = zeros(n,2);
 for i=1:n
-    tmp(i,:) = gamfit(1./store_hpara(:,2*n+i));   % dead: the lines that read it are commented out [51]
+    tmp(i,:) = gamfit(1./store_hpara(:,2*n+i));   % dead: the lines that read it are commented out
 end
 % nusig2hat = tmp(:,1); Ssig2hat = 1./tmp(:,2);
 h_hat = zeros(T*n,1);
@@ -211,7 +211,7 @@ for isim = 1:M
     po = big_po(isim);
     o_idx = ngrid - sum(repmat(rand(T,1),1,ngrid)<cumsumo_hat,2)+1;
     o = o_grid(o_idx);
-        % defect 3: the legacy leaves the outlier Jacobian out of c1
+        % defect 3: under bugcompat the outlier Jacobian is left out of c1
     if bugcompat
         lJ_o = 0;
     else

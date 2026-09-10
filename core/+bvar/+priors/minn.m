@@ -1,20 +1,26 @@
 % bvar.priors.minn - Minnesota prior constructor for a VAR(p) with intercept.
 %
-% Body from chan2023_joe_mlvarsv/legacy/utility/prior_Minn.m
-% (the superset - it also returns the AR(4) residuals U_hat), renamed, with one
-% parameterization: n0pre, the number of presample rows of Y0 prepended before the
-% univariate AR(4) fits, tmpY = [Y0(end-n0pre+1:end,:); Yt]. n0pre = 4 reproduces
-% that copy; n0pre = p with three outputs requested reproduces
-% chan2020_springer_largebvar/legacy/prior_Minn.m, which differs only
-% in that index and in lacking U_hat. NOTE: the AR(4) design matrix is conformable
-% only when the prepended block has exactly 4 rows, so n0pre = p runs only for
-% p = 4 (as in every large_BVAR caller), where the two settings coincide.
-% Equivalence: tests/unit/test_prior_minn_mlvarsv.m, test_prior_minn_largebvar.m.
-% Record: tests/variant_map.md.
+%   [beta_Minn,V_Minn,Sig_hat,U_hat] = bvar.priors.minn(p,c1,c2,c3,Y0,Yt,n0pre)
+%
+%   p        : lag length
+%   c1,c2,c3 : own-lag, cross-lag and intercept shrinkage
+%   Y0       : presample rows; the last n0pre of them are prepended to Yt for
+%              the univariate AR(4) fits, tmpY = [Y0(end-n0pre+1:end,:); Yt]
+%   Yt       : T x n estimation sample
+%   n0pre    : number of presample rows to prepend. The AR(4) design matrix is
+%              conformable only when the prepended block has exactly 4 rows, so
+%              n0pre = 4; n0pre = p runs only for p = 4.
+%   beta_Minn, V_Minn : prior mean (zeros) and prior variances of alpha, stacked
+%              equation by equation, intercept first in each block
+%   Sig_hat  : the n univariate AR(4) residual variances
+%   U_hat    : the T x n AR(4) residuals
 %
 % Prior: alpha ~ N(beta_Minn, diag(V_Minn)), equation by equation, with
 % intercept variance c3, own-lag variance c1/l^2, cross-lag variance
 % c2*sig2_i/(l^2*sig2_j); sig2 are univariate AR(4) residual variances.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_prior_minn_mlvarsv.m, test_prior_minn_largebvar.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian Vector Autoregressions. In: P. Fuleky (Eds),

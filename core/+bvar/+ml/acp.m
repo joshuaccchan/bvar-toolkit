@@ -8,17 +8,13 @@
 %   prior : the struct from bvar.priors.acp_redu or acp_stru
 %   ridge : added to the diagonal of the posterior precision; default 0
 %
-% TWO LEGACY COPIES, which differ in the ridge. chan2022_qe_acp forms the
-% posterior precision as iVi + Xi'*Xi, which is the default here.
-% chan_matthes_yu2026_qe_svarsign adds 1e-6*speye(ki) to it, a jitter that keeps
-% the Cholesky alive at n = 35. Pass 'ridge', 1e-6 to reproduce that copy. The
-% default path is left arithmetically untouched, so it still reproduces the 2022
-% package bit for bit.
-%
-% On the ACP package's 15-variable dataset at its own kappa = (.04, .0016, 1, 100),
-% the two settings give log marginal likelihoods 1.99 apart, which is large enough
-% to affect a model comparison. Hold the setting fixed across the models being
-% compared, and report which one was used.
+% The ridge moves the value, so it is a modelling choice. By default the
+% posterior precision is formed as iVi + Xi'*Xi; a positive ridge adds
+% ridge*speye(ki) to it, a jitter that keeps the Cholesky alive at n = 35. On
+% the ACP package's 15-variable dataset at its own kappa = (.04, .0016, 1, 100),
+% ridge = 0 and ridge = 1e-6 give log marginal likelihoods 1.99 apart, which is
+% large enough to affect a model comparison. Hold the setting fixed across the
+% models being compared, and report which one was used.
 %
 % This is the property that motivates the prior. Conjugacy makes each equation's
 % marginal likelihood a ratio of normal-inverse-gamma normalizing constants, so
@@ -32,9 +28,8 @@
 % have no such expression: the kron_bvar family needs Chib's method and the
 % mlvarsv family needs adaptive importance sampling, both requiring the chain.
 %
-% Body from chan2022_qe_acp/legacy/utility/ml_VAR_ACP.m, renamed and
-% de-indented (the legacy file indents the whole function by four spaces).
-% Equivalence: tests/unit/test_acp_equivalence.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_acp_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs,

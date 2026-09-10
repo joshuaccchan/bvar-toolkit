@@ -7,21 +7,19 @@
 %   A = bvar.samplers.eq_var_redu_tri(Y, X, B0, h, A, Valp, alp0)      % VAR-SV
 %   A = bvar.samplers.eq_var_redu_tri(Y, X, B0, h, A, Valp, alp0, o)   % VAR-SVO
 %
-%   Valp : k*n x 1 stacked prior variances (legacy Hyper.Valp)
-%   alp0 : k*n x 1 stacked prior means (legacy Hyper.alp0)
+%   Valp : k*n x 1 stacked prior variances
+%   alp0 : k*n x 1 stacked prior means
 %   o    : T x 1 outlier scales, optional; default ones(T,1), which leaves the
 %          row scaling bit-for-bit unchanged (multiplication by 1)
 %
-% rng consumption: randn(k,1) per equation, ii = 1:n. The caller keeps alp = reshape(A,k_alp,1).
+% rng consumption: randn(k,1) per equation, ii = 1:n. The caller keeps
+% alp = reshape(A,k_alp,1).
 %
 % Sibling of bvar.samplers.eq_svar_oi (order-invariant SVAR-SV), which stacks all
 % n rows, has no prior-mean term and no o. Do not merge the two.
 %
-% Body from chan2023_joe_mlvarsv/legacy/VAR_ARSV_redu.m lines 44-57, wrapped as
-% a function: sizes from the arguments, vec -> bvar.util.vec. The optional o
-% argument also covers VAR_ARSVO_redu.m lines 51-64, whose sole textual
-% difference is the Lambda line's .*repmat(o,1,n-ii+1).
-% Equivalence: tests/unit/test_mlvarsv_equivalence.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_mlvarsv_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

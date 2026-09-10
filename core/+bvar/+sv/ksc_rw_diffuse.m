@@ -4,13 +4,19 @@
 %   ystar_t = h_t + eps_t,  eps_t approximated by the Kim-Shephard-Chib (1998)
 %             7-component normal mixture,
 %   h_t = h_{t-1} + v_t,    v_t ~ N(0,omega2h),   h_1 ~ N(0,Vh).
-% Returns the new path h AND the mixture indicators S.
+%
+%   [h,S] = bvar.sv.ksc_rw_diffuse(ystar, h, omega2h, Vh)
+%
+%   ystar is T x 1; h on input is the current path and on output the new draw;
+%   omega2h and Vh are VARIANCES. S is the T x 1 vector of mixture indicators,
+%   in 1:7, drawn alongside h.
+%
+% Distinct from ksc_rw_h0: different initial condition, hence different draws.
+%
 % rng consumption: rand(T,1) then randn(T,1), one of each per call.
 %
-% Body from chan_jeliazkov2009_statespace/legacy/sp_code/SVRW.m, renamed;
-% the output list is written [h,S] where the legacy has [h S], which is syntax only.
-% Distinct from ksc_rw_h0: different initial condition, hence different draws.
-% Equivalence: tests/unit/test_ksc_rw_diffuse.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_ksc_rw_diffuse.m.
 %
 % See Chan, J.C.C. (2013). Moving Average Stochastic Volatility Models
 %     with Application to Inflation Forecast, Journal of Econometrics, 176(2): 162-172

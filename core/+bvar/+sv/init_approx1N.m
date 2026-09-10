@@ -1,8 +1,20 @@
-% bvar.sv.init_approx1N - crude 1-component log-chi2 approximation used to initialize SV paths.
-% Body from chan2023_joe_mlvarsv/legacy/utility/getARh_approx1N.m, renamed.
-% Equivalence: tests/unit/test_init_approx1N.m. Record: tests/variant_map.md.
-% This function approximates the SV model using a linear Gaussian state 
-% space model where the log chi^2 errors are modeled as N(-1.27,4.94)
+% bvar.sv.init_approx1N - crude 1-component log-chi2 approximation used to
+% initialize SV paths.
+%
+%   h_hat = bvar.sv.init_approx1N(s2, muh, rhoh, sigh2)
+%
+%   s2                : T x 1 squared errors
+%   muh, rhoh, sigh2  : mean, AR(1) coefficient and innovation variance of the
+%                       log-volatility path
+%   h_hat             : T x 1 conditional mean of h under the approximation
+%
+% The SV model is approximated by a linear Gaussian state space model in which
+% the log chi^2 errors are modeled as N(-1.27,4.94), one normal in place of the
+% 7-component mixture. Deterministic and deliberately crude: the result is a
+% starting value for a sampler.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_init_approx1N.m.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for 

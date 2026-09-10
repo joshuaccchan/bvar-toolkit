@@ -6,17 +6,19 @@
 %
 %   [o,po] = bvar.sv.svo_outlier(Y, X, A, B0, h, o_grid, po, p0a, p0b)
 %
+%   Y, X   : T x n data and T x k regressors
+%   A      : k x n VAR coefficient matrix
+%   B0     : n x n impact matrix; (Y-X*A)*B0' are the orthogonalized errors
+%   h      : T x n log-volatility paths
 %   o_grid : (ngrid+1) x 1, [1; grid of outlier sizes]
 %   po     : current outlier probability (in), new draw (out)
 %   p0a,p0b: beta prior parameters
+%   o      : T x 1 draw, each element one of the o_grid points
 %
 % rng consumption: rand once per period t = 1:T, then one betarnd.
 %
-% Body from chan2023_joe_mlvarsv/legacy/VAR_ARSVO_redu.m lines 112-124, wrapped
-% as a function: T, n, ngrid taken from the arguments, Hyper.p0a/p0b passed
-% explicitly, o preallocated instead of updated in place (equivalent - every
-% element is overwritten before any read).
-% Equivalence: tests/unit/test_mlvarsv_equivalence.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_mlvarsv_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

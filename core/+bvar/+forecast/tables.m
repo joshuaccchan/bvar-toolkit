@@ -1,6 +1,5 @@
 % bvar.forecast.tables - forecast-evaluation accumulation and RMSFE / average
-% log predictive likelihood (ALPL) table construction, replicated VERBATIM from
-% the recursive-forecasting driver tails. Three named actions:
+% log predictive likelihood (ALPL) table construction. Three named actions:
 %
 %   row = bvar.forecast.tables('accum_row', tmpyhat, obs)
 %     One accumulation row for one vintage and one horizon:
@@ -9,37 +8,37 @@
 %     with n = (size(tmpyhat,2)-1)/2. tmpyhat is the nsim x (2n+1) per-draw
 %     matrix from bvar.forecast.iterate ([point forecasts, per-variable log
 %     prelikes, joint log prelike]); obs is the 1 x n observed outturn row.
-%     Canonicalizes chan2020_springer_largebvar/legacy/main_forecasting.m
-%     lines 147-154 (yhat0 and yhat1 rows) and chan2021_ijf_mahp/legacy/
-%     main_forecasting.m lines 98-105 (yhat1 and yhat4 rows) - the same
-%     formula in both packages. The storage GUARDS (springer: yhat1 only when
-%     t<=T-1; MAHP: yhat4 only when t<=T-4) are loop control and stay with the
-%     caller. NOTE on older MATLABs tmpyhat can arrive complex-typed with zero
-%     imaginary part (see bvar.forecast.iterate header; on R2025b diag() demotes
-%     it back to real) and max() then compares by magnitude - the formula is
-%     reproduced verbatim so this behavior is preserved exactly either way.
+%     The storage GUARDS (springer: store yhat1 only when t<=T-1; MAHP: yhat4
+%     only when t<=T-4) are loop control and stay with the CALLER.
+%     TRAP: on MATLAB versions that retain the complex attribute tmpyhat can
+%     arrive complex-typed with zero imaginary part (see the
+%     bvar.forecast.iterate header; on R2025b diag() demotes it back to real),
+%     and max() then compares by magnitude. That behavior is preserved
+%     deliberately - do NOT insert a real() guard.
 %
 %   S = bvar.forecast.tables('springer', yhat0, yhat1, var_core)
-%     RMSFE / ALPL tables of chan2020_springer_largebvar/legacy/
-%     main_forecasting.m lines 160-172, evaluation-period row trims verbatim
-%     (yhat0(5:end,:) = 1975Q1 on; yhat1(4:end,:)). var_core nonempty (the
-%     legacy [1 7 8 12]' column) gives the model~=1 form: RMSFE over the
-%     var_core columns and ALPL over columns 2*n+var_core (per-variable only -
-%     the joint column is NOT tabled). var_core = [] gives the model==1
-%     (BVAR-small) form: all n variables, ALPL over 2*n+1:end (per-variable
-%     AND joint). S has fields RMSFE_0, RMSFE_1, RMSFE = [RMSFE_0 RMSFE_1],
+%     RMSFE / ALPL tables for the h=0 (nowcast) and h=1 accumulators. yhat0
+%     and yhat1 are the vintage-by-row stacks of 'accum_row' output, so
+%     n = (size(yhat0,2)-1)/3. The evaluation-period row trims are applied
+%     here: yhat0(5:end,:) (1975Q1 on) and yhat1(4:end,:). var_core nonempty
+%     (the headline columns, e.g. [1 7 8 12]') tabulates RMSFE over the
+%     var_core columns and ALPL over columns 2*n+var_core, per-variable only -
+%     the joint column is NOT tabled. var_core = [] gives the all-variable
+%     (BVAR-small) form: all n variables, ALPL over 2*n+1:end, per-variable
+%     AND joint. S has fields RMSFE_0, RMSFE_1, RMSFE = [RMSFE_0 RMSFE_1],
 %     aveprelike_0, aveprelike_1, aveprelike.
 %
 %   S = bvar.forecast.tables('mahp', yhat1, yhat4)
-%     RMSFE / ALPL tables of chan2021_ijf_mahp/legacy/main_forecasting.m
-%     lines 111-116, row trims verbatim (yhat1(4:end,:), yhat4(1:end,:)),
-%     all n variables, ALPL over 2*n+1:end (per-variable AND joint). S has
-%     fields RMSFE_1, RMSFE_4, RMSFE, aveprelike_1, aveprelike_4, aveprelike.
+%     RMSFE / ALPL tables for the h=1 and h=4 accumulators, again stacks of
+%     'accum_row' output. Row trims yhat1(4:end,:) and yhat4(1:end,:), all n
+%     variables, ALPL over 2*n+1:end (per-variable AND joint). S has fields
+%     RMSFE_1, RMSFE_4, RMSFE, aveprelike_1, aveprelike_4, aveprelike.
 %
-% The legacy fprintf display blocks (headline-variable pretty-printing) are
-% formatting only and are not reproduced; callers print from S.
+% Display: none. The headline-variable pretty-printing is formatting only and
+% is left to the caller, which prints from S.
 %
-% Equivalence: tests/unit/test_forecast_tables.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_forecast_tables.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian Vector Autoregressions. In: P. Fuleky (Ed.),

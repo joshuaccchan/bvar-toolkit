@@ -11,9 +11,8 @@
 %
 % rng consumption: one randn(T*r,1) per call.
 %
-% Body from chan2023_joe_mlvarsv/legacy/VAR_FSV.m lines 38-44, wrapped as a
-% function with T, n, r taken from the arguments.
-% Equivalence: tests/unit/test_mlvarsv_equivalence.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_mlvarsv_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

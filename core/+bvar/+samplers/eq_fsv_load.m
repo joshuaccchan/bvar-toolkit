@@ -10,11 +10,11 @@
 %   Valp, alp0 : k*n x 1 stacked prior variances / means of A
 %   Vl, l0     : scalar prior variance / mean of every free loading
 %
-% rng consumption: randn(k+min(ii-1,r),1) per equation, ii = 1:n. The caller keeps alp = A(:).
+% rng consumption: randn(k+min(ii-1,r),1) per equation, ii = 1:n. The caller
+% keeps alp = A(:).
 %
-% Body from chan2023_joe_mlvarsv/legacy/VAR_FSV.m lines 48-71, wrapped as a
-% function: T, n, k, r taken from the arguments, Hyper.* passed explicitly.
-% Equivalence: tests/unit/test_mlvarsv_equivalence.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_mlvarsv_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

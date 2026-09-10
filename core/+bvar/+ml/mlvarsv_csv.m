@@ -6,31 +6,27 @@
 % moment/ML fit - and the M log weights are averaged in 50 batches, which also
 % gives the numerical standard error.
 %
-% Clean bill from the audit. tests/variant_map.md has it and the
-% family-wide quirks.
-%
-% Body from chan2023_joe_mlvarsv/legacy/utility/ml_var_csv.m, renamed,
-% with helper calls redirected to core (listed below).
-% Equivalence: tests/unit/test_mlvarsv_ml.m.
-%
 %   [lml,lmlstd,out] = bvar.ml.mlvarsv_csv(X,Y,Y0,M,Hyper,store_h,store_hpara,...
 %                                         store_kappa,is_kappafixed)
 %
 %   Hyper: A0, VA, nu0, S0, c0, nuh, Sh, phi0, Vphi. VA is recomputed inside
 %          from each kappa draw before any read, so whichever version the
-%          caller passes is irrelevant (the legacy passes the final sweep's).
-%   store_h     - nsim x T log-volatility draws        [VAR_CSV.m 11]
-%   store_hpara - nsim x 2, columns [phi sig2]         [VAR_CSV.m 12]
-%   store_kappa - nsim x 1                             [VAR_CSV.m 13]
+%          caller passes is irrelevant.
+%   store_h     - nsim x T log-volatility draws
+%   store_hpara - nsim x 2, columns [phi sig2]
+%   store_kappa - nsim x 1
 %   out: store_w, bigml (the 50 batch values), and the fitted IS parameters
 %
 % rng consumption: all of it inside the importance-sampling loops - gamrnd(M,1) per
 % kappa block, then one randn(T,1) per draw for h. This is a top-level estimator
 % rather than a Gibbs block, so it is not meant to be spliced into a seeded sweep.
 %
-% Core used: bvar.priors.niw('mlvarsv_ncp') (legacy prior_NCP), bvar.util.tnormrnd,
-% bvar.util.ldet, bvar.util.mgammaln, bvar.ml.isden_arss (getISden_ARSS),
-% bvar.ml.lgampdf / ltnormpdf / lmvnpdf_pcn.
+% Core used: bvar.priors.niw('mlvarsv_ncp'), bvar.util.tnormrnd, bvar.util.ldet,
+% bvar.util.mgammaln, bvar.ml.isden_arss, bvar.ml.lgampdf / ltnormpdf /
+% lmvnpdf_pcn.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_mlvarsv_ml.m.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large
@@ -38,7 +34,7 @@
 
 function [lml,lmlstd,out] = mlvarsv_csv(X,Y,Y0,M,Hyper,store_h,...
     store_hpara,store_kappa,is_kappafixed)
-kappa3 = 100; % overall shrinkage parameter for the intercept [ml_var_csv.m 9]
+kappa3 = 100; % overall shrinkage parameter for the intercept
 M = 50*ceil(M/50);
 [T,n] = size(Y);
 k = size(Hyper.A0,1);
@@ -108,7 +104,7 @@ end
 % -------------------------------------------------------------------------
 function lden = like_VAR_CSV(Y,X,Hyper,h)
 % log p(Y | h, kappa) with (A,Sig) integrated out under the natural-conjugate
-% prior - the matric-t ordinate. [ml_var_csv.m 69-83, verbatim]
+% prior - the matric-t ordinate.
 [T,n] = size(Y);
 k = size(Hyper.A0,1);
 iOh = sparse(1:T,1:T,exp(-h));

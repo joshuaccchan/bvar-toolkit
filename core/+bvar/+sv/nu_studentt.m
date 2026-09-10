@@ -3,22 +3,21 @@
 % under a uniform prior on (2, nu_ub): Newton-Raphson mode nut, Gaussian
 % N(nut, -1/H) proposal, MH accept-reject.
 %
-% Body from chan2020_springer_largebvar/legacy/sample_nu.m, renamed, with one
-% deviation: a duplicated recomputation of T/sum1/sum2 - three lines reassigning
-% identical values, no rng calls - was removed. Also stands in for the two
-% sample_nu copies in chan2020_jbes_kronecker; one of those forms the MH ratio
-% from normpdf ratios rather than in logs. That is mathematically identical and
-% its accept/reject decisions matched on every seed tested, but the two are not
-% bitwise-identical in alpha; the log-form is kept because it has no Inf*0 = NaN
-% hazard when |nu - nut| is extreme.
-% Equivalence: tests/unit/test_nu_studentt.m. Record: tests/variant_map.md.
-% rng consumption: one randn for the candidate, then one rand only if that candidate
-% falls in (2, nu_ub).
+%   [nu, flag, f_nu] = bvar.sv.nu_studentt(lam, nu, nu_ub)
 %
 % Inputs:  lam   - T x 1 latent scale draws
 %          nu    - current df draw
 %          nu_ub - upper bound of the uniform prior support
 % Outputs: nu, flag (1 if accepted), f_nu (handle: log target kernel of nu)
+%
+% nu comes back unchanged with flag = 0 both when the candidate is rejected and
+% when it falls outside (2, nu_ub); flag marks an accepted move.
+%
+% rng consumption: one randn for the candidate, then one rand only if that
+% candidate falls in (2, nu_ub).
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_nu_studentt.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian Vector Autoregressions. In: P. Fuleky (Eds),

@@ -1,9 +1,19 @@
 % bvar.util.tnormrnd - N draws from the normal truncated to (a, b), by inverse
 % transform.
 %
-% Body from chan2023_joe_mlvarsv/legacy/utility/tnormrnd.m (identical modulo comments).
-% Equivalence: tests/unit/test_tnormrnd.m. Record: tests/variant_map.md.
+%   t = bvar.util.tnormrnd(mu, sigma2, a, b)
+%   t = bvar.util.tnormrnd(mu, sigma2, a, b, N)
+%
+%   mu, sigma2 : mean and VARIANCE of the untruncated normal, either scalars,
+%                which are expanded to N identical values, or length-N vectors
+%   a, b       : truncation bounds, scalar or length-N
+%   N          : number of draws (default length(mu))
+%   t          : N x 1 vector of draws
+%
 % rng consumption: one rand(N,1) per call.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_tnormrnd.m.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for 

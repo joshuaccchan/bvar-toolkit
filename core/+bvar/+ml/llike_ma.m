@@ -4,11 +4,8 @@
 % first transformed observation carrying the initialization variance factor
 % (1+psi^2) and the matching -n/2*log(1+psi^2) constant.
 %
-% Body from chan2020_jbes_kronecker/legacy/llike_MA.m, the package-root
-% copy; the realtime_forecasts sibling is not canonicalized here (its function
-% line is named llike_MA1, so the filename wins at dispatch, and it differs only
-% in comments/whitespace).
-% Equivalence: tests/unit/test_kron_ml_densities.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_kron_ml_densities.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

@@ -2,14 +2,23 @@
 % reduced-form parameterization, mapped to the implied prior on the
 % structural parameterization.
 %
-% Body from chan2022_qe_acp/legacy/utility/prior_ACP_redu.m
-% (R1, the published QE version), renamed; its internal prior_ACP_stru call now
-% targets the core copy bvar.priors.acp_stru.
-% Equivalence: tests/unit/test_acp_redu.m. Record: tests/variant_map.md.
+%   prior = bvar.priors.acp_redu(n, p, kappa, sig2)
+%   prior = bvar.priors.acp_redu(n, p, kappa, sig2, idx_ns)
 %
-% This function first elicits the asymmetric conjugate prior on the
-% reduced-form parameterization and then constructs the implied prior on
-% the structural parameterization
+%   n, p   : number of variables and lag length
+%   kappa  : [kappa1 kappa2 kappa3 kappa4] - own lags, other lags, impact
+%            matrix, intercepts
+%   sig2   : n-vector of AR(4) residual variances (bvar.priors.resid_var_ar4)
+%   idx_ns : indices of nonstationary variables, whose first own lag gets prior
+%            mean one (default none)
+%   prior  : struct with fields beta0, Vbeta (VAR coefficients, (n p + 1) x n,
+%            equation by equation), alp0, Valp (free elements of the impact
+%            matrix), nu, S (the n inverse-gamma error-variance parameters).
+%            Only Vbeta differs from bvar.priors.acp_stru; the other fields are
+%            passed through unchanged.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_acp_redu.m.
 %
 % See:
 % Chan, J.C.C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs,

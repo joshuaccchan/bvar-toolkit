@@ -5,12 +5,14 @@
 % per-period a_t, b_t are the mean and variance of the rho-differenced draws.
 % Returns the mean h_hat and the PRECISION Kh_hat (band, sparse).
 %
-% Body from chan2023_joe_mlvarsv/legacy/utility/getISden_ARSS.m,
-% renamed; consumes no rng. Equivalence: tests/unit/test_mlvarsv_ml_densities.m
-% (end-to-end in test_mlvarsv_ml.m). Record: tests/variant_map.md.
-%
 %   [h_hat,Kh_hat,r_hat,m_hat,v_hat] = bvar.ml.isden_arss(store_h)
 %   store_h - R x T matrix of posterior draws (one row per draw)
+%
+% rng consumption: none.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_mlvarsv_ml_densities.m (end-to-end in
+% test_mlvarsv_ml.m).
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

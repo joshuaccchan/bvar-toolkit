@@ -1,8 +1,26 @@
 % bvar.forecast.realtime_loaddata - assembles the vintage-t real-time estimation panel.
 %
-% Body from chan2020_springer_largebvar/legacy/loaddata.m, renamed (the copy at
-% chan2020_jbes_kronecker/legacy/realtime_forecasts/loaddata.m is byte-identical).
-% Equivalence: tests/unit/test_forecast_iterate_springer.m. Record: tests/variant_map.md.
+%   [data_t,data_tpk] = bvar.forecast.realtime_loaddata(rt_data,nonrev_data, ...
+%                           t,T0,tcode,var_type)
+%
+% rt_data     - struct of real-time vintage matrices, fields var1...varn, one
+%               column per vintage
+% nonrev_data - struct of non-revised series, same field names (read only for
+%               var_type 4)
+% t           - vintage index; the estimation panel ends at t-1
+% T0          - period of the first vintage (the vintage column is t-T0+1 for
+%               quarterly vintages, (t-T0)*3+3 for monthly ones)
+% tcode       - n x 1 transformation code: 5 = 400*log-difference, 1 = level
+% var_type    - n x 1 vintage/observation frequency code: 1 = quarterly
+%               vintage, quarterly observations; 2 = quarterly vintage,
+%               monthly observations averaged to quarters; 3 = monthly
+%               vintage, monthly observations averaged to quarters;
+%               4 = non-revised, monthly observations averaged to quarters
+% data_t      - (t-2) x n estimation panel as seen in vintage t
+% data_tpk    - 5 x n actual outturns from the LAST vintage, rows t-1:t+3
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_forecast_iterate_springer.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian Vector Autoregressions. In: P. Fuleky (Eds),

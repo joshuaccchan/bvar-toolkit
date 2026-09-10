@@ -1,32 +1,41 @@
 % bvar.priors.niw - natural-conjugate (normal-inverse-Wishart) prior constructor
 % for a VAR(p) with intercept.
 %
-% Body from chan2023_joe_mlvarsv/legacy/utility/prior_NCP.m
-% (the superset with U_hat), renamed, and parameterized by `variant` into four
-% settings, each reproducing one legacy copy exactly:
+%   [A0,VA0,nu0,S0,U_hat] = bvar.priors.niw(p, kappa, Y0, Y, variant)
 %
-%   'largebvar_nc'  -> chan2020_springer_largebvar/legacy/prior_NC.m
-%       kappa = [c1 c2]; presample rows Y0(end-p+1:end,:); VA0 dense k x 1
-%       vector; S0 = diag(sig2); nu0 = n+3.
-%   'mlvarsv_ncp'   -> chan2023_joe_mlvarsv/legacy/utility/prior_NCP.m
-%       kappa = [c1 c2]; presample rows Y0(end-4+1:end,:) (hard-coded 4);
-%       VA0 dense vector; S0 = diag(sig2); nu0 = n+3; extra output U_hat.
-%   'opthyper_ncp'  -> cjz2019_ad_opthyper/legacy/prior_NCP.m
-%       kappa = [kappa1..kappa5]; presample rows Y0(end-p+1:end,:);
-%       VA0(1) = kappa(3), VA0(i) = kappa(1)/(l^kappa(2)*sig2(idx));
-%       S0 = kappa(5)*diag(sig2); nu0 = kappa(4)+n+1;
-%       VA0 returned as SPARSE diagonal k x k matrix (as in the legacy copy).
-%   'kron_script'   -> chan2020_jbes_kronecker/legacy/construct_prior_A.m
-%       (a workspace SCRIPT; its callers all set S0 = eye(n); nu0 = n+3
-%       immediately before running it, and the script hard-codes
-%       c1 = .2^2, c2 = 100). Reproduced by kappa = [.2^2 100]:
-%       A0/VA0/sig2 as the script computes them, plus S0 = eye(n), nu0 = n+3.
+%   p       : lag length
+%   kappa   : shrinkage hyperparameters; length and meaning set by variant
+%   Y0, Y   : presample rows and the T x n estimation sample
+%   variant : selects the shrinkage parameterization, how many presample rows
+%             are prepended for the univariate AR(4) fits, and the form of
+%             VA0, nu0 and S0:
+%
+%     'largebvar_nc'  kappa = [c1 c2]; VA0(1) = c2 (intercept) and
+%                     VA0(i) = c1/(l^2*sig2(idx)), a dense k x 1 vector;
+%                     nu0 = n+3; S0 = diag(sig2); presample Y0(end-p+1:end,:).
+%     'mlvarsv_ncp'   as 'largebvar_nc', except the presample block is
+%                     Y0(end-4+1:end,:) whatever p is.
+%     'opthyper_ncp'  kappa = [kappa1 ... kappa5]; VA0(1) = kappa(3) and
+%                     VA0(i) = kappa(1)/(l^kappa(2)*sig2(idx)), returned as a
+%                     SPARSE k x k diagonal matrix, where the other
+%                     variants return a k x 1 vector;
+%                     nu0 = kappa(4)+n+1; S0 = kappa(5)*diag(sig2);
+%                     presample Y0(end-p+1:end,:).
+%     'kron_script'   as 'largebvar_nc', except S0 = eye(n); the Kronecker
+%                     application calls it with kappa = [.2^2 100].
+%
+%   A0      : k x n prior mean of the coefficient matrix, zeros
+%   VA0     : prior variances of the coefficients; vector or sparse matrix,
+%             see variant
+%   nu0, S0 : inverse-Wishart degrees of freedom and scale matrix
+%   U_hat   : T x n univariate AR(4) residuals
 %
 % NOTE: the AR(4) design matrix is conformable only when the prepended presample
-% block has exactly 4 rows, so the Y0(end-p+1:end,:) variants run only for p = 4
-% (as in all their legacy callers).
+% block has exactly 4 rows, so the variants that prepend Y0(end-p+1:end,:) run
+% only for p = 4.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
 % Equivalence: tests/unit/test_prior_niw_<variant>.m, one per variant.
-% Record: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian Vector Autoregressions. In: P. Fuleky (Eds),

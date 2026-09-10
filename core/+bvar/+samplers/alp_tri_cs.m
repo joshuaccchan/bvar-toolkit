@@ -2,35 +2,27 @@
 % unit-lower-triangular impact matrix A in the Cholesky / triangularized (CS)
 % SVAR-SV model, row by row: for equation ii = 2:n the ii-1 free elements
 % alp_ii regress the residual E(:,ii) on -E(:,1:ii-1) weighted by
-% exp(-h(:,ii)), with independent N(0, Valp) priors (zero prior mean - the
-% legacy block never adds an alp0 term).
+% exp(-h(:,ii)), under independent N(0, Valp) priors. The prior mean is zero;
+% there is no alp0 term.
 %
 %   alp = bvar.samplers.alp_tri_cs(E, h, Valp)
 %   alp = bvar.samplers.alp_tri_cs(E, h, Valp, o)   % outlier-scaled (VAR-SVO)
 %
-%   E    : T x n residual matrix Y - XB (computed by the CALLER, verbatim
-%          legacy position; the caller also keeps `A(A_id) = alp`)
+%   E    : T x n residual matrix Y - XB; the CALLER computes it and the caller
+%          writes the draw back into A with `A(A_id) = alp`
 %   h    : T x n log-volatilities
-%   Valp : n*(n-1)/2 x 1 stacked prior variances (legacy Hyper.Valp), rows
-%          ordered (2,1), (3,1),(3,2), (4,1),... - row-major lower triangle
+%   Valp : n*(n-1)/2 x 1 stacked prior variances, rows ordered (2,1),
+%          (3,1),(3,2), (4,1),... - row-major lower triangle
 %   o    : T x 1 outlier scales, optional; default ones(T,1), which leaves the
 %          weights bit-for-bit unchanged (division by 1)
-%   alp  : 1 x n*(n-1)/2 row vector of draws (the legacy scripts grow `alp`
-%          dynamically into exactly this 1 x k_alp row in the first sweep and
-%          fully overwrite it every sweep; preallocated fresh here,
-%          value-identical). ml_varsv keeps the same draw as a column - its
-%          caller transposes.
+%   alp  : 1 x n*(n-1)/2 ROW vector of draws; callers that want a column (as
+%          ml_varsv does) transpose it themselves
 %
 % rng consumption: randn(ii-1,1) per equation, equations in order ii = 2:n.
 %
-% Body from chan_koop_yu2024_jbes_oisv/legacy/CS_MH.m lines 77-87 (the inline
-% "sample alp" loop), wrapped as a function: sizes from size(E), Hyper.Valp ->
-% Valp, alp preallocated. The optional o argument also covers
-% chan2023_joe_mlvarsv/legacy/VAR_ARSVO_redu.m lines 71-80, whose sole textual
-% difference is the iD line's ./o.^2; the default path covers forecast_CS_MH.m
-% lines 68-78 and VAR_ARSV_redu.m lines 64-73 (naming only).
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
 % Equivalence: tests/unit/test_oisv_equivalence.m,
-% tests/unit/test_mlvarsv_equivalence.m. Record: tests/variant_map.md.
+% tests/unit/test_mlvarsv_equivalence.m.
 %
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian

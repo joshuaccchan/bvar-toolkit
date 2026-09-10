@@ -4,14 +4,20 @@
 %             7-component normal mixture,
 %   h_t = mu + rho*(h_{t-1} - mu) + v_t,  v_t ~ N(0,sig2),
 %   h_1 ~ N(mu, sig2/(1-rho^2))  (stationary initialization).
-% Returns the new path h AND the mixture indicators S.
+%
+%   [h,S] = bvar.sv.ksc_ar1_mean(ystar, h, mu, rho, sig2)
+%
+%   ystar is T x 1; h on input is the current path and on output the new draw;
+%   sig2 is a VARIANCE. S is the T x 1 vector of mixture indicators, in 1:7,
+%   drawn alongside h.
+%
+% NOT interchangeable with the random-walk variants ksc_rw_h0 / ksc_rw_diffuse:
+% different state equations.
+%
 % rng consumption: rand(T,1) then randn(T,1), one of each per call.
 %
-% Body from chan2023_joe_mlvarsv/legacy/utility/sample_SV.m, renamed;
-% also stands in for the identical copy in chan_koop_yu2024_jbes_oisv. Not
-% interchangeable with the random-walk variants ksc_rw_h0 / ksc_rw_diffuse:
-% different state equations.
-% Equivalence: tests/unit/test_ksc_ar1_mean.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_ksc_ar1_mean.m.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for

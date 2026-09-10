@@ -5,27 +5,24 @@
 %   [ml_opt,kappa_opt] = bvar.priors.acp_opt_kappa(Y0, Y, Z, p, k0, type, idx_ns)
 %   [...]              = bvar.priors.acp_opt_kappa(..., 'symmetric', true)
 %
+%   Y0, Y  : presample rows and the T x n estimation sample
+%   Z      : T x (n p + 1) lag matrix, intercept first (bvar.util.build_lags)
+%   p      : lag length
 %   k0     : starting values [kappa1, kappa2]; ignored when 'symmetric' is true
 %   type   : 'redu' or 'stru', selecting bvar.priors.acp_redu or acp_stru
 %   idx_ns : indices of variables entering in levels (default none)
+%   'symmetric' : default false, which optimizes log kappa1 and log kappa2 with
+%               fminsearch, so the arguments stay positive without a constrained
+%               solver; true imposes kappa1 = kappa2 and uses fminbnd on (0,1)
+%   ml_opt    : the maximized log marginal likelihood, bvar.ml.acp at kappa_opt
 %   kappa_opt : the full 4-vector [kappa1, kappa2, 1, 100] - kappa3 and kappa4
 %               are held at those values, as in the paper's application
 %
 % Because bvar.ml.acp is available in closed form, this is a two-parameter
-% optimization over a smooth objective rather than a search requiring repeated
-% estimation. The asymmetric case optimizes log kappa1 and log kappa2 with
-% fminsearch, so the arguments stay positive without a constrained solver; the
-% symmetric case imposes kappa1 = kappa2 and uses fminbnd on (0,1). The paper
-% compares the two to
-% measure what the asymmetry contributes, so the symmetric variant is reached
-% through this same function rather than duplicated elsewhere.
+% optimization over a smooth objective, with no repeated estimation of the VAR.
 %
-% Bodies from chan2022_qe_acp/legacy/utility/get_OptKappa.m
-% and, for 'symmetric', true, get_OptSymKappa.m: the two are merged behind one
-% name with the 'symmetric' option selecting which branch runs, and their calls to
-% get_resid_var, prior_ACP_stru and prior_ACP_redu routed to the core copies
-% bvar.priors.resid_var_ar4, acp_stru and acp_redu.
-% Equivalence: tests/unit/test_acp_equivalence.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_acp_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs,

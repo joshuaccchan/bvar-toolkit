@@ -3,12 +3,20 @@
 % B0 step of the order-invariant SVAR-SV sampler: mixture weight
 % w = 1/(1+exp(2*mu/rho)) on the negative mode mu1 = mu/2 - sqrt(mu^2+4)/2
 % (else the positive mode mu2 = mu/2 + sqrt(mu^2+4)/2), each with variance
-% muj^2*rho/(1+muj^2). Consumes exactly one rand THEN one randn per call.
+% muj^2*rho/(1+muj^2).
 %
-% Body from chan_koop_yu2024_jbes_oisv/legacy/utility/anormrnd.m. Not a
-% truncated normal - do NOT fold into bvar.util.tnormrnd (different density,
-% different rng sequence).
-% Equivalence: tests/unit/test_anormrnd.m. Record: tests/variant_map.md.
+%   draw = bvar.util.anormrnd(mu, rho)
+%
+%   mu, rho : scalar parameters of the approximation above
+%   draw    : scalar draw
+%
+% rng consumption: exactly one rand THEN one randn per call.
+%
+% Not a truncated normal - do NOT fold into bvar.util.tnormrnd (different
+% density, different rng sequence).
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_anormrnd.m.
 %
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian

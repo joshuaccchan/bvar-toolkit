@@ -10,18 +10,17 @@
 %
 % rng consumption: R*T randn in the intlike, then the reduced run's draws.
 %
-% Provenance: tests/variant_map.md.
-% Equivalence: tests/unit/test_kron_equivalence.m.
-%
 %   [ML, out] = bvar.ml.kron_bvar_t_csv(shortY, X, pri, est, ...)
 %
 %   pri: A0, VA0, nu0, S0, rho0, Vrho, nuh0, Sh0, nuub
 %   est: nsims, store_A, store_Sig (running sums), store_h, store_lam,
 %        store_theta ([nu rho sigh2] columns)
-%   options (name-value): 'R' - importance-sampling draws (default 1000 =
-%        legacy ml_BVAR_t_CSV.m lines 13-14)
+%   options (name-value): 'R' - importance-sampling draws (default 1000)
 %   out: llike, lpri, lpost, store_lpost (reduced-run den_rho column),
 %        store_lpost1, A_mean, Sig_mean, theta_mean
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_kron_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

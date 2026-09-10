@@ -4,23 +4,22 @@
 % flat nu prior 1/(nuub-2), and posterior ordinates Rao-Blackwellized over
 % the stored lam draws - the (A,Sig) ordinate as a log-mean-exp of
 % conditional NIW densities, the nu ordinate as the mean of grid-normalized
-% conditional densities. Deterministic given the stores: consumes NO rng.
-%
-% Body from chan2020_jbes_kronecker/legacy/ml_BVAR_t.m, wrapped as a function:
-% that file is a script, so its opening disp and closing fprintf are replaced by
-% the signature, the unpacking of pri/est, and the out struct; lniwpdf is called
-% through bvar.ml. The arithmetic between is verbatim. Every ordinate is
-% evaluated at the same (A_mean, Sig_mean, nu_mean) and nothing is read outside
-% the stores and the priors: no bugcompat flag.
-% Verbatim family quirk: the nu grid normalization divides by
-% nugrid(2)-nugrid(1) although inserting nu_mean leaves one interval unequal.
-% Equivalence: tests/unit/test_kron_equivalence.m. Record: tests/variant_map.md.
+% conditional densities. Every ordinate is evaluated at the same
+% (A_mean, Sig_mean, nu_mean) and nothing is read outside the stores and the
+% priors: no bugcompat flag. Deterministic given the stores: consumes NO rng.
 %
 %   [ML, out] = bvar.ml.kron_bvar_t(shortY, X, pri, est)
 %
 %   pri: A0, VA0, nu0, S0, nuub          [replication preset, cited there]
 %   est: nsims, store_A, store_Sig (running sums), store_nu, store_lam
 %   out: llike, lpri, lpost, store_lpost, A_mean, Sig_mean, nu_mean
+%
+% Known quirk, shared across this family: the nu grid normalization divides
+% by nugrid(2)-nugrid(1) although inserting nu_mean leaves one interval
+% unequal.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_kron_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error
@@ -34,12 +33,11 @@ nsims = est.nsims;
 store_A = est.store_A; store_Sig = est.store_Sig;
 store_nu = est.store_nu; store_lam = est.store_lam;
 
-    % [ml_BVAR_t.m lines 10-12]
 A_mean = store_A/nsims;
 Sig_mean = store_Sig/nsims;
 nu_mean = mean(store_nu)';
 
-    % evaluate the log likelihood [lines 15-20]
+    % evaluate the log likelihood
 CSig = chol(Sig_mean,'lower');
 tmp = (shortY-X*A_mean)/CSig';
 s2 = sum(tmp.^2,2);
@@ -47,7 +45,7 @@ llike = T*(gammaln((nu_mean+n)/2) - gammaln(nu_mean/2) - n/2*log(nu_mean*pi))...
     - T*sum(log(diag(CSig))) -(nu_mean+n)/2*sum(log(1+s2/nu_mean));
 lpri = bvar.ml.lniwpdf(A_mean,Sig_mean,A0,sparse(1:k,1:k,1./VA0),nu0,S0) + log(1/(nuub-2));
 
-    % evaluate the posterior density [lines 23-55]
+    % evaluate the posterior density
 store_lpost = zeros(nsims,2); % [log density of A Sig, density of nu]
 nugrid = sort([nu_mean; linspace(2,nuub,700)']);
 nuidx = find(nugrid==nu_mean);

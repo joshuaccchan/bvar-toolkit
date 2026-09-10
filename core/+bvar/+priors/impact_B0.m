@@ -1,14 +1,24 @@
 % bvar.priors.impact_B0 - data-based prior variances for the free elements of
 % the impact matrix B0 (AR(4) residual-variance scaling, Minnesota-style).
 %
-% Body from chan2023_joe_mlvarsv/legacy/utility/prior_B0.m,
-% renamed. Do not merge with the role-equivalent impact-matrix priors elsewhere -
-% oisv (inline unit prior variances, no data-based scaling), mahp/hybtvp (Valp via
-% getVtheta) and the acp packages (the kappa(3)/sig2(idx) term in prior_ACPi):
-% they are numerically different priors on the same object.
-% Equivalence: tests/unit/test_impact_B0.m. Record: tests/variant_map.md.
+%   [beta0,Vbeta] = bvar.priors.impact_B0(Y0, Y, kappa)
 %
-% This function constructs the prior for the impact matrix B0
+%   Y0    : presample rows; the last 4 are prepended to Y for the univariate
+%           AR(4) fits that produce the scaling variances sig2
+%   Y     : T x n estimation sample
+%   kappa : scalar shrinkage on the impact-matrix block
+%   beta0 : prior mean of the n(n-1)/2 free elements, zeros
+%   Vbeta : their prior variances, kappa*sig2_i/sig2_j, stacked equation by
+%           equation (row 2 of B0 first, then row 3, ...)
+%
+% Do not merge with the role-equivalent impact-matrix priors elsewhere in the
+% library - bvar.priors.vtheta (Valp), the kappa(3)/sig2 term inside
+% bvar.priors.acp_stru, and the inline unit prior variances of the OISV package,
+% which carry no data-based scaling: they are numerically different priors on
+% the same object.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_impact_B0.m.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for

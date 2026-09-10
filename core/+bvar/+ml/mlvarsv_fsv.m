@@ -6,34 +6,31 @@
 % densities fitted to the posterior draws, and the M log weights are averaged in
 % 50 batches, which also gives the numerical standard error. flag_marg = 2
 % additionally integrates out the log-volatility variances; flag_marg = 1 keeps
-% them as drawn parameters (both branches are in the legacy; main_varsv sets 2).
-%
-% Clean bill from the audit. One thing that looks like a defect and is
-% not: lh_prior and lh_g both omit the same T(n+r)/2*log(2*pi), and the two
-% omissions cancel in llike + lh_prior - lh_g, in both flag_marg branches.
-% Quirk: big_sig2 is drawn even under flag_marg = 2, where nothing reads it; the
-% draw shifts the rng stream without changing any value.
-% tests/variant_map.md has the audit.
-%
-% Body from chan2023_joe_mlvarsv/legacy/utility/ml_var_fsv.m, renamed,
-% with helper calls redirected to core (listed below).
-% Equivalence: tests/unit/test_mlvarsv_ml.m.
+% them as drawn parameters.
 %
 %   [lml,lmlstd,out] = bvar.ml.mlvarsv_fsv(X,Y,Y0,M,Hyper,flag_marg,store_h,...
 %       store_hpara,store_l,store_kappa,is_kappafixed,is_kappasym)
 %
+%   flag_marg   - 1 or 2; any other value raises an error. VAR-FSV is the
+%                 only model in this family that implements 1; run_ml passes 2
+%                 by default
 %   Hyper: alp0, Valp, c0, nuh, Sh, mu0, Vmu, phi0, Vphi, l0, Vl. Valp is
 %          recomputed inside from each kappa draw before any read, so whichever
-%          version the caller passes is irrelevant (the legacy passes the final
-%          sweep's).
-%   store_h     - nsim x T x (n+r); r is inferred as size(store_h,3)-n  [VAR_FSV.m 11]
-%   store_hpara - nsim x 3(n+r), columns [mu' phi' sig2']              [13]
-%   store_l     - nsim x kl free loadings                              [9]
-%   store_kappa - nsim x 2                                             [15]
+%          version the caller passes is irrelevant.
+%   store_h     - nsim x T x (n+r); r is inferred as size(store_h,3)-n
+%   store_hpara - nsim x 3(n+r), columns [mu' phi' sig2']
+%   store_l     - nsim x kl free loadings
+%   store_kappa - nsim x 2
 %   out: store_w, bigml (the 50 batch values), and the fitted IS parameters
 %
-% Core used: bvar.priors.minn (legacy prior_Minn, n0pre = 4), bvar.util.tnormrnd,
-% bvar.util.surform2 (SURform2), bvar.util.ldet, bvar.ml.isden_arss.
+% rng consumption: big_sig2 is drawn even under flag_marg = 2, where nothing
+% reads it; the draw shifts the rng stream without changing any value.
+%
+% Core used: bvar.priors.minn (n0pre = 4), bvar.util.tnormrnd,
+% bvar.util.surform2, bvar.util.ldet, bvar.ml.isden_arss.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_mlvarsv_ml.m.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large
@@ -51,7 +48,7 @@ r = npr - n;
 k = size(X,2);
 p = (k-1)/n;
 kl = size(store_l,2);
-kappa3 = 100;             % [ml_var_fsv.m 17]
+kappa3 = 100;
 
    % obtain parameters for importance sampling densities
 if is_kappafixed
@@ -101,7 +98,7 @@ big_phi = zeros(M,n+r);
 for ii=1:n+r
    big_phi(:,ii) = bvar.util.tnormrnd(phihat(ii),phivar(ii),-1,1,M);
 end
-big_sig2 = zeros(M,n+r);          % drawn even under flag_marg = 2, where nothing reads it [67-70]
+big_sig2 = zeros(M,n+r);          % drawn even under flag_marg = 2, where nothing reads it
 for i=1:n+r
     big_sig2(:,i) = 1./gamrnd(nusig2hat(i),1./Ssig2hat(i),M,1);
 end
@@ -238,7 +235,7 @@ end
 % -------------------------------------------------------------------------
 function lden = deny_fsv(X,Y,L,h,Hyper)
 % log p(Y | L, h, kappa) with the VAR coefficients and the latent factors
-% integrated out. [ml_var_fsv.m 197-214, verbatim]
+% integrated out.
 [T,n] = size(Y);
 npr = size(h,2);
 r = npr-n;

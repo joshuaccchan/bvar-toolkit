@@ -3,12 +3,14 @@
 % by importance sampling with R draws around the Newton-Raphson mode of its
 % conditional density given the MA(1)-transformed residuals. The first
 % observation carries the (1+psi^2) initialization variance both in the mode
-% search and inside the deny_h likelihood evaluation. Consumes R*T randn calls.
+% search and inside the deny_h likelihood evaluation.
 %
-% Body from chan2020_jbes_kronecker/legacy/intlike_BVAR_CSV_MA.m,
-% renamed, apart from two syntax-only edits: a stray semicolon after a while
-% condition, and a comma in [T, n] = size(shortY).
-% Equivalence: tests/unit/test_kron_intlike.m. Record: tests/variant_map.md.
+%   [intlike,store_llike] = bvar.ml.intlike_csv_ma(shortY,X,A,Sig,psi,rho,sigh2,R)
+%
+% rng consumption: R*T randn calls.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_kron_intlike.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

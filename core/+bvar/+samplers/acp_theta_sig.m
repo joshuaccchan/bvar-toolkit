@@ -7,9 +7,11 @@
 %   [Alp,Beta,Sig] = bvar.samplers.acp_theta_sig(Y0, Y, p, prior, nsim)
 %
 %   Y0, Y : initial conditions and the estimation sample; the lag matrix is
-%           rebuilt here rather than passed in, so this call is self-contained
+%           built here from Y0 and Y, so no design matrix is passed in
+%   p     : lag length
 %   prior : the struct from bvar.priors.acp_redu or acp_stru (fields beta0,
 %           Vbeta, alp0, Valp, nu, S)
+%   nsim  : number of independent draws
 %   Alp   : nsim x n(n-1)/2 free elements of the unit-lower-triangular A
 %   Beta  : nsim x (n^2 p + n) coefficients, equation by equation
 %   Sig   : nsim x n structural innovation variances
@@ -24,8 +26,8 @@
 % at once, so the stream position after the call depends on nsim as well as on
 % n and p.
 %
-% Body from chan2022_qe_acp/legacy/utility/sample_ThetaSig.m, renamed.
-% Equivalence: tests/unit/test_acp_equivalence.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_acp_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs,

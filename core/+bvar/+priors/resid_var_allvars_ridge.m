@@ -3,13 +3,18 @@
 % ridge on the normal equations; used to set the Minnesota-prior scalings in the
 % hybrid TVP-VAR.
 %
-% Body from chan2023_jbes_hybtvp/legacy/utility/get_resid_var_v2.m,
-% renamed. NEVER merge with bvar.priors.resid_var_ar4 (legacy get_resid_var):
-% that one runs univariate AR(4) regressions with no ridge - numerically
-% different sig2, hence different Minnesota scalings.
-% Equivalence: tests/unit/test_resid_var_allvars_ridge.m. Record: tests/variant_map.md.
+%   sig2 = bvar.priors.resid_var_allvars_ridge(Y0, Y)
 %
-% Support function for estimating the hybrid TVP-VAR in Chan (2022)
+%   Y0   : presample rows; the last 4 are prepended to Y
+%   Y    : T x n estimation sample
+%   sig2 : n-vector of residual variances
+%
+% NEVER merge with bvar.priors.resid_var_ar4: that one runs univariate AR(4)
+% regressions with no ridge - numerically different sig2, hence different
+% Minnesota scalings.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_resid_var_allvars_ridge.m.
 %
 % See:
 % Chan, J.C.C. (2023). Large Hybrid Time-Varying Parameter VARs, Journal of

@@ -6,15 +6,7 @@
 % via chol(Kthetai,'lower'), and accumulate the structural residuals U.
 % rng consumption: exactly one randn(ki,1) per equation, ki = n*p+ii - nothing else.
 %
-% Body from chan2021_ijf_mahp/legacy/BVAR_MNG.m lines 40-59 (the inline "sample
-% alp and beta" block), wrapped as a function (Y,Z,h,Valp,Vbeta in; beta,alp,U
-% out) with np = size(Z,2)-1 replacing the literal n*p. The same block appears
-% verbatim in BVAR_NG.m, BVAR_Minn.m and the three forecast_BVAR_*.m scripts
-% (Y/Z/T -> Yt/Zt/Tt only). Prior-variance scaling stays with the CALLER:
-% BVAR_MNG and all three forecast scripts double Valp/Vbeta before this block,
-% estimation BVAR_NG/BVAR_Minn do not - pass Valp/Vbeta exactly as the legacy
-% script has them at entry to the equation loop.
-% Equivalence: tests/unit/test_mahp_equivalence.m. Record: tests/variant_map.md.
+%   [beta, alp, U] = bvar.samplers.eq_gauss(Y, Z, h, Valp, Vbeta)
 %
 % Inputs:  Y     - T x n observations (equation ii regresses Y(:,ii) on
 %                  [Z -Y(:,1:ii-1)], the structural triangular form)
@@ -25,6 +17,12 @@
 % Outputs: beta  - n*(n*p+1) x 1 stacked coefficient draw
 %          alp   - n*(n-1)/2 x 1 impact-matrix draw
 %          U     - T x n structural residuals yi - Xi*thetai
+%
+% Valp and Vbeta are used exactly as passed. Any scaling of the prior variances
+% - some callers double both before this step - stays with the caller.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_mahp_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2021). Minnesota-Type Adaptive Hierarchical Priors for

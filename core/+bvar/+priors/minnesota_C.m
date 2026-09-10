@@ -2,11 +2,19 @@
 % the index sets of the own-lag (kappa1) and other-lag (kappa2) coefficients,
 % equation by equation (intercept first, then lag-1 block, lag-2 block, ...).
 %
-% Body from chan2021_ijf_mahp/legacy/get_C.m, renamed; the
-% hybtvp, mlvarsv and oisv packages carry copies identical modulo comments.
-% Equivalence: tests/unit/test_minnesota_C.m. Record: tests/variant_map.md.
+%   [C,idx_kappa1,idx_kappa2] = bvar.priors.minnesota_C(n, p, sig2)
 %
-% This function constructs the second moments of the Minnesota prior
+%   n, p       : number of variables and lag length
+%   sig2       : n-vector of AR(4) residual variances
+%   C          : (n^2 p + n) x 1 vector of second moments - sig2_i on the
+%                intercepts, 1/l^2 on own lags, sig2_i/(l^2*sig2_j) on other
+%                lags. The shrinkage hyperparameters scale it in
+%                bvar.priors.vtheta.
+%   idx_kappa1 : indices into C of the own-lag coefficients
+%   idx_kappa2 : indices into C of the other-lag coefficients
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_minnesota_C.m.
 %
 % See:
 % Chan, J.C.C. (2021). Minnesota-Type Adaptive Hierarchical Priors for

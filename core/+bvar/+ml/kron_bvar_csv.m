@@ -5,32 +5,32 @@
 % ordinates for (A,Sig) and sigh2 Rao-Blackwellized over the stored (h, rho)
 % draws, and a rho ordinate from a REDUCED MCMC RUN of nsims sweeps that
 % re-draws (h, rho) at fixed (A_mean, Sig_mean, sigh2_mean), continuing the
-% chain from the final stored draws. Consumes rng: R*T randn in the intlike,
-% then the reduced run's AR-MH h draws and rho MH draws.
+% chain from the final stored draws. Every ordinate sits at the same starred
+% point: no bugcompat flag.
 %
-% Body from chan2020_jbes_kronecker/legacy/ml_BVAR_CSV.m, with the
-% legacy script's leftover-workspace reads made explicit inputs (the reduced run
-% continues from the last stored h and rho; est.state.countrho carries the
-% estimation counter) and its inline AR-MH h step calling bvar.sv.csv_armh.
-% Every ordinate sits at the same starred point: no bugcompat flag.
-% Equivalence: tests/unit/test_kron_equivalence.m. Record: tests/variant_map.md.
+% rng consumption: R*T randn in the intlike, then the reduced run's AR-MH h
+% draws and rho MH draws.
 %
 %   [ML, out] = bvar.ml.kron_bvar_csv(shortY, X, pri, est, ...)
 %
 %   pri: A0, VA0, nu0, S0, rho0, Vrho, nuh0, Sh0
 %   est: nsims, store_A, store_Sig (running sums), store_h, store_theta
-%        ([rho sigh2] columns), state.countrho
+%        ([rho sigh2] columns), state.countrho (the estimation run's rho-MH
+%        acceptance count, carried forward into out.countrho)
 %   options (name-value): 'R' - importance-sampling draws for the integrated
-%        likelihood (default 1000 = legacy ml_BVAR_CSV.m line 10)
+%        likelihood (default 1000)
 %   out: llike, lpri, lpost, store_lpost (reduced-run den_rho column),
-%        countrho, A_mean, Sig_mean, theta_mean, h_mean
+%        store_lpost1, countrho, A_mean, Sig_mean, theta_mean, h_mean
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_kron_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error
 % covariance structure, Journal of Business and Economic Statistics, 38(1), 68-79.
 
 function [ML, out] = kron_bvar_csv(shortY, X, pri, est, varargin)
-R = 1000;                               % legacy ml_BVAR_CSV.m line 10
+R = 1000;
 for iv = 1:2:numel(varargin)
     switch lower(varargin{iv})
         case 'r', R = varargin{iv+1};
@@ -45,22 +45,21 @@ rho0 = pri.rho0; Vrho = pri.Vrho; nuh0 = pri.nuh0; Sh0 = pri.Sh0;
 nsims = est.nsims;
 store_A = est.store_A; store_Sig = est.store_Sig;
 store_h = est.store_h; store_theta = est.store_theta;
-countrho = est.state.countrho;          % legacy: continues the estimation counter
+countrho = est.state.countrho;          % continues the estimation run's counter
 
-    % estimation-tail posterior means [BVAR_CSV.m lines 95-98]
+    % estimation-tail posterior means
 A_mean = store_A/nsims;
 Sig_mean = store_Sig/nsims;
 h_mean = mean(store_h)';
 theta_mean = mean(store_theta)';
 
-    % [ml_BVAR_CSV.m lines 10-14]
 llike = bvar.ml.intlike_csv(shortY,X,A_mean,Sig_mean,theta_mean(1),theta_mean(2),R);
 c_rho = 1/(normcdf(1,rho0,sqrt(Vrho))-normcdf(-1,rho0,sqrt(Vrho)));
 lpri = -.5*log(2*pi*Vrho) + log(c_rho) -.5*(theta_mean(1)-rho0)^2/Vrho ...
     + nuh0*log(Sh0) - gammaln(nuh0) - (nuh0+1)*log(theta_mean(2)) - Sh0/theta_mean(2) ...
     + bvar.ml.lniwpdf(A_mean,Sig_mean,A0,sparse(1:k,1:k,1./VA0),nu0,S0);
 
-    % evaluate the posterior density [lines 17-40]
+    % evaluate the posterior density
 store_lpost = zeros(nsims,2); % [log density of A Sig, log density of sigh2]
 
 for isim = 1:nsims
@@ -86,8 +85,7 @@ end
 tmpmax = max(store_lpost);
 lpost = log(mean(exp(store_lpost-repmat(tmpmax,nsims,1)))) + tmpmax;
 
-    % rho ordinate: reduced run [lines 42-111]; chain continuation from the
-    % last stored draws (the values the legacy first loop leaves behind)
+    % rho ordinate: reduced run, continuing the chain from the last stored draws
 store_lpost1 = store_lpost;             % first-phase densities, for out
 store_lpost = zeros(nsims,1); % [log density of rho]
 rhogrid = sort([theta_mean(1); linspace(-.999,.999,700)']);
@@ -98,11 +96,11 @@ tmp = (U/CSig');
 s2 = sum(tmp.^2,2);
 sigh2 = theta_mean(2);
 for isim = 1:nsims
-        % [lines 51-88] inline AR-MH h step: NR start at h_mean, forced
-        % accept on the reduced run's first sweep -> bvar.sv.csv_armh
+        % AR-MH h step: NR start at h_mean, with a forced accept on the
+        % reduced run's first sweep
     h = bvar.sv.csv_armh(s2,rho,sigh2,h,n,isim==1,h_mean);
 
-        % sample rho [lines 91-102]
+        % sample rho
     Krho = 1/Vrho + sum(h(1:T-1).^2)/sigh2;
     rhohat = Krho\(rho0/Vrho + h(1:T-1)'*h(2:T)/sigh2);
     rhoc = rhohat + sqrt(Krho)'\randn;
@@ -115,7 +113,7 @@ for isim = 1:nsims
         end
     end
 
-        % compute the conditional density of rho [lines 105-109]
+        % compute the conditional density of rho
     tmpden = grho(rhogrid) + -.5*Krho*(rhogrid-rhohat).^2;
     tmpden = exp(tmpden-max(tmpden));
     tmpden = tmpden/(sum(tmpden)*(rhogrid(2)-rhogrid(1)));

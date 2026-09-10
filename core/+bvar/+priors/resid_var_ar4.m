@@ -1,15 +1,18 @@
 % bvar.priors.resid_var_ar4 - residual variances of univariate AR(4) models,
 % used to set the Minnesota-prior scalings.
 %
-% Body from chan2021_ijf_mahp/legacy/get_resid_var.m,
-% renamed; the acp (2019wp and QE) and oisv packages carry copies identical
-% modulo comments and an optional terminating `end`. NEVER merge with
-% bvar.priors.resid_var_allvars_ridge (legacy get_resid_var_v2, HYB): that one
-% regresses each variable on 4 lags of ALL variables with a 1e-4 ridge -
-% numerically different sig2.
-% Equivalence: tests/unit/test_resid_var_ar4.m. Record: tests/variant_map.md.
+%   sig2 = bvar.priors.resid_var_ar4(Y0, Y)
 %
-% This function computes the residuals of univariate AR(4) models
+%   Y0   : presample rows; the last 4 are prepended to Y
+%   Y    : T x n estimation sample
+%   sig2 : n-vector of AR(4) residual variances
+%
+% NEVER merge with bvar.priors.resid_var_allvars_ridge: that one regresses each
+% variable on 4 lags of ALL variables with a 1e-4 ridge - numerically different
+% sig2.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_resid_var_ar4.m.
 %
 % See:
 % Chan, J.C.C. (2021). Minnesota-Type Adaptive Hierarchical Priors for

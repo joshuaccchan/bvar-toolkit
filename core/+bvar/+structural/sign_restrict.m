@@ -30,11 +30,8 @@
 % neither, which is why acceptance rates in the caller's rejection loop can be
 % very low without any single evaluation being expensive.
 %
-% Body from the inline block at chan2022_qe_acp/legacy/main_ACP_apps.m lines
-% 103-131, wrapped as a function: m and nR now come from size(S,2) and
-% numel(Ridx), and the two counters are compared here and returned as the single
-% flag ok.
-% Equivalence: tests/unit/test_acp_equivalence.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_acp_equivalence.m.
 %
 % See:
 % Rubio-Ramirez, J.F., Waggoner, D.F. and Zha, T. (2010). Structural Vector

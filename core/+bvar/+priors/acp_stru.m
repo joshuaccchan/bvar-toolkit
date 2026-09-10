@@ -1,24 +1,31 @@
 % bvar.priors.acp_stru - asymmetric conjugate prior elicited directly on the
 % structural parameterization of the VAR.
 %
-% Body from chan2022_qe_acp/legacy/utility/prior_ACP_stru.m
-% (R1, the published QE version), renamed, including its local helper prior_ACPi.
-% Do not merge chan2019wp_acp/legacy/prior_ACPi.m into it: that one computes the
-% same mi/Vi/nui/Si as the local prior_ACPi at is_ns = false (it has no
-% nonstationary unit-mean option on the first own lag), but returns Vi as a
-% sparse diagonal matrix rather than a vector, so the 2019wp replication keeps
-% its own copy.
-% Equivalence: tests/unit/test_acp_stru.m, test_acp_2019wp_relationship.m.
-% Record: tests/variant_map.md.
+%   prior = bvar.priors.acp_stru(n, p, kappa, sig2)
+%   prior = bvar.priors.acp_stru(n, p, kappa, sig2, idx_ns)
 %
-% This function directly elicits the asymmetric conjugate prior on the
-% strucutural parameterization
+%   n, p   : number of variables and lag length
+%   kappa  : [kappa1 kappa2 kappa3 kappa4] - own lags, other lags, impact
+%            matrix, intercepts
+%   sig2   : n-vector of AR(4) residual variances (bvar.priors.resid_var_ar4)
+%   idx_ns : indices of nonstationary variables, whose first own lag gets prior
+%            mean one (default none)
+%   prior  : struct with fields beta0, Vbeta (VAR coefficients, (n p + 1) x n,
+%            equation by equation), alp0, Valp (free elements of the impact
+%            matrix, stacked equation by equation), nu, S (the n inverse-gamma
+%            error-variance parameters)
+%
+% Do not merge the local helper prior_ACPi with the 2019 working paper copy of
+% the same name: that one has no nonstationary unit-mean option on the first
+% own lag, and returns Vi as a sparse diagonal matrix where this one returns a
+% vector.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_acp_stru.m, test_acp_2019wp_relationship.m.
 %
 % See:
 % Chan, J.C.C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs,
 % Quantitative Economics, 13(3): 1145-1169
-%
-% Input: idx_ns - index for nonstationary variables
 
 function prior = acp_stru(n,p,kappa,sig2,idx_ns)
 if nargin == 4

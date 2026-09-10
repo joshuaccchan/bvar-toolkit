@@ -10,22 +10,18 @@
 %
 %   B0 = bvar.structural.b0_row_sampler(U, h, B0, B00, VB0)
 %
-%   U   : T x n residual matrix Y - X*A (computed by the CALLER, verbatim
-%         legacy position - estimation U = Y-X*A, forecast U = Yt-Xt*A)
+%   U   : T x n residual matrix, formed by the CALLER - Y - X*A when
+%         estimating, Yt - Xt*A when forecasting
 %   h   : T x n log-volatilities
 %   B0  : current n x n impact matrix (rows updated in place, in order)
-%   B00 : n x n prior mean of B0   (legacy Hyper.B0,  = eye(n) in the paper)
-%   VB0 : n x n prior variances    (legacy Hyper.VB0, = ones(n) in the paper)
+%   B00 : n x n prior mean of B0   (eye(n) in the paper)
+%   VB0 : n x n prior variances    (ones(n) in the paper)
 %
 % rng consumption, per row: one rand then one randn (inside anormrnd), then
 % n-1 further randn - rows in order ii = 1:n.
 %
-% Body from chan_koop_yu2024_jbes_oisv/legacy/SVARSV_MH.m lines 49-72 (the
-% inline "sammple B0" loop), wrapped as a function: T and n now come from
-% size(U), and Hyper.B0/Hyper.VB0 enter as the arguments B00/VB0. Also stands in
-% for forecast_SVARSV_MH.m lines 43-66, identical modulo the Y/X/T -> Yt/Xt/Tt
-% renaming, which reaches this function only through U.
-% Equivalence: tests/unit/test_oisv_equivalence.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_oisv_equivalence.m.
 %
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian

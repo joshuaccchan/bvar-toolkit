@@ -3,12 +3,8 @@
 % (full n x n in the OI model; unit-lower-triangular A in the CS model) and the
 % T x n log-volatility paths h. Pure transform - consumes no rng.
 %
-% Body from chan_koop_yu2024_jbes_oisv/legacy/utility/construct_Sigt.m,
-% namespaced only. Also stands in for the private subfunction copy inside
-% legacy/func_main_SVAR_v2.m lines 67-73, identical bar comments.
-% Equivalence: tests/unit/test_construct_sigt.m. Record: tests/variant_map.md.
-%
-% This function constructs the time-varying covariance matrices
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_construct_sigt.m.
 %
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian

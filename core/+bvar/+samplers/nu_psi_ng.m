@@ -7,20 +7,18 @@
 % rng consumption: one randn always, then one rand IFF the candidate is
 % positive (Newton/fminbnd are deterministic).
 %
-% Body from chan2021_ijf_mahp/legacy/sample_nu_psi.m, renamed; it was
-% already a function there, and all four legacy call sites are served unchanged.
-% The inert `count` logic is kept verbatim: count is initialized to 0 and never
-% incremented, so the `count < 100` guard in the while loop and the
-% `if count == 100` fminbnd fallback are dead code.
-% Equivalence: tests/unit/test_mahp_equivalence.m. Record: tests/variant_map.md.
+% Trap: count is initialized to 0 and never incremented, so the count < 100
+% guard on the while loop and the if count == 100 fminbnd fallback are dead
+% code; the Newton iteration is bounded only by its convergence test and by the
+% negative-iterate break. This is deliberate - leave the guard alone.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_mahp_equivalence.m.
 %
 % Inputs:  psi_kappa1, psi_kappa2 - local scale draws (n*p x 1, (n-1)*n*p x 1)
 %          nu_psi                 - current draw
 %          lam0_nu_psi            - exponential prior rate
 % Outputs: nu_psi, flag (1 if accepted), f_nu_psi (handle: log target kernel)
-%
-% This script samples the parameter nu_psi in the Minnesota-type
-% normal-gamma prior
 %
 % See:
 % Chan, J.C.C. (2021). Minnesota-Type Adaptive Hierarchical Priors for

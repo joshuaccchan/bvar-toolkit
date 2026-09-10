@@ -5,22 +5,23 @@
 % a psi ordinate from a reduced run of nsims sweeps re-drawing (lam, psi) at
 % fixed (A_mean, Sig_mean, nu_mean), continuing from the final stored psi
 % draw with the psi-MH proposal warm-started at the ESTIMATION run's final
-% mode psihat. Consumes rng in the reduced run only (gamrnd, randn, rand);
-% fminunc/fminbnd are deterministic.
+% mode psihat. Every ordinate sits at the same starred point: no bugcompat
+% flag.
 %
-% Body from chan2020_jbes_kronecker/legacy/ml_BVAR_t_MA.m, with the
-% legacy script's leftover-workspace reads made explicit inputs
-% (store_theta(nsims,1), est.state.psihat, reconstructed optimset). Every
-% ordinate sits at the same starred point: no bugcompat flag.
-% Equivalence: tests/unit/test_kron_equivalence.m. Record: tests/variant_map.md.
+% rng consumption: the reduced run only (gamrnd, randn, rand);
+% fminunc/fminbnd are deterministic.
 %
 %   [ML, out] = bvar.ml.kron_bvar_t_ma(shortY, X, pri, est)
 %
 %   pri: A0, VA0, nu0, S0, psi0, Vpsi, nuub
 %   est: nsims, store_A, store_Sig (running sums), store_lam,
-%        store_theta ([psi nu] columns), state.psihat
+%        store_theta ([psi nu] columns), state.psihat (the estimation run's
+%        final psi-MH mode, which warm starts the psi proposal)
 %   out: llike, lpri, lpost, store_lpost (reduced-run den_psi column),
 %        store_lpost1, A_mean, Sig_mean, theta_mean
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_kron_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error
@@ -35,15 +36,14 @@ nsims = est.nsims;
 store_A = est.store_A; store_Sig = est.store_Sig;
 store_lam = est.store_lam; store_theta = est.store_theta;
 psihat = est.state.psihat;              % estimation run's final psi-MH mode
-options = optimset('Display', 'off', 'LargeScale','off') ;  % = BVAR_t_MA.m line 28
-lpri_psi = @(x) -.5*(x-psi0)^2/Vpsi -1e10*(x<-.99 || x>.99);    % = BVAR_t_MA.m line 10
+options = optimset('Display', 'off', 'LargeScale','off') ;
+lpri_psi = @(x) -.5*(x-psi0)^2/Vpsi -1e10*(x<-.99 || x>.99);    % psi log-prior kernel
 
-    % estimation-tail posterior means [BVAR_t_MA.m lines 137-139]
+    % estimation-tail posterior means
 A_mean = store_A/nsims;
 Sig_mean = store_Sig/nsims;
 theta_mean = mean(store_theta)';
 
-    % [ml_BVAR_t_MA.m lines 9-27]
 psi_mean = theta_mean(1);
 nu_mean = theta_mean(2);
 ngrid = 300;
@@ -64,7 +64,7 @@ lpri = bvar.ml.lniwpdf(A_mean,Sig_mean,A0,sparse(1:k,1:k,1./VA0),nu0,S0) ...
     + log(1/(nuub-2)) ...
     -.5*log(2*pi*Vpsi) + log(c_psi) -.5*(psi_mean(1)-psi0)^2/Vpsi;
 
-    % evaluate the posterior density [lines 30-64]
+    % evaluate the posterior density
 store_lpost = zeros(nsims,2); % [log density of A Sig, density of nu]
 nugrid = sort([nu_mean; linspace(2,nuub,ngrid)']);
 nuidx = find(nugrid==nu_mean);
@@ -101,8 +101,8 @@ lpost = zeros(3,1);
 lpost(1) = log(mean(exp(store_lpost(:,1)-tmpmax))) + tmpmax;
 lpost(2) = log(mean(store_lpost(:,2)));
 
-    % psi ordinate: reduced run [lines 66-118]; psi1/Hpsi continue from the
-    % last stored draw, psihat from the estimation run's final mode
+    % psi ordinate: reduced run; psi1/Hpsi continue from the last stored
+    % draw, psihat from the estimation run's final mode
 store_lpost1 = store_lpost;
 store_lpost = zeros(nsims,1); % density of psi
 psigrid = sort([theta_mean(1); linspace(-.99,.99,ngrid)']);
@@ -146,7 +146,7 @@ for isim = 1:nsims
     end
 
         % compute the conditional density of psi [normalization centered at
-        % tmpden(psiidx) - verbatim m6 quirk, mathematically = max-centering]
+        % tmpden(psiidx); mathematically the same as max-centering]
     tmpden = zeros(ngrid+1,1);
     for ii=1:ngrid+1
         tmpden(ii) = lp_psi(psigrid(ii));

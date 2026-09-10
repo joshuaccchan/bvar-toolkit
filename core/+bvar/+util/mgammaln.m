@@ -1,7 +1,13 @@
 % bvar.util.mgammaln - log of the multivariate gamma function Gamma_n(x).
 %
-% Body from chan2023_joe_mlvarsv/legacy/utility/mgammaln.m (identical modulo comments).
-% Equivalence: tests/unit/test_util_small.m. Record: tests/variant_map.md.
+%   k = bvar.util.mgammaln(n, x)
+%
+%   n : dimension, a positive integer
+%   x : scalar argument; needs x > (n-1)/2, else gammaln returns Inf/NaN
+%   k : log Gamma_n(x)
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_util_small.m.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for 

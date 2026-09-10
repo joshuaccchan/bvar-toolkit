@@ -1,15 +1,28 @@
 % bvar.sv.sv0_params - posterior draw of the SV state-equation parameters
 % (phi, sig2) for stationary zero-mean AR(1) log-volatilities.
 %
-% Body from chan_koop_yu2024_jbes_oisv/legacy/utility/sample_SV0para.m,
-% renamed, with the phi-candidate MH truncation bound (hard-coded .99) promoted
-% to the optional 4th argument phi_bnd, default .99. Not a special case of
-% bvar.sv.sv_params: the OISV pair keeps the zero-mean sampler separate with a
-% different bound (.99 here vs .999 in sample_SVpara).
-% Equivalence: tests/unit/test_sv0_params.m. Record: tests/variant_map.md.
+%   [phi,sig2,flag_phi] = bvar.sv.sv0_params(h, phi, Hyper)
+%   [phi,sig2,flag_phi] = bvar.sv.sv0_params(h, phi, Hyper, phi_bnd)
+%
+%   h        : T x n zero-mean log-volatility paths, one column per series
+%   phi      : n x 1 current AR(1) coefficients; the new draw on output
+%   Hyper    : struct with nuh, Sh (inverse-gamma prior on sig2) and phi0,
+%              Vphi (normal prior on phi)
+%   phi_bnd  : truncation bound on the phi candidate, which can be accepted
+%              only if |phic| < phi_bnd; default .99, the OISV canonical value
+%   sig2     : n x 1 innovation variances
+%   flag_phi : n x 1, 1 where the phi candidate was accepted
+%
+% NEVER merge with bvar.sv.sv_params. This is not that sampler at mu = 0: the
+% OISV pair keeps the zero-mean sampler separate, with a different truncation
+% bound (.99 here, .999 there).
+%
 % rng consumption: one gamrnd for sig2, one randn(n,1) for the phi candidates,
 % then one rand per candidate falling inside phi_bnd - so that count is
 % data-dependent.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_sv0_params.m.
 %
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian

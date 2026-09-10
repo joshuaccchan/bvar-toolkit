@@ -19,9 +19,8 @@
 % here. Anyone comparing figures with an older run should check which copy
 % produced them.
 %
-% Body from chan2022_qe_acp/legacy/utility/IRredu.m (the BVAR_ACP_R1
-% zip of 2026-08-27, the copy carrying the fix), renamed.
-% Equivalence: tests/unit/test_acp_equivalence.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_acp_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs,

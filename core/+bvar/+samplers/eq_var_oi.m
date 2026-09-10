@@ -23,12 +23,10 @@
 % identical to eq_svar_oi, so under a common seed the two functions return the
 % same draw to floating-point precision (tests/unit/test_eq_var_oi.m).
 %
-% New in the consolidated toolkit; it canonicalizes no legacy file and replaces
-% nothing. eq_svar_oi remains the verbatim CKY24 block (SVARSV_MH.m lines 76-87)
-% and the bitwise anchor of the chan_koop_yu2024_jbes_oisv replication; use this
-% one in new code. "svar" in the legacy name refers to the structural
-% parameterization of the error covariance, not to the coefficients, which are
-% reduced-form in both. Record: tests/variant_map.md.
+% bvar.samplers.eq_svar_oi draws from the same conditional and stays the bitwise
+% anchor for replicating Chan, Koop and Yu (2024); use this one in new code. The
+% "svar" in that name refers to the structural parameterization of the error
+% covariance, not to the coefficients, which are reduced-form in both.
 %
 % Why it is faster. Column ii of A enters structural equation j with the
 % coefficient B0(j,ii), so its conditional precision is
@@ -45,6 +43,8 @@
 % at, are tabulated in tests/variant_map.md; the unit test prints the figures
 % for the machine it runs on. At macroeconomic dimensions the saving is about
 % an order of magnitude.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian

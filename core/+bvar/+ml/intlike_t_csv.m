@@ -4,11 +4,13 @@
 % importance sampling, R draws) are integrated out. The mode search is an
 % EM-within-Newton scheme (E-step over lam, inner NR over h) and the IS
 % covariance uses the exact negative Hessian of the t-marginal conditional.
+%
+%   [intlike,store_llike] = bvar.ml.intlike_t_csv(shortY,X,A,Sig,rho,sigh2,nu,R)
+%
 % rng consumption: R*T randn calls.
 %
-% Body from chan2020_jbes_kronecker/legacy/intlike_BVAR_t_CSV.m,
-% renamed.
-% Equivalence: tests/unit/test_kron_intlike.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_kron_intlike.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

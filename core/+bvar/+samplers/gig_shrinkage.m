@@ -4,27 +4,22 @@
 % coefficient-specific local scales psi_kappa1/psi_kappa2 (one gigrnd call
 % each, floored at psi_floor).
 %
-% The function has three explicitly NAMED variants, each body verbatim from its
-% own legacy source; the blocks are numerically DIFFERENT across models - never
-% unify them:
-%   'mng'  -> chan2021_ijf_mahp/legacy/BVAR_MNG.m  lines 68-81 (kappa(1:2) with
-%             the Minnesota C, then the psi block);
-%   'ng'   -> chan2021_ijf_mahp/legacy/BVAR_NG.m   lines 66-78 (a single kappa,
-%             no Minnesota C and no factor 2 - the NG prior variance is kappa*psi);
-%   'minn' -> chan2021_ijf_mahp/legacy/BVAR_Minn.m lines 59-62 (kappa draws only,
-%             no psi block: psi_kappa1/psi_kappa2 pass through untouched, callers
-%             may pass [], and nu_psi/psi_floor are not referenced).
-% Wrapped as a function with kappa/psi state passed in and returned; the
-% hard-coded 1e-10 psi floor is promoted to the argument psi_floor; the Psi(idx)
-% reassembly (BVAR_MNG lines 82-83) stays with the caller. Settings reproducing
-% each legacy copy exactly: estimation BVAR_MNG and BVAR_NG use their own variant
-% with psi_floor = 1e-10; forecast_BVAR_MNG uses 'mng' with psi_floor = 1e-16;
-% BVAR_Minn and forecast_BVAR_Minn use 'minn' (floor unused).
-% NEVER-MERGE: forecast_BVAR_NG.m is NOT reproduced by 'ng' at any psi_floor -
-% its conditionals carry an extra factor 2 (lines 72-78), pairing with its
-% doubled Valp/Vbeta (line 43); functionize it separately if the forecast
+% The function has three explicitly NAMED variants; the blocks are numerically
+% DIFFERENT across models - never unify them:
+%   'mng'  -> kappa(1:2) with the Minnesota C, then the psi block;
+%   'ng'   -> a single kappa, no Minnesota C and no factor 2 - the NG prior
+%             variance is kappa*psi;
+%   'minn' -> kappa draws only, no psi block: psi_kappa1/psi_kappa2 pass
+%             through untouched, callers may pass [], and nu_psi/psi_floor are
+%             not referenced.
+% Caller contract: the Psi reassembly, Psi(idx_kappa1) = psi_kappa1 and
+% Psi(idx_kappa2) = psi_kappa2, stays with the caller.
+% NEVER-MERGE: the NG forecasting sampler forecast_BVAR_NG.m is NOT reproduced
+% by 'ng' at any psi_floor - its conditionals carry an extra factor 2, pairing
+% with its doubled Valp/Vbeta; functionize it separately if the forecast
 % pipeline is ever consolidated.
-% Equivalence: tests/unit/test_mahp_equivalence.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_mahp_equivalence.m.
 %
 % rng consumption (all draws through gigrnd, resolved from third_party/):
 %   'mng' : 2 + n*p + (n-1)*n*p gigrnd calls, in that order;
@@ -43,7 +38,9 @@
 %          nu_psi      - normal-gamma shape ('mng'/'ng'; unused by 'minn')
 %          c01, c02    - gamma prior [shape, rate] pairs (c02 unused by 'ng')
 %          n, p        - VAR dimensions
-%          psi_floor   - psi lower bound ('mng'/'ng'; unused by 'minn')
+%          psi_floor   - psi lower bound against arithmetic underflow
+%                        ('mng'/'ng'; unused by 'minn'). The estimation
+%                        samplers use 1e-10, the MNG forecasting sampler 1e-16
 % Outputs: kappa, psi_kappa1, psi_kappa2 - updated state (psi pass through 'minn')
 %
 % See:
@@ -55,13 +52,13 @@ function [kappa, psi_kappa1, psi_kappa2] = gig_shrinkage(variant, beta, ...
     c01, c02, n, p, psi_floor)
 switch variant
     case 'mng'
-            % sample kappa1 and kappa2    [BVAR_MNG.m lines 68-71]
+            % sample kappa1 and kappa2
         tmpc1 = sum(beta(idx_kappa1).^2./(2*psi_kappa1.*C(idx_kappa1)));
         tmpc2 = sum(beta(idx_kappa2).^2./(2*psi_kappa2.*C(idx_kappa2)));
         kappa(1) = gigrnd(c01(1)-n*p/2,2*c01(2),tmpc1,1);
         kappa(2) = gigrnd(c02(1)-(n-1)*n*p/2,2*c02(2),tmpc2,1);
 
-            % sample psi    [BVAR_MNG.m lines 74-81]
+            % sample psi
         tmpv1 = beta(idx_kappa1).^2./(2*C(idx_kappa1)*kappa(1));
         tmpv2 = beta(idx_kappa2).^2./(2*C(idx_kappa2)*kappa(2));
         for ik=1:1:n*p  % lower bound psi_floor to avoid arithmetic underflow
@@ -71,12 +68,12 @@ switch variant
             psi_kappa2(il) = max(gigrnd(nu_psi-1/2,nu_psi,tmpv2(il),1),psi_floor);
         end
     case 'ng'
-            % sample kappa    [BVAR_NG.m lines 66-68]
+            % sample kappa
         tmpc1 = sum(beta(idx_kappa1).^2./psi_kappa1);
         tmpc2 = sum(beta(idx_kappa2).^2./psi_kappa2);
         kappa = gigrnd(c01(1)-n^2*p/2,2*c01(2),tmpc1+tmpc2,1);
 
-            % sample psi    [BVAR_NG.m lines 71-78]
+            % sample psi
         tmpv1 = beta(idx_kappa1).^2/kappa;
         tmpv2 = beta(idx_kappa2).^2/kappa;
         for ik=1:1:n*p  % lower bound psi_floor to avoid arithmetic underflow
@@ -86,7 +83,7 @@ switch variant
             psi_kappa2(il) = max(gigrnd(nu_psi-1/2,nu_psi,tmpv2(il),1),psi_floor);
         end
     case 'minn'
-            % sample kappa1 and kappa2    [BVAR_Minn.m lines 59-62]
+            % sample kappa1 and kappa2
         tmpc1 = sum(beta(idx_kappa1).^2./C(idx_kappa1));
         tmpc2 = sum(beta(idx_kappa2).^2./C(idx_kappa2));
         kappa(1) = gigrnd(c01(1)-n*p/2,2*c01(2),tmpc1,1);

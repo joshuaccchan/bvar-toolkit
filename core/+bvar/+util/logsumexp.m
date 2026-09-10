@@ -3,10 +3,14 @@
 % y = bvar.util.logsumexp(x)        operates along dim 1
 % y = bvar.util.logsumexp(x, dim)
 %
-% For averaging log predictive-likelihood draws, use
+%   x   : array of log-scale values; a slice that is entirely -Inf returns
+%         -Inf, with no NaN
+%   dim : dimension to reduce (default 1)
+%
+% For averaging M log predictive-likelihood draws, use
 %   logsumexp(logdraws) - log(M)
-% which replaces the ad-hoc max-shift blocks inlined in the legacy forecasting
-% scripts. New in the consolidated toolkit; tests/unit/test_logsumexp.m.
+%
+% Tests: tests/unit/test_logsumexp.m.
 
 function y = logsumexp(x, dim)
     if nargin < 2

@@ -6,10 +6,12 @@
 %
 %   x = bvar.util.igrnd(nu, S)
 %
-% nu and S may be scalars or conformable arrays; the result has the size of
-% the expansion, one independent draw per element. Implemented as
-% 1./gamrnd(nu, 1./S), which is the expression the legacy samplers write
-% inline, so a seeded call here consumes the random stream identically.
+% nu and S must be positive, and may be scalars or conformable arrays; the
+% result has the size of the expansion, one independent draw per element.
+%
+% rng consumption: implemented as 1./gamrnd(nu, 1./S), the same expression the
+% samplers write inline, so a seeded call here advances the random stream
+% identically (asserted in tests/unit/test_igrnd.m).
 %
 % The conjugate variance step of a Gaussian model - with prior IG(nu0, S0)
 % and residuals e - is
@@ -18,12 +20,6 @@
 %
 % which is the update repeated in the state-equation variance draws of the SV
 % and TVP samplers.
-%
-% NOTE for maintainers: the functions under core/ extracted from the published
-% packages keep their inline `1/gamrnd(...)` calls verbatim, so they remain
-% line-by-line diffable against replications/*/legacy/. This helper is for new
-% code and is not retrofitted into them; it draws identically under the same
-% seed (asserted in tests/unit/test_igrnd.m).
 %
 % Requires the Statistics and Machine Learning Toolbox (gamrnd).
 

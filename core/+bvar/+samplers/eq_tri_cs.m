@@ -6,14 +6,13 @@
 % equations' fits through XB*A') and draws B(ii,:) from its Gaussian
 % conditional; XB(:,ii) = X*betai is refreshed in place so later equations
 % condition on the new draw. Prior variances enter as the stacked k*n vector
-% tmpdV (caller-computed - legacy getVbeta(idx_kappa1,idx_kappa2,kappa,
-% C.*Psi,sig2), reproduced exactly by the Vbeta output of bvar.priors.vtheta);
-% prior means as the stacked k*n vector beta0 (legacy Hyper.beta0).
+% tmpdV, which the caller supplies (the Vbeta output of bvar.priors.vtheta
+% produces it); prior means as the stacked k*n vector beta0.
 %
 %   [B,XB] = bvar.samplers.eq_tri_cs(Y, X, XB, B, A, h, tmpdV, beta0)
 %
 % rng consumption: randn(k,1) per equation, equations in order ii = 1:n.
-% The caller keeps `beta = reshape(B',k_beta,1)` (legacy line 73).
+% The caller keeps `beta = reshape(B',k_beta,1)`.
 %
 % THIS IS THE CORRECTED TRIANGULAR ALGORITHM of Carriero, Chan, Clark and
 % Marcellino (2022), the corrigendum to Carriero, Clark and Marcellino (2019).
@@ -22,14 +21,9 @@
 % y - so it did not sample the intended triangular factorization. The corrigendum
 % keeps that factorization and restores the missing term at the same O(n^4) cost.
 % Stacking rows ii:n above, rather than equation ii alone, is that correction.
-% The legacy package labels it so: forecast_CS_MH.m line 2 reads "using CCCM
-% algorithm".
 %
-% Body from chan_koop_yu2024_jbes_oisv/legacy/CS_MH.m lines 54-72 (the inline
-% "sample B" block), wrapped as a function: T, n, k from the arguments,
-% Hyper.beta0 -> beta0. Also covers forecast_CS_MH.m lines 45-63 (Y/X/T ->
-% Yt/Xt/Tt only).
-% Equivalence: tests/unit/test_oisv_equivalence.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_oisv_equivalence.m.
 %
 % See:
 % Carriero, A., Chan, J.C.C., Clark, T.E. and Marcellino, M. (2022). Corrigendum
@@ -46,7 +40,6 @@ Ytilde = Y*sparse(A');
 for ii = 1:n
     tmpXBA = XB(:,[1:ii-1 ii+1:n])*sparse(A(:,[1:ii-1 ii+1:n])');
     Zi = Ytilde(:,ii:n) - tmpXBA(:,ii:n);
-    zi = reshape(Zi',T*(n-ii+1),1); %#ok<NASGU> % kept verbatim from the legacy block (assigned there and unused there too)
     Xi = repmat(X,n-ii+1,1);
     tmp1 = exp(-h(:,ii:n)).*repmat(A(ii:n,ii)',T,1);
     tmp2 = tmp1.*repmat(A(ii:n,ii)',T,1);

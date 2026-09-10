@@ -42,10 +42,8 @@
 % configuration, which is why the equivalence test runs whole chains rather than
 % single blocks.
 %
-% Body from chan2023_jbes_hybtvp/legacy/utility/sample_gam_thetai_ver2.m,
-% renamed, with the four SURform calls routed to bvar.util.surform (a
-% byte-identical copy of that package's SURform.m).
-% Equivalence: tests/unit/test_hybtvp_equivalence.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_hybtvp_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2023). Large Hybrid Time-Varying Parameter VARs, Journal of

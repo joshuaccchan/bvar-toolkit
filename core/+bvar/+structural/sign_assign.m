@@ -34,16 +34,17 @@
 % accept-reject algorithm of Rubio-Ramirez, Waggoner and Zha (2010). But the
 % labelling of the columns of Q is arbitrary: a rotation whose third column
 % satisfies the monetary restrictions is just as admissible as one where the
-% first column satisfies them, and accept-reject discards the former. This function builds the
-% m x n table of which columns admit which shocks, accepts whenever every shock
-% has at least one, and draws an assignment uniformly from those available.
+% first column satisfies them, and accept-reject discards the former. This
+% function builds the m x n table of which columns admit which shocks, accepts
+% whenever every shock has at least one, and draws an assignment uniformly from
+% those available.
 %
-% Proposition 1 of the paper establishes that the accepted R* equals L*Q* for a Q*
-% that is still uniform on the orthogonal group, so the target distribution is
-% unchanged; the proof turns on the Haar measure being invariant to right
-% multiplication by a permutation and a sign matrix. The reported gain at n = 15 with 1000 admissible draws is
-% about 3.6 billion candidate rotations and six days for the rejection scheme
-% against about 31,000 and sixteen seconds here.
+% Proposition 1 of the paper establishes that the accepted R* equals L*Q* for a
+% Q* that is still uniform on the orthogonal group, so the target distribution
+% is unchanged; the proof turns on the Haar measure being invariant to right
+% multiplication by a permutation and a sign matrix. The reported gain at n = 15
+% with 1000 admissible draws is about 3.6 billion candidate rotations and six
+% days for the rejection scheme against about 31,000 and sixteen seconds here.
 %
 % TWO THINGS THE CALLER MUST GET RIGHT, both from the paper. Accept or reject
 % the pair (A,Sigma) and Q JOINTLY, as the loop in the replication driver does;
@@ -53,7 +54,8 @@
 % (Sigma,Q) differ only by a permutation and sign flips, so they are dependent.
 %
 % Both functions are correct: sign_restrict is the scheme the earlier papers use
-% and the one their replication code reproduces, so it stays. See the never-merge list in tests/variant_map.md.
+% and the one their replication code reproduces, so it stays. See the
+% never-merge list in tests/variant_map.md.
 %
 % rng consumption on ACCEPTANCE, in order: one unidrnd per shock (m draws,
 % choosing among that shock's admissible columns), then randperm(n-m) and
@@ -71,11 +73,8 @@
 % second algorithm, which enumerates the admissible set instead, is not
 % implemented here.
 %
-% Body from chan_matthes_yu2026_qe_svarsign/legacy/proposed_15var.m lines 72-113,
-% wrapped as a function: m and n come from size(S) and size(L), and the
-% acceptance test nnz(sum(abs(satTab),2)) == m is returned as ok rather than
-% gating the caller's storage block.
-% Equivalence: tests/unit/test_sign_assign.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_sign_assign.m.
 %
 % See:
 % Rubio-Ramirez, J.F., Waggoner, D.F. and Zha, T. (2010). Structural Vector

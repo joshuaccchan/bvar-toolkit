@@ -5,17 +5,18 @@
 %
 %   pri: A0, VA0, nu0, S0, psi0, Vpsi   (see the replication preset)
 %   est: nsims, store_A, store_Sig, store_psi, state.psi
+%        (state.psi is read only under 'bugcompat', true)
 %   options: 'bugcompat' (default false)
+%   out: llike, lpri, lpost, store_lpost, den_psi, A_mean, Sig_mean,
+%        psi_mean, psi_llike, bugcompat
 %
-% Known legacy defect, reproduced by 'bugcompat', true: ml_BVAR_MA.m line 17
-% uses the leftover final-draw psi in the first observation's variance
-% correction, where psi_mean is intended and used everywhere else. The
-% default path uses psi_mean throughout. tests/variant_map.md has the audit
-% and the effect on the published values.
+% Known legacy defect, reproduced by 'bugcompat', true: the legacy script
+% uses the estimation run's leftover final psi draw (est.state.psi) in the
+% first observation's variance correction, where psi_mean is intended and
+% used everywhere else. The default path uses psi_mean throughout.
+% tests/variant_map.md has the audit and the effect on the published values.
 %
-% Body from chan2020_jbes_kronecker/legacy/ml_BVAR_MA.m apart from the
-% defect fix above (lniwpdf and llike_MA via bvar.ml; the lpri_psi handle
-% reconstructed from pri.psi0/pri.Vpsi).
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
 % Equivalence: tests/unit/test_kron_equivalence.m.
 %
 % See:
@@ -38,23 +39,23 @@ psi0 = pri.psi0; Vpsi = pri.Vpsi;
 nsims = est.nsims;
 store_A = est.store_A; store_Sig = est.store_Sig; store_psi = est.store_psi;
 
-    % estimation-tail posterior means [BVAR_MA.m lines 112-114]
+    % estimation-tail posterior means
 A_mean = store_A/nsims;
 Sig_mean = store_Sig/nsims;
 psi_mean = mean(store_psi)';
 
-    % lpri_psi reconstructed verbatim [BVAR_MA.m line 10]
+    % psi log-prior kernel, truncated to |psi| < .99
 lpri_psi = @(x) -.5*(x-psi0)^2/Vpsi -1e10*(x<-.99 || x>.99);
 
-    % evaluate the log likelihood [ml_BVAR_MA.m lines 11-17]
+    % evaluate the log likelihood
 Hpsi = speye(T) + psi_mean*sparse(2:T,1:(T-1),ones(1,T-1),T,T);
 CSig = chol(Sig_mean,'lower');
 Utld = Hpsi\(shortY-X*A_mean);
 tmp = (Utld/CSig');
 s2 = sum(tmp.^2,2);
 if bugcompat
-        % Legacy defect reproduced: line 17's `psi` is the estimation run's
-        % final chain draw, not psi_mean
+        % Legacy defect reproduced: the estimation run's final chain draw of
+        % psi stands in for psi_mean here
     psi_llike = est.state.psi;
 else
     psi_llike = psi_mean;   % corrected: consistent evaluation point
@@ -65,7 +66,7 @@ c_psi = 1/(normcdf(1,psi0,sqrt(Vpsi))-normcdf(-1,psi0,sqrt(Vpsi)));
 lpri = bvar.ml.lniwpdf(A_mean,Sig_mean,A0,sparse(1:k,1:k,1./VA0),nu0,S0) ...
     -.5*log(2*pi*Vpsi) + log(c_psi) -.5*(psi_mean(1)-psi0)^2/Vpsi;
 
-    % evaluate the posterior density [lines 23-44]
+    % evaluate the posterior density
 store_lpost = zeros(nsims,1); % [log density of A Sig]
 
 for isim = 1:nsims
@@ -89,7 +90,7 @@ end
 tmpmax = max(store_lpost(:,1));
 lpost = log(mean(exp(store_lpost(:,1)-tmpmax))) + tmpmax;
 
-    % psi ordinate: grid-normalized conditional density [lines 46-57]
+    % psi ordinate: grid-normalized conditional density
 U = shortY - X*A_mean;
 lp_psi = @(x) bvar.ml.llike_ma(x,U,Sig_mean) + lpri_psi(x);
 psigrid = sort([psi_mean; linspace(-.99,.99,700)']);

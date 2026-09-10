@@ -2,18 +2,16 @@
 % natural-conjugate) BVAR of Chan (2020, JBES): fully analytic - the ML
 % identity llike + lpri - lpost is evaluated exactly at the posterior mean
 % pair A = Ahat, Sig = Shat/(T+nu0), with both NIW ordinates in closed form.
-% No rng is consumed.
-%
-% Body from chan2020_jbes_kronecker/legacy/BVAR.m lines 36-47, wrapped as a
-% function: model 1 has no separate ml_* script, and lniwpdf is called through
-% bvar.ml.lniwpdf. Every piece is evaluated at the same (A,Sig).
-% Equivalence: tests/unit/test_kron_equivalence.m. Record: tests/variant_map.md.
+% Every piece sits at the same (A,Sig). No rng is consumed.
 %
 %   [ML, out] = bvar.ml.kron_bvar(shortY, X, pri, est)
 %
 %   pri: A0, VA0 (k x 1), nu0, S0        [replication preset, cited there]
 %   est: Ahat, Shat, KA                  [run_all model 1 output]
 %   out: llike, A, Sig                   [the evaluation point used]
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_kron_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error
@@ -25,7 +23,6 @@ k = size(X, 2);
 A0 = pri.A0; VA0 = pri.VA0; nu0 = pri.nu0; S0 = pri.S0;
 Ahat = est.Ahat; Shat = est.Shat; KA = est.KA;
 
-    % [BVAR.m lines 37-44, verbatim]
 A = Ahat;
 Sig = Shat/(T+nu0);
 CSig = chol(Sig,'lower');

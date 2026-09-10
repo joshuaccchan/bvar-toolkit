@@ -4,21 +4,17 @@
 % includes the -n/2*sum(h) volatility normalizing term and the first
 % observation's (1+psi^2) initialization variance.
 %
-% Body from chan2020_jbes_kronecker/legacy/llike_CSV_MA.m - the
-% package-ROOT copy. NEVER-MERGE / PATH HAZARD: the same package ships a SECOND
-% llike_CSV_MA.m in legacy/realtime_forecasts/ (and chan2020_springer_largebvar
-% the same reduced form) that OMITS the -n/2*sum(h) term. The term cancels
-% inside a psi-MH at fixed h, but as a likelihood ORDINATE the two differ by
-% n/2*sum(h), so the marginal-likelihood path requires THIS one; an unqualified
-% legacy call resolves by path order once main_forecasting.m line 20 addpaths
-% realtime_forecasts, so all bvar.ml consumers call this one fully qualified.
-% Equivalence: tests/unit/test_kron_ml_densities.m (bitwise against the root
-% copy, and asserted to differ from the realtime copy by n/2*sum(h)).
-% Record: tests/variant_map.md.
+% NEVER MERGE with a same-named function that omits the -n/2*sum(h) term. As
+% likelihood ORDINATES the two differ by n/2*sum(h); the term cancels inside a
+% psi-MH step at fixed h, so both give the same draws there, but a
+% marginal-likelihood path requires this one. Call it fully qualified, as
+% bvar.ml.llike_csv_ma, so that no path order can substitute the other.
 %
-% The t-model reduced runs reuse this same function with h := log(lam)
-% (legacy ml_BVAR_t_MA.m line 82) and with U pre-scaled by sqrt(lam)
-% (legacy ml_BVAR_CSV_t_MA.m lines 107-108), exactly as the legacy scripts do.
+% The t-model reduced runs reuse this function with h := log(lam) and with U
+% pre-scaled by sqrt(lam).
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_kron_ml_densities.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

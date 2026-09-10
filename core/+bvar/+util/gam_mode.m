@@ -11,12 +11,11 @@
 %
 % Each row is keyed by its binary expansion gam*2.^(0:nmodel-1)', counts are
 % accumulated by growing a table, and ties are broken by whichever configuration
-% sortrows leaves on top. The loop over draws is the legacy implementation and is
-% O(nsim x distinct configurations); it is quick at the sizes used here but slows
-% down for a long chain over many equations.
+% sortrows leaves on top. Cost is O(nsim x distinct configurations): quick at
+% the sizes used here, slow for a long chain over many equations.
 %
-% Body from chan2023_jbes_hybtvp/legacy/utility/get_gammode.m, renamed.
-% Equivalence: tests/unit/test_hybtvp_equivalence.m. Record: tests/variant_map.md.
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_hybtvp_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2023). Large Hybrid Time-Varying Parameter VARs, Journal of

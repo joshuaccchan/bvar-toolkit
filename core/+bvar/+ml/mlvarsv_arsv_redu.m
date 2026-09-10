@@ -7,38 +7,33 @@
 % truncated normal, kappa gamma - and the M log weights are averaged in 50
 % batches, which also gives the numerical standard error.
 %
-% Clean bill from the audit. Quirks kept verbatim: the dead gamfit block
-% over 1./sig2 (its consumers are commented out at legacy line 51), and the
-% is_kappasym prior scored with Hyper.c0 rows 2:3 where the estimation draws
-% kappa1 from row 1 - a no-op only because rows 1 and 2 are equal.
-% tests/variant_map.md has the audit and the family-wide quirks.
-%
-% Body from chan2023_joe_mlvarsv/legacy/utility/ml_var_arsv_redu.m,
-% renamed, with helper calls redirected to core (listed below).
-% Equivalence: tests/unit/test_mlvarsv_ml.m.
-%
 %   [lml,lmlstd,out] = bvar.ml.mlvarsv_arsv_redu(X,Y,Y0,M,Hyper,flag_marg,...
 %       store_h,store_beta,store_hpara,store_kappa,is_kappafixed,is_kappasym)
 %
-%   flag_marg   - 2 only (the legacy switch defines prior/gIS in that branch
-%                 alone; 1 would error on an undefined handle)
+%   flag_marg   - 2 only; any other value raises an error
 %   Hyper: alp0, Valp, beta0, Vbeta, c0, nuh, Sh, mu0, Vmu, phi0, Vphi. The
 %          four prior blocks are recomputed inside from each kappa draw before
-%          any read, so whichever version the caller passes is irrelevant (the
-%          legacy passes the final sweep's).
-%   store_h     - nsim x T x n                        [VAR_ARSV_redu.m 11]
-%   store_beta  - nsim x k_beta                       [10]
-%   store_hpara - nsim x 3n, columns [mu' phi' sig2'] [12]
-%   store_kappa - nsim x 3, columns [kappa1 kappa2 kappa4] [13]
+%          any read, so whichever version the caller passes is irrelevant.
+%   store_h     - nsim x T x n
+%   store_beta  - nsim x k_beta
+%   store_hpara - nsim x 3n, columns [mu' phi' sig2']
+%   store_kappa - nsim x 3, columns [kappa1 kappa2 kappa4]
 %   out: store_w, bigml (the 50 batch values), and the fitted IS parameters
+%
+% Under is_kappasym the kappa prior is scored with rows 2:3 of Hyper.c0 while
+% the sampler draws kappa1 from row 1, so rows 1 and 2 of c0 must be equal for
+% the weights to be right.
 %
 % rng consumption: all of it inside the importance-sampling loops - gamrnd(M,1) per
 % kappa block and randn(M,n) for mu while fitting the IS density, then randn(T*n,1)
 % for the log-volatility path and randn(k_beta,1) for the coefficients per draw. A
 % top-level estimator rather than a Gibbs block.
 %
-% Core used: bvar.priors.minn (legacy prior_Minn, n0pre = 4), bvar.priors.impact_B0
-% (prior_B0), bvar.util.tnormrnd, bvar.util.vec, bvar.util.ldet, bvar.ml.isden_arss.
+% Core used: bvar.priors.minn (n0pre = 4), bvar.priors.impact_B0,
+% bvar.util.tnormrnd, bvar.util.vec, bvar.util.ldet, bvar.ml.isden_arss.
+%
+% Provenance and the legacy copies this stands in for: tests/variant_map.md.
+% Equivalence: tests/unit/test_mlvarsv_ml.m.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large
@@ -53,7 +48,7 @@ k = size(X,2);
 p = (k-1)/n;
 k_beta = n*(n-1)/2;       % dimension of B0
 M = 50*ceil(M/50);
-kappa3 = 100;             % [ml_var_arsv_redu.m 14]
+kappa3 = 100;
 B0_id = nonzeros(tril(reshape(1:n^2,n,n),-1)');
 B0 = eye(n);
 
@@ -88,7 +83,7 @@ phihat = mean(store_hpara(:,n+1:2*n))';
 phivar = var(store_hpara(:,n+1:2*n))';
 tmp = zeros(n,2);
 for i=1:n
-    tmp(i,:) = gamfit(1./store_hpara(:,2*n+i));   % dead: the lines that read it are commented out [51]
+    tmp(i,:) = gamfit(1./store_hpara(:,2*n+i));   % dead: the lines that read it are commented out
 end
 % nusig2hat = tmp(:,1); Ssig2hat = 1./tmp(:,2);
 h_hat = zeros(T*n,1);
