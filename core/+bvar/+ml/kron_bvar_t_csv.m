@@ -5,14 +5,13 @@
 % Rao-Blackwellized over the stored (h, lam, rho) draws, and a rho ordinate
 % from a reduced run of nsims sweeps re-drawing (h, lam, rho) at fixed
 % (A_mean, Sig_mean, nu_mean, sigh2_mean), continuing from the final stored
-% draws. Consumes rng: R*T randn in the intlike, then the reduced run's
-% draws.
+% draws. Every ordinate sits at the same starred point, so there is no
+% bugcompat flag here.
 %
-% Body from chan2020_jbes_kronecker/legacy/ml_BVAR_t_CSV.m, with the
-% legacy script's leftover-workspace reads made explicit inputs (the reduced run
-% continues from the last stored h, lam and rho). Every ordinate sits at the
-% same starred point: no bugcompat flag.
-% Equivalence: tests/unit/test_kron_equivalence.m. Record: tests/variant_map.md.
+% rng consumption: R*T randn in the intlike, then the reduced run's draws.
+%
+% Provenance: tests/variant_map.md.
+% Equivalence: tests/unit/test_kron_equivalence.m.
 %
 %   [ML, out] = bvar.ml.kron_bvar_t_csv(shortY, X, pri, est, ...)
 %
@@ -22,14 +21,14 @@
 %   options (name-value): 'R' - importance-sampling draws (default 1000 =
 %        legacy ml_BVAR_t_CSV.m lines 13-14)
 %   out: llike, lpri, lpost, store_lpost (reduced-run den_rho column),
-%        store_lpost1, A_mean, Sig_mean, theta_mean, h_mean
+%        store_lpost1, A_mean, Sig_mean, theta_mean
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error
 % covariance structure, Journal of Business and Economic Statistics, 38(1), 68-79.
 
 function [ML, out] = kron_bvar_t_csv(shortY, X, pri, est, varargin)
-R = 1000;                               % legacy ml_BVAR_t_CSV.m lines 13-14
+R = 1000;
 for iv = 1:2:numel(varargin)
     switch lower(varargin{iv})
         case 'r', R = varargin{iv+1};
@@ -45,13 +44,11 @@ nsims = est.nsims;
 store_A = est.store_A; store_Sig = est.store_Sig;
 store_h = est.store_h; store_lam = est.store_lam; store_theta = est.store_theta;
 
-    % estimation-tail posterior means [BVAR_t_CSV.m lines 121-124]
+    % posterior means from the estimation run
 A_mean = store_A/nsims;
 Sig_mean = store_Sig/nsims;
 theta_mean = mean(store_theta)';
-h_mean = mean(store_h)';                                %#ok<NASGU> % legacy tail value, unused by this ml script
 
-    % [ml_BVAR_t_CSV.m lines 10-19]
 nu_mean = theta_mean(1);
 rho_mean = theta_mean(2);
 sigh2_mean = theta_mean(3);
@@ -63,7 +60,7 @@ lpri = log(1/(nuub-2)) ...
     + nuh0*log(Sh0) - gammaln(nuh0) - (nuh0+1)*log(sigh2_mean) - Sh0/sigh2_mean ...
     + bvar.ml.lniwpdf(A_mean,Sig_mean,A0,sparse(1:k,1:k,1./VA0),nu0,S0);
 
-    % evaluate the posterior density [lines 22-57]
+    % evaluate the posterior density
 store_lpost = zeros(nsims,3); % [log density of A Sig, log density of sigh2, log density of nu]
 nugrid = sort([nu_mean; linspace(2,nuub,700)']);
 nuidx = find(nugrid==nu_mean);
@@ -101,8 +98,7 @@ end
 tmpmax = max(store_lpost);
 lpost = log(mean(exp(store_lpost-repmat(tmpmax,nsims,1)))) + tmpmax;
 
-    % rho ordinate: reduced run [lines 59-95]; chain continuation from the
-    % last stored draws (the values the legacy first loop leaves behind)
+    % rho ordinate: a reduced run, continuing the chain from the last stored draws
 store_lpost1 = store_lpost;
 store_lpost = zeros(nsims,1); % [log density of rho]
 rhogrid = sort([rho_mean; linspace(-.999,.999,700)']);
@@ -110,18 +106,17 @@ rhoidx = find(rhogrid==rho_mean);
 U = shortY - X*A_mean;
 CSig = chol(Sig_mean,'lower');
 tmp = U/CSig';
-s2 = sum(tmp.^2,2);                                     %#ok<NASGU> % legacy line 65: immediately overwritten inside the loop
 nu = nu_mean;
 sigh2 = sigh2_mean;
 for isim = 1:nsims
     s2 = sum(tmp.^2,2)./lam;
-    h = bvar.sv.csv_armh(s2,rho,sigh2,h,n);              % legacy line 70: root sample_h
+    h = bvar.sv.csv_armh(s2,rho,sigh2,h,n);
 
         % sample lam
     s2 = sum(tmp.^2,2)./exp(h);
     lam = 1./gamrnd((n+nu)/2,2./(s2+nu));
 
-        % sample rho [reduced-run bound .999; estimation uses .9999]
+        % sample rho; the reduced run bounds rho at .999, estimation at .9999
     Krho = 1/Vrho + sum(h(1:T-1).^2)/sigh2;
     rhohat = Krho\(rho0/Vrho + h(1:T-1)'*h(2:T)/sigh2);
     rhoc = rhohat + sqrt(Krho)'\randn;

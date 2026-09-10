@@ -39,9 +39,10 @@ order. `examples/README.md` lists what each one teaches and which core functions
 zip's md5 recorded in `provenance.md`. Run those files as you would the original download.
 
 **Build on the code.** The samplers, priors, and forecasting machinery are factored into the
-`bvar` package under `core/`, each function tested to reproduce its legacy counterpart
-draw-for-draw under a fixed seed. Call the blocks directly, or copy the nearest `run_all.m` as
-a template.
+`bvar` package under `core/`. Most began as extractions and still reproduce their legacy
+counterpart draw-for-draw under a fixed seed at their default settings. Where the published
+code can be improved on, `core/` improves on it, and the improvement carries a test of its
+own. Call the blocks directly, or copy the nearest `run_all.m` as a template.
 
 ## Which model do I want?
 
@@ -75,12 +76,18 @@ those steps were written out again and again — the auxiliary mixture sampler t
 the log-volatility path appears in seven of them, under three names. `bvar` is those steps
 factored into one function each.
 
-Each function's body is taken from a specific published package, and a unit test runs the
-original code alongside it and requires identical output — draw for draw, bitwise, under
-a fixed seed. Calling `bvar.sv.ksc_rw_h0` runs the computation
-the paper ran. A small number of functions are new code rather than extractions — they are
-marked as such in their headers and listed in `tests/variant_map.md`, and are pinned
-instead to the inline spelling they generalize.
+Most function bodies are taken from a specific published package, and a unit test runs the
+original code alongside them and requires identical output — draw for draw, bitwise, under a
+fixed seed. Calling `bvar.sv.ksc_rw_h0` runs the computation the paper ran.
+
+That equivalence pins the DEFAULT path. `core/` is a library rather than a second copy of the
+archive, so a function may since have gained an option where the published code had a
+hard-coded constant, a bound on a loop that could not terminate, or a cheaper route to the
+same conditional. In every such case the defaults reproduce the published behaviour, and the
+new behaviour is established by a test of its own rather than by comparison with the legacy.
+A small number of functions are new code rather than extractions — they are marked as such in
+their headers and listed in `tests/variant_map.md`, and are pinned instead to the inline
+spelling they generalize.
 
 | Namespace | What it is for |
 |---|---|
@@ -104,13 +111,26 @@ a never-merge list of the pairs that must stay apart.
 
 ## Verification
 
-Every core function extracted from a published package is covered by a unit test that runs
-the corresponding legacy code and requires exact agreement — bitwise, draw-for-draw under a
-fixed seed for the stochastic ones. The functionized drivers are tested the same way against
-the original scripts in full. The few functions that are new code, listed under new
-functions in `tests/variant_map.md`, have no legacy counterpart to run: they are tested
-against the inline expression they replace, to floating-point rather than bitwise agreement,
-and `eq_var_oi` additionally against the published block it computes more cheaply.
+Which standard a function is held to depends on where its behaviour comes from.
+
+**Extracted, unchanged.** A unit test runs the corresponding legacy code and requires exact
+agreement — bitwise, draw-for-draw under a fixed seed for the stochastic ones. The
+functionized drivers are tested the same way against the original scripts in full.
+
+**Extracted, then improved.** The legacy test still runs and pins the default path, so the
+published results stay reproducible. The improvement is held to a different standard: a test
+of the property that makes it correct, argued directly rather than by comparison. For a
+sampler that usually means an invariance — a new option may change how long a step takes, or
+how often it accepts, but must leave the distribution it targets alone, and the test
+demonstrates that at settings that differ from the default.
+
+**New code.** Listed under new functions in `tests/variant_map.md`. With no legacy counterpart
+to run, these are tested against the inline expression they replace, to floating-point rather
+than bitwise agreement, and `eq_var_oi` additionally against the published block it computes
+more cheaply.
+
+The archive itself is not affected by any of this. `replications/<paper>/legacy/` is never
+edited, and CI checks every tree against its `as-published` tag on each push.
 
 ```matlab
 run tests/unit/run_unit_tests.m

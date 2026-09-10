@@ -4,6 +4,11 @@ For every core function: which legacy copies it canonicalizes, how identity was 
 and — in the **never-merge** section — same-name files that must NOT be unified because they
 are numerically different. Update this file with every extraction.
 
+`core/` is a library, not a second copy of the archive, and is free to improve on the
+published code. Where a function has, record BOTH: the legacy equivalence that still pins its
+default path, and the test that establishes the new behaviour is correct on its own terms.
+The deviations are listed in the **deviations from legacy** section at the end.
+
 ## Canonicalized in step 3 (zero-risk extractions, 2026-09-01)
 
 Verification: "diff" = byte/comment-stripped diff (differences only in comments, whitespace,
@@ -1098,3 +1103,27 @@ on the prior-mean reparameterization the header documents, the three input guard
 missing `A(:,ii) = 0`, a reversed equation order, a transposed `B0`, a wrong `tmpdV` block,
 a wrong Cholesky solve, and an extra `randn` are each killed at the first shape.
 First consumer: an out-of-tree clustered stochastic volatility VAR sampler.
+
+## Deviations from legacy (2026-09-10 onwards)
+
+`core/` began as extraction and is now allowed to improve on the published code. The archive
+under `replications/*/legacy/` is untouched either way, and the replication drivers still
+reproduce the published numbers, because every deviation keeps a default that reproduces the
+legacy behaviour bit for bit. What changes is the standard of proof: legacy equivalence pins
+the default path, and the new behaviour needs a test of the property that makes it correct,
+argued directly rather than by comparison against a legacy file that does not have it.
+
+For a sampler that property is usually an INVARIANCE. A new option may change how long a step
+takes or how often it accepts, and must leave the distribution the step targets alone; the
+test has to demonstrate that at settings away from the default, since the default is already
+covered by the equivalence test.
+
+| core function | deviation | default reproducing legacy | correctness test |
+|---|---|---|---|
+| `bvar.sv.csv_armh` | the accept-reject envelope constant, hard-coded `log(3)`, is the option `c_reject`; both unbounded `while` loops are capped by `MaxIterMode` (500) and `MaxIterAR` (1000) and raise a named error rather than returning a draw that is not from the target; every exposed option is validated. The mode-search tolerance stays hard-coded and is deliberately NOT an option: convergence to the mode is what makes the proposal state-independent, hence the MH ratio correct, so exposing it would trade correctness for speed silently | `c_reject = 3`, caps never reached | `c_reject` is efficiency-only by an exact argument, not just empirically: the AR loop draws from `min(pi, c*q)`, the MH ratio for that proposal is `exp(max(b,0) - max(a,0))` which is what the three-way branch computes, and `logc` cancels on both sides of detailed balance. Checked numerically at machine precision (residual 1.4e-14) and by a mixing-free one-step invariance test on 300,000 draws from the exact target. Both extremes are live - at `c_reject` = 1e-4 the envelope is violated essentially always, and at 300 on a heavy-tailed target it still fails - so the MH repair is never idle. In the suite: `tests/unit/test_csv_armh.m`, a Geweke joint-distribution test, since `s2_t \| h_t = exp(h_t)*chi2(n)` makes both conditionals exact. The invariant distribution is unchanged for `c_reject` in 0.2 to 20 (max\|z\| 2.2) while a kernel given the wrong `n` scores 115; forced accept is exact at a valid envelope and fails below it, which is what the MH step is for; both caps fire; the values that used to fail silently (`c_reject` 0 or negative) are rejected |
+| `bvar.ml.kron_bvar_t_csv` | two dead assignments dropped - `h_mean` (computed, never read, and never in `out` despite the header claiming it) and an `s2` overwritten before any read | neither consumed randomness, so the draws are unchanged | `tests/unit/test_kron_equivalence.m` (unchanged, still bitwise) |
+
+Header convention for these: state what the function does and how to call it. The legacy
+correspondence belongs here, not in eighty headers - a header that opens with which legacy
+file it was copied from, and which other copies it stands in for, is archaeology the caller
+did not ask for.
