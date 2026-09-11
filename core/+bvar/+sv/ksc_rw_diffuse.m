@@ -13,11 +13,6 @@
 %
 % Distinct from ksc_rw_h0: different initial condition, hence different draws.
 %
-% rng consumption: rand(T,1) then randn(T,1), one of each per call.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_ksc_rw_diffuse.m.
-%
 % See Chan, J.C.C. (2013). Moving Average Stochastic Volatility Models
 %     with Application to Inflation Forecast, Journal of Econometrics, 176(2): 162-172
 % (c) 2012, Joshua Chan. Email: joshuacc.chan@gmail.com

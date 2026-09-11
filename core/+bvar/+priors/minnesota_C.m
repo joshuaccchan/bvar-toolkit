@@ -13,9 +13,6 @@
 %   idx_kappa1 : indices into C of the own-lag coefficients
 %   idx_kappa2 : indices into C of the other-lag coefficients
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_minnesota_C.m.
-%
 % See:
 % Chan, J.C.C. (2021). Minnesota-Type Adaptive Hierarchical Priors for
 % Large Bayesian VARs, International Journal of Forecasting, 37(3): 1212-1226

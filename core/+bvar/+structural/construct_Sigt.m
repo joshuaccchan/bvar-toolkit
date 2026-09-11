@@ -3,9 +3,6 @@
 % (full n x n in the OI model; unit-lower-triangular A in the CS model) and the
 % T x n log-volatility paths h. Pure transform - consumes no rng.
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_construct_sigt.m.
-%
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian
 % VARs with Stochastic Volatility, Journal of Business and Economic

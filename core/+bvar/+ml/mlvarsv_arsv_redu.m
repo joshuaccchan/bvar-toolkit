@@ -24,16 +24,8 @@
 % the sampler draws kappa1 from row 1, so rows 1 and 2 of c0 must be equal for
 % the weights to be right.
 %
-% rng consumption: all of it inside the importance-sampling loops - gamrnd(M,1) per
-% kappa block and randn(M,n) for mu while fitting the IS density, then randn(T*n,1)
-% for the log-volatility path and randn(k_beta,1) for the coefficients per draw. A
-% top-level estimator rather than a Gibbs block.
-%
 % Core used: bvar.priors.minn (n0pre = 4), bvar.priors.impact_B0,
 % bvar.util.tnormrnd, bvar.util.vec, bvar.util.ldet, bvar.ml.isden_arss.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_mlvarsv_ml.m.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

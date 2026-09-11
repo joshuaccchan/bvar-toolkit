@@ -19,10 +19,6 @@
 %           a prior mean A0, call on Y - X*A0 with A - A0 and add A0 back -
 %           an exact reparameterization, tested in tests/unit/test_eq_var_oi.m)
 %
-% rng consumption: randn(k,1) per equation, equations in order ii = 1:n -
-% identical to eq_svar_oi, so under a common seed the two functions return the
-% same draw to floating-point precision (tests/unit/test_eq_var_oi.m).
-%
 % bvar.samplers.eq_svar_oi draws from the same conditional and stays the bitwise
 % anchor for replicating Chan, Koop and Yu (2024); use this one in new code. The
 % "svar" in that name refers to the structural parameterization of the error
@@ -43,8 +39,6 @@
 % at, are tabulated in tests/variant_map.md; the unit test prints the figures
 % for the machine it runs on. At macroeconomic dimensions the saving is about
 % an order of magnitude.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian

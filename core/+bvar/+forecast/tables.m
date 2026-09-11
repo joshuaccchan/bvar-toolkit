@@ -37,9 +37,6 @@
 % Display: none. The headline-variable pretty-printing is formatting only and
 % is left to the caller, which prints from S.
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_forecast_tables.m.
-%
 % See:
 % Chan, J.C.C. (2020). Large Bayesian Vector Autoregressions. In: P. Fuleky (Ed.),
 % Macroeconomic Forecasting in the Era of Big Data, 95-125, Springer, Cham.

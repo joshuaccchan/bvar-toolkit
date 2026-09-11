@@ -21,12 +21,6 @@
 % An independence sampler, so a bad starting h can leave the chain stuck there
 % silently; is_accept stays 0 when it does, so check it rather than the path.
 %
-% rng consumption: randn(T,1) and one rand per accept-reject proposal until one is
-% accepted, so the count is data-dependent, then one rand for the MH step.
-%
-% Provenance, the legacy copies this stands in for, and the design notes:
-% tests/variant_map.md. Equivalence: tests/unit/test_csv_armh.m.
-%
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error
 % covariance structure, Journal of Business and Economic Statistics, 38(1), 68-79.

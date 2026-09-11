@@ -17,9 +17,6 @@
 %            kappa(3)*sig2_i/sig2_j. A caller wanting only Vbeta may pass
 %            kappa(3) = NaN and take [~,Vbeta]; Valp is then NaN throughout.
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_vtheta.m, tests/unit/test_oisv_equivalence.m.
-%
 % See:
 % Chan, J.C.C. (2021). Minnesota-Type Adaptive Hierarchical Priors for
 % Large Bayesian VARs, International Journal of Forecasting, 37(3): 1212-1226

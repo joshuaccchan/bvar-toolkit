@@ -8,9 +8,6 @@
 % chain from the final stored draws. Every ordinate sits at the same starred
 % point: no bugcompat flag.
 %
-% rng consumption: R*T randn in the intlike, then the reduced run's AR-MH h
-% draws and rho MH draws.
-%
 %   [ML, out] = bvar.ml.kron_bvar_csv(shortY, X, pri, est, ...)
 %
 %   pri: A0, VA0, nu0, S0, rho0, Vrho, nuh0, Sh0
@@ -21,9 +18,6 @@
 %        likelihood (default 1000)
 %   out: llike, lpri, lpost, store_lpost (reduced-run den_rho column),
 %        store_lpost1, countrho, A_mean, Sig_mean, theta_mean, h_mean
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_kron_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

@@ -34,9 +34,6 @@
 % block has exactly 4 rows, so the variants that prepend Y0(end-p+1:end,:) run
 % only for p = 4.
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_prior_niw_<variant>.m, one per variant.
-%
 % See:
 % Chan, J.C.C. (2020). Large Bayesian Vector Autoregressions. In: P. Fuleky (Eds),
 % Macroeconomic Forecasting in the Era of Big Data, 95-125, Springer, Cham

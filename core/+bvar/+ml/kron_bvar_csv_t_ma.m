@@ -3,8 +3,6 @@
 % Rao-Blackwellized ordinates for (A,Sig), sigh2 and nu, and rho / psi
 % ordinates from a reduced run at the posterior means.
 %
-% rng consumption: R*T randn in the intlike, then the reduced run's draws.
-%
 %   [ML, out] = bvar.ml.kron_bvar_csv_t_ma(shortY, X, pri, est, ...)
 %
 %   pri: A0, VA0, nu0, S0, psi0, Vpsi, rho0, Vrho, nuh0, Sh0, nuub
@@ -31,9 +29,6 @@
 % the reduced run's warm start) are sampler details rather than
 % evaluation-point inconsistencies. tests/variant_map.md has the audit, the
 % full quirk list and the effect on the published values.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_kron_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

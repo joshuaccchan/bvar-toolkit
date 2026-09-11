@@ -18,9 +18,6 @@
 % by nugrid(2)-nugrid(1) although inserting nu_mean leaves one interval
 % unequal.
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_kron_equivalence.m.
-%
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error
 % covariance structure, Journal of Business and Economic Statistics, 38(1), 68-79.

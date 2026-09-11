@@ -4,9 +4,6 @@
 % b is a rate. gamfit returns a scale, so a caller fitting with gamfit must
 % invert it first (ckappa_hat = [a; 1/scale]).
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_mlvarsv_ml_densities.m.
-%
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large
 % Bayesian VARs, Journal of Econometrics, 235(2), 1419-1446.

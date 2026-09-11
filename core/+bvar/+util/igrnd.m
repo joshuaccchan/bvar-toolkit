@@ -9,10 +9,6 @@
 % nu and S must be positive, and may be scalars or conformable arrays; the
 % result has the size of the expansion, one independent draw per element.
 %
-% rng consumption: implemented as 1./gamrnd(nu, 1./S), the same expression the
-% samplers write inline, so a seeded call here advances the random stream
-% identically (asserted in tests/unit/test_igrnd.m).
-%
 % The conjugate variance step of a Gaussian model - with prior IG(nu0, S0)
 % and residuals e - is
 %

@@ -31,15 +31,8 @@
 % the sampler draws kappa1 from row 1, so rows 1 and 2 of c0 must be equal for
 % the weights to be right.
 %
-% rng consumption: as bvar.ml.mlvarsv_arsv_redu, plus betarnd(M,1) for the outlier
-% probability while fitting the IS density and one rand(T,1) per draw for the
-% outlier-scale grid. A top-level estimator rather than a Gibbs block.
-%
 % Core used: bvar.priors.minn (n0pre = 4), bvar.priors.impact_B0,
 % bvar.util.tnormrnd, bvar.util.vec, bvar.util.ldet, bvar.ml.isden_arss.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_mlvarsv_ml.m.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

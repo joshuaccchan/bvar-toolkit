@@ -14,9 +14,6 @@
 % sortrows leaves on top. Cost is O(nsim x distinct configurations): quick at
 % the sizes used here, slow for a long chain over many equations.
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_hybtvp_equivalence.m.
-%
 % See:
 % Chan, J.C.C. (2023). Large Hybrid Time-Varying Parameter VARs, Journal of
 % Business and Economic Statistics, 41(3): 890-905.

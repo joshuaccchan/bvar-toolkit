@@ -13,11 +13,6 @@
 % Distinct from ksc_rw_diffuse: different initial condition, hence different
 % draws.
 %
-% rng consumption: rand(T,1) then randn(T,1), one of each per call.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_ksc_rw_h0.m.
-%
 % See:
 % Chan, J.C.C. (2020). Large Bayesian Vector Autoregressions. In: P. Fuleky (Eds),
 % Macroeconomic Forecasting in the Era of Big Data, 95-125, Springer, Cham

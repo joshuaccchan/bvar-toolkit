@@ -9,12 +9,6 @@
 %
 %   A = bvar.samplers.eq_svar_oi(Y, X, B0, h, A, tmpdV)
 %
-% rng consumption: randn(k,1) per equation, equations in order ii = 1:n.
-% The caller keeps `alpha = A(:)`.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_oisv_equivalence.m.
-%
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian
 % VARs with Stochastic Volatility, Journal of Business and Economic

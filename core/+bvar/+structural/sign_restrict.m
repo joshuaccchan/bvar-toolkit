@@ -30,9 +30,6 @@
 % neither, which is why acceptance rates in the caller's rejection loop can be
 % very low without any single evaluation being expensive.
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_acp_equivalence.m.
-%
 % See:
 % Rubio-Ramirez, J.F., Waggoner, D.F. and Zha, T. (2010). Structural Vector
 % Autoregressions: Theory of Identification and Algorithms for Inference,

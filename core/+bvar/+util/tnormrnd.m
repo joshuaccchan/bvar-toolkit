@@ -10,11 +10,6 @@
 %   N          : number of draws (default length(mu))
 %   t          : N x 1 vector of draws
 %
-% rng consumption: one rand(N,1) per call.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_tnormrnd.m.
-%
 % See:
 % Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for 
 % Large Bayesian VARs, Journal of Econometrics, 235(2): 1419-1446.

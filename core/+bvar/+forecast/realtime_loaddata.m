@@ -19,9 +19,6 @@
 % data_t      - (t-2) x n estimation panel as seen in vintage t
 % data_tpk    - 5 x n actual outturns from the LAST vintage, rows t-1:t+3
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_forecast_iterate_springer.m.
-%
 % See:
 % Chan, J.C.C. (2020). Large Bayesian Vector Autoregressions. In: P. Fuleky (Eds),
 % Macroeconomic Forecasting in the Era of Big Data, 95-125, Springer, Cham.

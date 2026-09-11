@@ -19,9 +19,6 @@
 % intercept variance c3, own-lag variance c1/l^2, cross-lag variance
 % c2*sig2_i/(l^2*sig2_j); sig2 are univariate AR(4) residual variances.
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_prior_minn_mlvarsv.m, test_prior_minn_largebvar.m.
-%
 % See:
 % Chan, J.C.C. (2020). Large Bayesian Vector Autoregressions. In: P. Fuleky (Eds),
 % Macroeconomic Forecasting in the Era of Big Data, 95-125, Springer, Cham

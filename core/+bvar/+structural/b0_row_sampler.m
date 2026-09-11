@@ -20,9 +20,6 @@
 % rng consumption, per row: one rand then one randn (inside anormrnd), then
 % n-1 further randn - rows in order ii = 1:n.
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_oisv_equivalence.m.
-%
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian
 % VARs with Stochastic Volatility, Journal of Business and Economic

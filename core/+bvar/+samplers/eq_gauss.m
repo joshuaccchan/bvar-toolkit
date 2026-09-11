@@ -4,7 +4,6 @@
 % conditional through the sparse precision
 %   Kthetai = iVthetai + Xi' * diag(exp(-h(:,ii))) * Xi,   Xi = [Z -Y(:,1:ii-1)],
 % via chol(Kthetai,'lower'), and accumulate the structural residuals U.
-% rng consumption: exactly one randn(ki,1) per equation, ki = n*p+ii - nothing else.
 %
 %   [beta, alp, U] = bvar.samplers.eq_gauss(Y, Z, h, Valp, Vbeta)
 %
@@ -20,9 +19,6 @@
 %
 % Valp and Vbeta are used exactly as passed. Any scaling of the prior variances
 % - some callers double both before this step - stays with the caller.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_mahp_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2021). Minnesota-Type Adaptive Hierarchical Priors for

@@ -11,9 +11,6 @@
 % NOT the same operator as bvar.util.surform2, which is the n-row Kronecker
 % expansion kron(speye(n), X(t,:)) for stacked-vector VARs.
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_surform.m.
-%
 % See:
 % Chan, J.C.C. (2023). Large Hybrid Time-Varying Parameter VARs, Journal of
 % Business and Economic Statistics, 41(3): 890-905

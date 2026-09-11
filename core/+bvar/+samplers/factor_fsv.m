@@ -9,11 +9,6 @@
 %   L : n x r loading matrix (unit-lower-triangular top block)
 %   h : T x (n+r), idiosyncratic columns first
 %
-% rng consumption: one randn(T*r,1) per call.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_mlvarsv_equivalence.m.
-%
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large
 % Bayesian VARs, Journal of Econometrics, 235(2), 1419-1446.

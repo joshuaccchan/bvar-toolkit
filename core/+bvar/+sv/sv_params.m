@@ -25,13 +25,6 @@
 % NEVER merge with bvar.sv.sv0_params, the separate zero-mean sampler, which
 % carries a different truncation bound (.99).
 %
-% rng consumption: one gamrnd for sig2, one randn(n+r,1) for the phi candidates,
-% then one rand per candidate falling inside phi_bnd - so that count is
-% data-dependent - and finally randn(n,1) for mu when the gate above passes.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_sv_params.m, test_sv_params_mlvarsv.m.
-%
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian
 % VARs with Stochastic Volatility, Journal of Business and Economic

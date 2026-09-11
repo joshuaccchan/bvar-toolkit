@@ -13,9 +13,6 @@
 % regressions with no ridge - numerically different sig2, hence different
 % Minnesota scalings.
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_resid_var_allvars_ridge.m.
-%
 % See:
 % Chan, J.C.C. (2023). Large Hybrid Time-Varying Parameter VARs, Journal of
 % Business and Economic Statistics, 41(3): 890-905

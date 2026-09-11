@@ -11,9 +11,6 @@
 %
 %   [B,XB] = bvar.samplers.eq_tri_cs(Y, X, XB, B, A, h, tmpdV, beta0)
 %
-% rng consumption: randn(k,1) per equation, equations in order ii = 1:n.
-% The caller keeps `beta = reshape(B',k_beta,1)`.
-%
 % THIS IS THE CORRECTED TRIANGULAR ALGORITHM of Carriero, Chan, Clark and
 % Marcellino (2022), the corrigendum to Carriero, Clark and Marcellino (2019).
 % The original algorithm drew equation j from a conditional that omitted part of
@@ -21,9 +18,6 @@
 % y - so it did not sample the intended triangular factorization. The corrigendum
 % keeps that factorization and restores the missing term at the same O(n^4) cost.
 % Stacking rows ii:n above, rather than equation ii alone, is that correction.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_oisv_equivalence.m.
 %
 % See:
 % Carriero, A., Chan, J.C.C., Clark, T.E. and Marcellino, M. (2022). Corrigendum

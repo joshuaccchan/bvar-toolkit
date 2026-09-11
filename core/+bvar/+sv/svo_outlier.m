@@ -15,11 +15,6 @@
 %   p0a,p0b: beta prior parameters
 %   o      : T x 1 draw, each element one of the o_grid points
 %
-% rng consumption: rand once per period t = 1:T, then one betarnd.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_mlvarsv_equivalence.m.
-%
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large
 % Bayesian VARs, Journal of Econometrics, 235(2), 1419-1446.

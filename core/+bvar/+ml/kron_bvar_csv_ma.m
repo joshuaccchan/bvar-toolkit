@@ -9,8 +9,6 @@
 % estimation run's final psihat. Every ordinate sits at the same starred
 % point: no bugcompat flag.
 %
-% rng consumption: R*T randn in the intlike, then the reduced run's draws.
-%
 %   [ML, out] = bvar.ml.kron_bvar_csv_ma(shortY, X, pri, est, ...)
 %
 %   pri: A0, VA0, nu0, S0, psi0, Vpsi, rho0, Vrho, nuh0, Sh0
@@ -21,9 +19,6 @@
 %        'nsims2' - reduced-run length (default 1000)
 %   out: llike, lpri, lpost, store_lpost ([den_rho den_psi] reduced-run
 %        columns), store_lpost1, A_mean, Sig_mean, theta_mean
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_kron_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

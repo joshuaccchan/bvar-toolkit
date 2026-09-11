@@ -23,14 +23,8 @@
 %   store_kappa - nsim x 2
 %   out: store_w, bigml (the 50 batch values), and the fitted IS parameters
 %
-% rng consumption: big_sig2 is drawn even under flag_marg = 2, where nothing
-% reads it; the draw shifts the rng stream without changing any value.
-%
 % Core used: bvar.priors.minn (n0pre = 4), bvar.util.tnormrnd,
 % bvar.util.surform2, bvar.util.ldet, bvar.ml.isden_arss.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_mlvarsv_ml.m.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

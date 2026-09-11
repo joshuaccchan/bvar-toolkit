@@ -7,8 +7,6 @@
 %   [intlike,store_llike] = ...
 %       bvar.ml.intlike_csv_t_ma(shortY,X,A,Sig,psi,rho,sigh2,nu,R)
 %
-% rng consumption: R*T randn calls.
-%
 % Known quirk (kept verbatim in both bugcompat and corrected ML modes - it is
 % a likelihood-formula property, not an evaluation-point inconsistency):
 % unlike the Gaussian intlike_csv_ma, whose deny_h scales the first
@@ -20,9 +18,6 @@
 % (1+psi^2)*exp(h_1)*lam_1*Sig. A one-observation (out of T) mismatch between
 % the estimated model and this likelihood ordinate; the published
 % BVAR-CSV-t-MA marginal likelihood includes it.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_kron_intlike.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

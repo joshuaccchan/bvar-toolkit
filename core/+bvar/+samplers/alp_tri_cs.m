@@ -18,12 +18,6 @@
 %   alp  : 1 x n*(n-1)/2 ROW vector of draws; callers that want a column (as
 %          ml_varsv does) transpose it themselves
 %
-% rng consumption: randn(ii-1,1) per equation, equations in order ii = 2:n.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_oisv_equivalence.m,
-% tests/unit/test_mlvarsv_equivalence.m.
-%
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian
 % VARs with Stochastic Volatility, Journal of Business and Economic

@@ -73,9 +73,6 @@
 % second algorithm, which enumerates the admissible set instead, is not
 % implemented here.
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_sign_assign.m.
-%
 % See:
 % Rubio-Ramirez, J.F., Waggoner, D.F. and Zha, T. (2010). Structural Vector
 % Autoregressions: Theory of Identification and Algorithms for Inference,

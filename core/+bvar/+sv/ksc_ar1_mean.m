@@ -14,11 +14,6 @@
 % NOT interchangeable with the random-walk variants ksc_rw_h0 / ksc_rw_diffuse:
 % different state equations.
 %
-% rng consumption: rand(T,1) then randn(T,1), one of each per call.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_ksc_ar1_mean.m.
-%
 % See:
 % Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for
 % Large Bayesian VARs, Journal of Econometrics, 235(2): 1419-1446.

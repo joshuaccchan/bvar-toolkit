@@ -10,9 +10,6 @@
 %
 % If a driver holds its initial conditions separately as Y0, pass them in the
 % same matrix: build_lags([Y0(end-p+1:end,:); Y], p).
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_build_lags.m.
 
 function [Y, Z] = build_lags(Yfull, p)
     [T0, n] = size(Yfull);

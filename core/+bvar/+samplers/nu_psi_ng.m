@@ -4,16 +4,11 @@
 % under an Exp(lam0_nu_psi) prior: Newton-Raphson search for the conditional
 % mode nu_psit (fminbnd fallback if an iterate goes negative), Gaussian
 % N(nu_psit, -1/H) proposal, MH accept-reject.
-% rng consumption: one randn always, then one rand IFF the candidate is
-% positive (Newton/fminbnd are deterministic).
 %
 % Trap: count is initialized to 0 and never incremented, so the count < 100
 % guard on the while loop and the if count == 100 fminbnd fallback are dead
 % code; the Newton iteration is bounded only by its convergence test and by the
 % negative-iterate break. This is deliberate - leave the guard alone.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_mahp_equivalence.m.
 %
 % Inputs:  psi_kappa1, psi_kappa2 - local scale draws (n*p x 1, (n-1)*n*p x 1)
 %          nu_psi                 - current draw

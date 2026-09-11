@@ -6,9 +6,6 @@
 %   Omega : symmetric positive definite matrix; chol errors if it is not
 %   k     : log(det(Omega))
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_util_small.m.
-%
 % See:
 % Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for 
 % Large Bayesian VARs, Journal of Econometrics, 235(2): 1419-1446.

@@ -17,13 +17,6 @@
 % OISV pair keeps the zero-mean sampler separate, with a different truncation
 % bound (.99 here, .999 there).
 %
-% rng consumption: one gamrnd for sig2, one randn(n,1) for the phi candidates,
-% then one rand per candidate falling inside phi_bnd - so that count is
-% data-dependent.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_sv0_params.m.
-%
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian
 % VARs with Stochastic Volatility, Journal of Business and Economic

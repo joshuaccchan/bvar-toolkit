@@ -10,13 +10,8 @@
 %   mu, rho : scalar parameters of the approximation above
 %   draw    : scalar draw
 %
-% rng consumption: exactly one rand THEN one randn per call.
-%
 % Not a truncated normal - do NOT fold into bvar.util.tnormrnd (different
 % density, different rng sequence).
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_anormrnd.m.
 %
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian

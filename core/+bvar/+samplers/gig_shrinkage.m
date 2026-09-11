@@ -18,8 +18,6 @@
 % by 'ng' at any psi_floor - its conditionals carry an extra factor 2, pairing
 % with its doubled Valp/Vbeta; functionize it separately if the forecast
 % pipeline is ever consolidated.
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_mahp_equivalence.m.
 %
 % rng consumption (all draws through gigrnd, resolved from third_party/):
 %   'mng' : 2 + n*p + (n-1)*n*p gigrnd calls, in that order;

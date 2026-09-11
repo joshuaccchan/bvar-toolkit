@@ -24,8 +24,6 @@
 %
 % NEVER merge with bvar.samplers.gig_shrinkage: that is the MAHP normal-gamma
 % (GIG) block, a different prior family with a different draw sequence.
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_oisv_equivalence.m.
 %
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian

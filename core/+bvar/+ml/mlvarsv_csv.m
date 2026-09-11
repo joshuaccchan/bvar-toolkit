@@ -17,16 +17,9 @@
 %   store_kappa - nsim x 1
 %   out: store_w, bigml (the 50 batch values), and the fitted IS parameters
 %
-% rng consumption: all of it inside the importance-sampling loops - gamrnd(M,1) per
-% kappa block, then one randn(T,1) per draw for h. This is a top-level estimator
-% rather than a Gibbs block, so it is not meant to be spliced into a seeded sweep.
-%
 % Core used: bvar.priors.niw('mlvarsv_ncp'), bvar.util.tnormrnd, bvar.util.ldet,
 % bvar.util.mgammaln, bvar.ml.isden_arss, bvar.ml.lgampdf / ltnormpdf /
 % lmvnpdf_pcn.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_mlvarsv_ml.m.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

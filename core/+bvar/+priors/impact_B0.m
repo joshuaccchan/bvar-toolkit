@@ -17,9 +17,6 @@
 % which carry no data-based scaling: they are numerically different priors on
 % the same object.
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_impact_B0.m.
-%
 % See:
 % Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for
 % Large Bayesian VARs, Journal of Econometrics, 235(2): 1419-1446.

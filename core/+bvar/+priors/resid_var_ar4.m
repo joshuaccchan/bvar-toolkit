@@ -11,9 +11,6 @@
 % variable on 4 lags of ALL variables with a 1e-4 ridge - numerically different
 % sig2.
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_resid_var_ar4.m.
-%
 % See:
 % Chan, J.C.C. (2021). Minnesota-Type Adaptive Hierarchical Priors for
 % Large Bayesian VARs, International Journal of Forecasting, 37(3): 1212-1226

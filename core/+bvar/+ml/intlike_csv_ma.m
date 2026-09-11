@@ -7,11 +7,6 @@
 %
 %   [intlike,store_llike] = bvar.ml.intlike_csv_ma(shortY,X,A,Sig,psi,rho,sigh2,R)
 %
-% rng consumption: R*T randn calls.
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_kron_intlike.m.
-%
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error
 % covariance structure, Journal of Business and Economic Statistics, 38(1), 68-79.

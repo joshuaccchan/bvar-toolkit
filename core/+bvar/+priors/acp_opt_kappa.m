@@ -21,9 +21,6 @@
 % Because bvar.ml.acp is available in closed form, this is a two-parameter
 % optimization over a smooth objective, with no repeated estimation of the VAR.
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_acp_equivalence.m.
-%
 % See:
 % Chan, J.C.C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs,
 % Quantitative Economics, 13(3): 1145-1169.

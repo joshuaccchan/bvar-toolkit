@@ -1127,3 +1127,48 @@ Header convention for these: state what the function does and how to call it. Th
 correspondence belongs here, not in eighty headers - a header that opens with which legacy
 file it was copied from, and which other copies it stands in for, is archaeology the caller
 did not ask for.
+
+## rng consumption of the stochastic core blocks
+
+Moved out of the function headers on 2026-09-11: a caller writing new code does not
+need it, but anyone splicing a block into a seeded stream to reproduce a published
+result does, and the draw-for-draw equivalence tests depend on these counts staying
+exactly as they are. Change one and the corresponding test fails, which is the point.
+
+| core function | draws per call, in order |
+|---|---|
+| `bvar.forecast.iterate` | a branch consumes the same randn/rand/gamrnd sequence, in the same order and count, whether or not a given step is evaluated, so a caller splicing iterate into a seeded stream gets a reproducible sequence. |
+| `bvar.ml.intlike_csv` | R*T randn calls (one CKh'\randn(T,1) per draw). |
+| `bvar.ml.intlike_csv_ma` | R*T randn calls. |
+| `bvar.ml.intlike_csv_t_ma` | R*T randn calls. |
+| `bvar.ml.intlike_t_csv` | R*T randn calls. |
+| `bvar.ml.isden_arss` | none. |
+| `bvar.ml.kron_bvar_csv` | R*T randn in the intlike, then the reduced run's AR-MH h draws and rho MH draws. |
+| `bvar.ml.kron_bvar_csv_ma` | R*T randn in the intlike, then the reduced run's draws. |
+| `bvar.ml.kron_bvar_csv_t_ma` | R*T randn in the intlike, then the reduced run's draws. |
+| `bvar.ml.kron_bvar_t_csv` | R*T randn in the intlike, then the reduced run's draws. |
+| `bvar.ml.kron_bvar_t_ma` | the reduced run only (gamrnd, randn, rand); fminunc/fminbnd are deterministic. |
+| `bvar.ml.mlvarsv_arsv_redu` | all of it inside the importance-sampling loops - gamrnd(M,1) per kappa block and randn(M,n) for mu while fitting the IS density, then randn(T*n,1) for the log-volatility path and randn(k_beta,1) for the coefficients per draw. A top-level estimator rather than a Gibbs block. |
+| `bvar.ml.mlvarsv_arsvo_redu` | as bvar.ml.mlvarsv_arsv_redu, plus betarnd(M,1) for the outlier probability while fitting the IS density and one rand(T,1) per draw for the outlier-scale grid. A top-level estimator rather than a Gibbs block. |
+| `bvar.ml.mlvarsv_csv` | all of it inside the importance-sampling loops - gamrnd(M,1) per kappa block, then one randn(T,1) per draw for h. This is a top-level estimator rather than a Gibbs block, so it is not meant to be spliced into a seeded sweep. |
+| `bvar.ml.mlvarsv_fsv` | big_sig2 is drawn even under flag_marg = 2, where nothing reads it; the draw shifts the rng stream without changing any value. |
+| `bvar.samplers.alp_tri_cs` | randn(ii-1,1) per equation, equations in order ii = 2:n. |
+| `bvar.samplers.eq_fsv_load` | randn(k+min(ii-1,r),1) per equation, ii = 1:n. The caller keeps alp = A(:). |
+| `bvar.samplers.eq_gauss` | exactly one randn(ki,1) per equation, ki = n*p+ii - nothing else. |
+| `bvar.samplers.eq_svar_oi` | randn(k,1) per equation, equations in order ii = 1:n. The caller keeps `alpha = A(:)`. |
+| `bvar.samplers.eq_tri_cs` | randn(k,1) per equation, equations in order ii = 1:n. The caller keeps `beta = reshape(B',k_beta,1)`. |
+| `bvar.samplers.eq_var_oi` | randn(k,1) per equation, equations in order ii = 1:n - identical to eq_svar_oi, so under a common seed the two functions return the same draw to floating-point precision (tests/unit/test_eq_var_oi.m). |
+| `bvar.samplers.eq_var_redu_tri` | randn(k,1) per equation, ii = 1:n. The caller keeps alp = reshape(A,k_alp,1). |
+| `bvar.samplers.factor_fsv` | one randn(T*r,1) per call. |
+| `bvar.samplers.nu_psi_ng` | one randn always, then one rand IFF the candidate is positive (Newton/fminbnd are deterministic). |
+| `bvar.sv.csv_armh` | randn(T,1) and one rand per accept-reject proposal until one is accepted, so the count is data-dependent, then one rand for the MH step. |
+| `bvar.sv.ksc_ar1_mean` | rand(T,1) then randn(T,1), one of each per call. |
+| `bvar.sv.ksc_rw_diffuse` | rand(T,1) then randn(T,1), one of each per call. |
+| `bvar.sv.ksc_rw_h0` | rand(T,1) then randn(T,1), one of each per call. |
+| `bvar.sv.nu_studentt` | one randn for the candidate, then one rand only if that candidate falls in (2, nu_ub). |
+| `bvar.sv.sv0_params` | one gamrnd for sig2, one randn(n,1) for the phi candidates, then one rand per candidate falling inside phi_bnd - so that count is data-dependent. |
+| `bvar.sv.sv_params` | one gamrnd for sig2, one randn(n+r,1) for the phi candidates, then one rand per candidate falling inside phi_bnd - so that count is data-dependent - and finally randn(n,1) for mu when the gate above passes. |
+| `bvar.sv.svo_outlier` | rand once per period t = 1:T, then one betarnd. |
+| `bvar.util.anormrnd` | exactly one rand THEN one randn per call. |
+| `bvar.util.igrnd` | implemented as 1./gamrnd(nu, 1./S), the same expression the samplers write inline, so a seeded call here advances the random stream identically (asserted in tests/unit/test_igrnd.m). |
+| `bvar.util.tnormrnd` | one rand(N,1) per call. |

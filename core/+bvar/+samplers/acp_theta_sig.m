@@ -26,9 +26,6 @@
 % at once, so the stream position after the call depends on nsim as well as on
 % n and p.
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_acp_equivalence.m.
-%
 % See:
 % Chan, J.C.C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs,
 % Quantitative Economics, 13(3): 1145-1169.

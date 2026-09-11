@@ -16,9 +16,6 @@
 % used everywhere else. The default path uses psi_mean throughout.
 % tests/variant_map.md has the audit and the effect on the published values.
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_kron_equivalence.m.
-%
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error
 % covariance structure, Journal of Business and Economic Statistics, 38(1), 68-79.

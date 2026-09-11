@@ -13,9 +13,6 @@
 %          S0   - n x n IW scale matrix
 % Output:  lden - log density
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_kron_ml_densities.m.
-%
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error
 % covariance structure, Journal of Business and Economic Statistics, 38(1), 68-79.

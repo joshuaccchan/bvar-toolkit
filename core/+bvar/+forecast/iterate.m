@@ -18,10 +18,6 @@
 %          below) comes back as zeros(1,2*n+1); the simulation draws for that
 %          step are still consumed.
 %
-% rng consumption: a branch consumes the same randn/rand/gamrnd sequence, in
-% the same order and count, whether or not a given step is evaluated, so a
-% caller splicing iterate into a seeded stream gets a reproducible sequence.
-%
 % TRAP (complex-typed rows): the expression sum(diag(log(CSig))) goes through
 % a complex intermediate when CSig has negative off-diagonal entries. On
 % R2025b diag() demotes the zero-imaginary diagonal back to real, so real-data
@@ -102,10 +98,6 @@
 %             cfg:  shortYt, Z (the Tt x k estimation design), data_tpk,
 %                   is_last_miss, p, t, T
 % ---------------------------------------------------------------------------
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_forecast_iterate_mahp.m (mahp_sv) and
-% tests/unit/test_forecast_iterate_springer.m (springer_*).
 %
 % See:
 % Chan, J.C.C. (2021). Minnesota-Type Adaptive Hierarchical Priors for

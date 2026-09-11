@@ -8,9 +8,6 @@
 % mode psihat. Every ordinate sits at the same starred point: no bugcompat
 % flag.
 %
-% rng consumption: the reduced run only (gamrnd, randn, rand);
-% fminunc/fminbnd are deterministic.
-%
 %   [ML, out] = bvar.ml.kron_bvar_t_ma(shortY, X, pri, est)
 %
 %   pri: A0, VA0, nu0, S0, psi0, Vpsi, nuub
@@ -19,9 +16,6 @@
 %        final psi-MH mode, which warm starts the psi proposal)
 %   out: llike, lpri, lpost, store_lpost (reduced-run den_psi column),
 %        store_lpost1, A_mean, Sig_mean, theta_mean
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_kron_equivalence.m.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

@@ -13,12 +13,6 @@
 % nu comes back unchanged with flag = 0 both when the candidate is rejected and
 % when it falls outside (2, nu_ub); flag marks an accepted move.
 %
-% rng consumption: one randn for the candidate, then one rand only if that
-% candidate falls in (2, nu_ub).
-%
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_nu_studentt.m.
-%
 % See:
 % Chan, J.C.C. (2020). Large Bayesian Vector Autoregressions. In: P. Fuleky (Eds),
 % Macroeconomic Forecasting in the Era of Big Data, 95-125, Springer, Cham.

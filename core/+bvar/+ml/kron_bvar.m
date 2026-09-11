@@ -10,9 +10,6 @@
 %   est: Ahat, Shat, KA                  [run_all model 1 output]
 %   out: llike, A, Sig                   [the evaluation point used]
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_kron_equivalence.m.
-%
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error
 % covariance structure, Journal of Business and Economic Statistics, 38(1), 68-79.

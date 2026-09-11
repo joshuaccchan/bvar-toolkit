@@ -13,9 +13,6 @@
 % NOT the same operator as bvar.util.surform, which is the T x Tk
 % block-diagonal expansion used for TVP state stacking.
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_surform2.m.
-%
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large
 % Bayesian VARs, Journal of Econometrics, 235(2), 1419-1446.

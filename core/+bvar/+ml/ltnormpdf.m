@@ -1,9 +1,6 @@
 % bvar.ml.ltnormpdf - log density of the normal N(mu,sig2) truncated to (lb,ub);
 % the density counterpart of bvar.util.tnormrnd.
 %
-% Provenance and the legacy copies this stands in for: tests/variant_map.md.
-% Equivalence: tests/unit/test_mlvarsv_ml_densities.m.
-%
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large
 % Bayesian VARs, Journal of Econometrics, 235(2), 1419-1446.
