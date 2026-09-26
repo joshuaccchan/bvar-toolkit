@@ -31,7 +31,7 @@ p_N = [0.0073 .10556 .00002 .04395 .34001 .24566 .2575];
 m_N = [-10.12999 -3.97281 -8.56686 2.77786 .61942 1.79518 -1.08819] - 1.2704;  % means already adjusted!!
 sig2_N = [5.79596 2.61369 5.17950 .16735 .64009 .34023 1.26261];
 
-    % sample S from a 7-point distrete distribution
+    % sample S from a 7-point discrete distribution
 tmprand = rand(T,1);
 q = repmat(p_N,T,1).*normpdf(repmat(ystar,1,7),repmat(h,1,7)+repmat(m_N,T,1),...
     repmat(sqrt(sig2_N),T,1));

@@ -33,7 +33,7 @@ mui = [-10.12999 -3.97281 -8.56686 2.77786 .61942 1.79518 -1.08819] - 1.2704;
 sigma2i = [5.79596 2.61369 5.17950 .16735 .64009 .34023 1.26261];
 sigmai = sqrt(sigma2i);
 
-%% sample S from a 7-point distrete distribution
+%% sample S from a 7-point discrete distribution
 temprand = rand(T,1);
 q = repmat(pi,T,1).*normpdf(repmat(ystar,1,7),repmat(h,1,7) ...
     +repmat(mui,T,1),repmat(sigmai,T,1));
