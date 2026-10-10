@@ -4,7 +4,13 @@
 # 14-day window means consecutive rows overlap by ~7 days - the series tracks
 # levels, not disjoint weekly sums.
 #
-# A second step appends the downloads and rating of the repo's MATLAB File Exchange listing to
+# A second step keeps what GitHub drops after 14 days: the counts of each day in daily.csv,
+# where a later read of a day replaces an earlier one (GitHub revises recent days, and weekly
+# runs read every day twice); the 14-day views by source of traffic in referrers.csv, grouped
+# into a few sources so that the public file names no visitor's organization; and the ten most
+# viewed pages in paths.csv.
+#
+# A third step appends the downloads and rating of the repo's MATLAB File Exchange listing to
 # .github/traffic/file_exchange.csv, read from the listing page; if the page cannot be read, it
 # only warns, so the traffic row is still committed.
 #
@@ -43,6 +49,77 @@ jobs:
           s=$(gh api "repos/${GITHUB_REPOSITORY}")
           echo "$(date -u +%F),$(jq .count <<<"$v"),$(jq .uniques <<<"$v"),$(jq .count <<<"$c"),$(jq .uniques <<<"$c"),$(jq .stargazers_count <<<"$s"),$(jq .forks_count <<<"$s")" >> "$f"
           tail -2 "$f"
+      - name: Save daily traffic, sources and pages
+        env:
+          GH_TOKEN: ${{ secrets.TRAFFIC_PAT }}
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/traffic/views" > /tmp/views.json
+          gh api "repos/${GITHUB_REPOSITORY}/traffic/clones" > /tmp/clones.json
+          gh api "repos/${GITHUB_REPOSITORY}/traffic/popular/referrers" > /tmp/referrers.json
+          gh api "repos/${GITHUB_REPOSITORY}/traffic/popular/paths" > /tmp/paths.json
+          python3 - <<'EOF'
+          import csv, datetime, json, os
+          d = '.github/traffic'
+          today = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
+
+          def load(name):
+              with open('/tmp/' + name) as fh:
+                  return json.load(fh)
+
+          def read_rows(name):
+              path = os.path.join(d, name)
+              if not os.path.exists(path):
+                  return []
+              with open(path, newline='') as fh:
+                  return list(csv.DictReader(fh))
+
+          def write_rows(name, cols, rows):
+              with open(os.path.join(d, name), 'w', newline='') as fh:
+                  w = csv.DictWriter(fh, cols, lineterminator='\n')
+                  w.writeheader()
+                  w.writerows(rows)
+
+          # each day's counts; GitHub revises recent days, so a later read replaces an earlier one
+          days = {r['date']: r for r in read_rows('daily.csv')}
+          for kind, uniq in (('views', 'unique_visitors'), ('clones', 'unique_cloners')):
+              for x in load(kind + '.json')[kind]:
+                  r = days.setdefault(x['timestamp'][:10], {'date': x['timestamp'][:10]})
+                  r[kind], r[uniq], r['read_on'] = x['count'], x['uniques'], today
+          cols = ['date', 'views', 'unique_visitors', 'clones', 'unique_cloners', 'read_on']
+          write_rows('daily.csv', cols, [{c: days[k].get(c, '') for c in cols} for k in sorted(days)])
+
+          # 14-day views by source, grouped so that the file names no visitor's organization
+          def source(referrer):
+              r = referrer.lower()
+              if 'linkedin' in r or 'lnkd.in' in r:
+                  return 'LinkedIn'
+              if r == 'github.com':
+                  return 'GitHub'
+              if 'joshuachan.org' in r:
+                  return 'joshuachan.org'
+              if r in ('google', 'bing', 'duckduckgo', 'yahoo', 'baidu', 'yandex', 'ecosia') \
+                      or 'google.' in r or 'bing.' in r:
+                  return 'search'
+              if any(k in r for k in ('chatgpt', 'openai', 'perplexity', 'gemini', 'claude', 'copilot')):
+                  return 'AI assistants'
+              return 'other'
+          tot = {}
+          for x in load('referrers.json'):
+              t = tot.setdefault(source(x['referrer']), [0, 0])
+              t[0] += x['count']
+              t[1] += x['uniques']
+          rows = [r for r in read_rows('referrers.csv') if r['read_on'] != today]
+          rows += [{'read_on': today, 'source': s, 'views': v, 'unique_visitors_summed': u}
+                   for s, (v, u) in sorted(tot.items())]
+          write_rows('referrers.csv', ['read_on', 'source', 'views', 'unique_visitors_summed'], rows)
+
+          # the ten most viewed pages over the 14 days
+          rows = [r for r in read_rows('paths.csv') if r['read_on'] != today]
+          rows += [{'read_on': today, 'path': x['path'], 'views': x['count'],
+                    'unique_visitors': x['uniques']} for x in load('paths.json')]
+          write_rows('paths.csv', ['read_on', 'path', 'views', 'unique_visitors'], rows)
+          EOF
+          tail -3 .github/traffic/daily.csv
       - name: Append File Exchange downloads
         env:
           FEX_URL: https://www.mathworks.com/matlabcentral/fileexchange/184885-bvar-toolkit-large-bayesian-vars
@@ -69,6 +146,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/traffic/traffic.csv .github/traffic/file_exchange.csv
+          git add .github/traffic/traffic.csv .github/traffic/daily.csv .github/traffic/referrers.csv .github/traffic/paths.csv .github/traffic/file_exchange.csv
           git diff --cached --quiet || git commit -m "Traffic snapshot $(date -u +%F)"
           git push
