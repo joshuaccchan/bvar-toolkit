@@ -11,7 +11,7 @@
 %   mu, rho : scalar parameters of the approximation above
 %   draw    : scalar draw
 %
-% Not a truncated normal - do NOT fold into bvar.util.tnormrnd (different
+% Not a truncated normal - do NOT merge into bvar.util.tnormrnd (different
 % density, different rng sequence).
 %
 % See:

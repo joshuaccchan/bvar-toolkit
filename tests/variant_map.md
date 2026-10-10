@@ -244,7 +244,7 @@ script-tail summaries, the six func_main outputs, and the terminal rng state.
 
 | Core function | Canonical source (legacy) | Also canonicalizes | Verified |
 |---|---|---|---|
-| `bvar.util.anormrnd` | chan_koop_yu2024_jbes_oisv `utility/anormrnd.m` (single copy) | both call sites (SVARSV_MH.m line 63, forecast_SVARSV_MH.m line 57) via `b0_row_sampler`. NEVER fold into `bvar.util.tnormrnd` - different density, different rng sequence. | unit (`test_anormrnd` seeded draws + `test_oisv_equivalence`) |
+| `bvar.util.anormrnd` | chan_koop_yu2024_jbes_oisv `utility/anormrnd.m` (single copy) | both call sites (SVARSV_MH.m line 63, forecast_SVARSV_MH.m line 57) via `b0_row_sampler`. NEVER merge into `bvar.util.tnormrnd` - different density, different rng sequence. | unit (`test_anormrnd` seeded draws + `test_oisv_equivalence`) |
 | `bvar.structural.construct_Sigt` | chan_koop_yu2024_jbes_oisv `utility/construct_Sigt.m` | the private subfunction copy inside `func_main_SVAR_v2.m` lines 67-73 (comment-stripped identical, diff 2026-09-02; that copy is what the legacy func resolves at runtime) | diff + unit (`test_construct_sigt`, and end-to-end through the Sig_mean assertion in `test_oisv_equivalence`) |
 | `bvar.structural.b0_row_sampler` | SVARSV_MH.m lines 49-72 (inline row-wise "sammple B0" rotation loop; caller supplies U = Y-X*A) | forecast_SVARSV_MH.m lines 43-66 (textually identical modulo Y/X/T -> Yt/Xt/Tt) | unit (`test_oisv_equivalence`) |
 | `bvar.samplers.eq_svar_oi` | SVARSV_MH.m lines 76-87 (inline "sample alpha" block; caller computes tmpdV and keeps alpha = A(:)) | NOTHING else - the forecast fragment REWRITES this step (never-merge, below) | unit (same test) |
@@ -885,7 +885,8 @@ Only the paper's own contribution is extracted here.
   because the strict rule needs it: its rate is 0.01%, so 10000 draws would expect a single
   acceptance and can easily return none, leaving nothing to form a ratio from.
 - **`ml_VAR_ACP.m` differs from the ACP copy**: this package adds `1e-6*speye(ki)` to the
-  posterior precision, a ridge that keeps the Cholesky alive at n = 35. `bvar.ml.acp` now
+  posterior precision. On this package's 35-variable data the factorization also succeeds
+  without it, and the log marginal likelihood at the optimum moves by 0.036. `bvar.ml.acp` now
   takes an optional `ridge` argument covering both copies. The default of zero reproduces
   the ACP copy and is asserted in `test_acp_equivalence`; `'ridge', 1e-6` reproduces this
   one and is asserted in `test_sign_assign`, which also asserts that the default does NOT

@@ -2,7 +2,7 @@
 % matrix: the row value that occurs most often across draws. Used on the hybrid
 % TVP-VAR's store_gam, whose nsim x 2n rows record which equations had
 % time-varying VAR coefficients and which had time-varying impact elements, to
-% report the single most-visited model.
+% report the single most frequent model.
 %
 %   gam_mode = bvar.util.gam_mode(store_gam)
 %
