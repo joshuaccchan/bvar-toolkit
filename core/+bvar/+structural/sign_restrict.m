@@ -14,7 +14,8 @@
 %   ok    : true only if every shock satisfies its sign column AND every row
 %           inequality holds
 %   L     : the candidate with columns sign-flipped where that was what made the
-%           restriction hold; unchanged when ok is false
+%           restriction hold. When ok is false, the columns of the shocks tested
+%           before the first failure keep any flip
 %
 % THE ROW INEQUALITIES ARE TESTED STRICTLY: every row must give
 % Rineq(j,:)*L(:,Ridx(j)) < 0. A row of zeros therefore fails and rejects every
