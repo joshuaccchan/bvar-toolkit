@@ -1,7 +1,8 @@
 %% build - regenerate the figures and numbers of tutorials/variable_ordering/README.md
 %
-% Part 1 runs examples/ex06_variable_ordering_sv.m at the published chain length,
-% 30,000 draws after 5,000 burn-in. Part 2 reads the 20-variable posterior means
+% Part 1 estimates both models on four FRED-MD series, in the published and the
+% reverse order and with a second seed, at the published chain length of 30,000
+% draws after 5,000 burn-in. Part 2 reads the 20-variable posterior means
 % that the Chan, Koop and Yu (2024) package ships in its results_mat folder. Part 3
 % runs the package's Table3_forecasting.m on a temporary copy of the package, which
 % recomputes the forecast comparison from the shipped forecasts, and checks the
@@ -27,22 +28,50 @@ tut_legend = {'Cholesky SV, published order', 'Cholesky SV, reversed order', ...
               'order-invariant SV, published order', 'order-invariant SV, reversed order'};
 
 %% ------------------------------------------------------------------
-%  Part 1. Four variables: ex06 at the published chain length
+%  Part 1. Four variables: both models, both orders and a second seed
 %  ------------------------------------------------------------------
-tutorial_settings = struct('nsim', 30000, 'burnin', 5000);
-run(fullfile(tut_repo, 'examples', 'ex06_variable_ordering_sv.m'));
-close all
-tut4.res = res;  tut4.vnames = vnames;
-[~, tut_ip] = max(gap(:,1));                      % the pair ex06 plots: largest Cholesky gap
-tut4.i = prs(tut_ip,1);  tut4.j = prs(tut_ip,2);
-tut4.T = size(res{1}.Sig_mean, 1);
-tut4.dates = datetime(1961,3,1) + calmonths(0:tut4.T-1);
-tut4.order = [4 5 1 2];                           % CS 1, CS 2, OI 1, OI 2 in ex06's cfg
+tut_cky = fullfile(tut_repo, 'replications', 'chan_koop_yu2024_jbes_oisv');
+tut_od = cd(tut_cky); tut_guard = onCleanup(@() cd(tut_od));    % preset.m resolves in its own folder
+tut_pr = preset();
+clear tut_guard
+tut_data = load(fullfile(tut_cky, 'legacy', tut_pr.data_file));  % never written to; legacy is frozen
+tut4.vnames = ["IP" "unemployment" "PCE inflation" "fed funds"];  % columns tut_pr.var_id1 = [4 6 12 13]
+tut4.cfg = struct('model', {'OI','OI','OI','CS','CS','CS'}, ...
+                  'rev',   {false, true, false, false, true, false}, ...
+                  'seed',  {20260915, 20260915, 31415926, 20260915, 20260915, 31415926});
+tut_chain = struct('nsim', 30000, 'burnin', 5000);                % the package's full-sample chains
+fprintf('\n=== Part 1: four variables, %d draws after %d burn-in ===\n', tut_chain.nsim, tut_chain.burnin);
+tut4.res = cell(1, numel(tut4.cfg));
+for q = 1:numel(tut4.cfg)
+    tut_ord = tut_pr.var_id1;
+    if tut4.cfg(q).rev, tut_ord = tut_ord(end:-1:1); end
+    tut_t1 = tic;
+    tut4.res{q} = bvar.models.var_sv(tut_data(1:tut_pr.n0, tut_ord), tut_data(tut_pr.n0+1:end, tut_ord), ...
+        tut_pr.p, 'model', tut4.cfg(q).model, 'nsim', tut_chain.nsim, ...
+        'burnin', tut_chain.burnin, 'seed', tut4.cfg(q).seed);
+    if tut4.cfg(q).rev                            % back to the published order for comparison
+        tut4.res{q}.Sig_mean = tut4.res{q}.Sig_mean(:, end:-1:1, end:-1:1);
+    end
+    fprintf('%s, order %d, seed %d: %.0f s\n', tut4.cfg(q).model, tut4.cfg(q).rev + 1, tut4.cfg(q).seed, toc(tut_t1));
+end
 
-relgap = @(a,b) 100*mean(abs(a-b)) / mean(abs(a)+abs(b))*2;        % as in ex06
+relgap = @(a,b) 100*mean(abs(a-b)) / mean(abs(a)+abs(b))*2;        % change as a share of the level
 cpath = @(S,i,j) S(:,i,j)./sqrt(S(:,i,i).*S(:,j,j));
 tut_pairs = [4 5; 4 6; 1 2; 1 3];                 % CS orderings, CS seeds, OI orderings, OI seeds
-fprintf('\n=== Part 1: four variables, %d draws after %d burn-in ===\n', tutorial_settings.nsim, tutorial_settings.burnin);
+prs = nchoosek(1:numel(tut4.vnames), 2);
+gap = zeros(size(prs,1), 4);
+for q = 1:size(prs,1)
+    for c = 1:4
+        gap(q,c) = mean(abs(cpath(tut4.res{tut_pairs(c,1)}.Sig_mean, prs(q,1), prs(q,2)) ...
+            - cpath(tut4.res{tut_pairs(c,2)}.Sig_mean, prs(q,1), prs(q,2))));
+    end
+end
+[~, tut_ip] = max(gap(:,1));                      % the pair the figure shows: largest Cholesky change
+tut4.i = prs(tut_ip,1);  tut4.j = prs(tut_ip,2);
+tut4.T = size(tut4.res{1}.Sig_mean, 1);
+tut4.dates = datetime(1961,3,1) + calmonths(0:tut4.T-1);
+tut4.order = [4 5 1 2];                           % CS 1, CS 2, OI 1, OI 2 in tut4.cfg
+fprintf('\n');
 fprintf('| | Cholesky SV, two orderings | Cholesky SV, two seeds | order-invariant SV, two orderings | order-invariant SV, two seeds |\n');
 fprintf('|---|---|---|---|---|\n');
 for q = 1:4
@@ -129,7 +158,7 @@ for q = 1:5
     fprintf('  %-22s x %-22s %.3f  %.3f\n', tut20.lab(tut20.prs(o(q),1)), tut20.lab(tut20.prs(o(q),2)), tut20.cg(o(q),:));
 end
 tut20.top = tut20.prs(o(1),:);
-fprintf('the four ex06 variables inside the 20-variable VAR (Cholesky / order-invariant):\n');
+fprintf('the four core variables inside the 20-variable VAR (Cholesky / order-invariant):\n');
 for q = find(tut20.prs(:,2) <= 4)'
     fprintf('  corr(%s, %s): %.3f  %.3f\n', tut20.lab(tut20.prs(q,1)), tut20.lab(tut20.prs(q,2)), tut20.cg(q,:));
 end

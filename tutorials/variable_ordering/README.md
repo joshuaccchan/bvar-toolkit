@@ -1,7 +1,7 @@
 # Does the Order of the Variables Change My VAR Results?
 
-*Code: [`examples/ex06_variable_ordering_sv.m`](../../examples/ex06_variable_ordering_sv.m) and
-[`build.m`](build.m). Method:
+*Code: [`build.m`](build.m) and [`your_data.m`](your_data.m), which call
+[`bvar.models.var_sv`](../../core/+bvar/+models/var_sv.m). Method:
 [Chan, Koop and Yu (2024)](../../CITING.md#chan-koop-and-yu-2024).*
 
 In this tutorial we examine whether the order of the variables affects the estimates and
@@ -20,8 +20,8 @@ Two commands, from the root of the repository:
 
 | Command | What it produces | Time |
 |---|---|---|
-| `run tutorials/variable_ordering/your_data.m` | the comparison on the four series of ex06 with short chains | about 30 seconds |
-| `run tutorials/variable_ordering/build.m` | every number and figure on this page | about 23 minutes |
+| `run tutorials/variable_ordering/your_data.m` | the comparison on IP, unemployment, PCE inflation and the federal funds rate, with short chains | about 30 seconds |
+| `run tutorials/variable_ordering/build.m` | every number and figure on this page | about 15 minutes |
 
 ![20-variable VAR](fig_20var_paths.png)
 
@@ -255,7 +255,7 @@ end of the sample, and stops on a missing value inside it, on unevenly spaced da
 column is given, and on a constant series. It estimates both models with the variables in the
 order given and in the reverse order, reports how much each correlation changes, and plots the
 correlation that changes most under the Cholesky model. With the default settings, which use the
-four series of ex06 and chains of 1,000 draws, it runs in about 30 seconds.
+four series of Table 1 and chains of 1,000 draws, it runs in about 30 seconds.
 
 Both models are estimated by the function `bvar.models.var_sv`:
 
@@ -289,19 +289,10 @@ both covariance specifications in MATLAB, R and Python, each with an independent
 on the VAR coefficients. The script `chapter13/pred_VAR_SV` implements the Cholesky model with
 random-walk log-volatilities, and `chapter13/pred_VAR_OISV` the order-invariant model. The script
 `chapter13/compare_VAR_SV` compares the two with a homoskedastic VAR in recursive one-step-ahead
-forecasts of PCE inflation. These programs are separate from ex06, whose Cholesky model has
-stationary AR(1) log-volatilities with estimated means.
+forecasts of PCE inflation. These programs are separate from `bvar.models.var_sv`, whose Cholesky
+model has stationary AR(1) log-volatilities with estimated means.
 
 ## Reproducing the Results
-
-For a quick version of the four-variable comparison, run ex06 with its default chains of 1,000
-draws after a burn-in period of 200 draws, which takes about 35 seconds. Its numbers differ from
-those on this page, which are based on longer chains.
-
-```matlab
-cd examples
-ex06_variable_ordering_sv
-```
 
 To reproduce all results on this page, run the build script from the root of the repository:
 
@@ -309,11 +300,11 @@ To reproduce all results on this page, run the build script from the root of the
 run tutorials/variable_ordering/build.m
 ```
 
-The script `build.m` estimates the models in ex06, reads the 20-variable results in the
+The script `build.m` estimates the four-variable models, reads the 20-variable results in the
 replication package, recomputes the forecast comparison from the stored forecasts and checks it
 against the capture in `tests/golden`. It prints every result in this tutorial, or the numbers
 they are computed from, and saves the figures in the same folder as this page. The build takes
-22.5 minutes using MATLAB R2025b on a computer with an Intel Core Ultra 7 255U processor and 32 GB
+15.2 minutes using MATLAB R2025b on a computer with an Intel Core Ultra 7 255U processor and 32 GB
 of RAM.
 
 ## References

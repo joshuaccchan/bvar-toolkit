@@ -18,11 +18,11 @@
 % DATA. replications/chan_koop_yu2024_jbes_oisv/legacy/FRED_MD_20vars.csv,
 % read-only: monthly FRED-MD, 1959:03 to 2019:12, columns 4, 6, 12 and 13 -
 % industrial production, the unemployment rate, PCE inflation and the federal
-% funds rate, which the paper ranks first among its 20 variables. Thirteen
-% lags, the first 24 months as initial conditions, and the prior constants of
-% the package's preset.m. The chains are 1000 draws after 200 burn-in, against
-% the published 30,000 after 5,000; tutorials/variable_ordering/build.m runs the
-% script at the published length.
+% funds rate, which the paper ranks first among its 20 variables. IP and PCE
+% inflation are multiplied by 100 to convert them to percent. Thirteen lags, the
+% first 24 months as initial conditions, and the prior constants of the
+% package's preset.m. The chains are 1000 draws after 200 burn-in, against the
+% published 30,000 after 5,000.
 %
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian
@@ -49,15 +49,13 @@ pr = preset();
 clear guard
 
 data = load(fullfile(pkg, 'legacy', pr.data_file));   % never written to; legacy is frozen
+data(:, [4 12]) = 100*data(:, [4 12]);                % IP and PCE inflation in percent
 var_id = pr.var_id1;                                  % [4 6 12 13], the paper's first four
 vnames = ["IP" "unemployment" "PCE inflation" "fed funds"];
 p = pr.p;
 n0 = pr.n0;
 
 nsim = 1000; burnin = 200;
-if exist('tutorial_settings', 'var')                 % set by tutorials/variable_ordering/build.m
-    nsim = tutorial_settings.nsim; burnin = tutorial_settings.burnin;
-end
 seeds = [20260915, 31415926];
 
 n = numel(var_id);

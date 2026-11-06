@@ -21,7 +21,8 @@
 % DATA. As in ex06: replications/chan_koop_yu2024_jbes_oisv/legacy/
 % FRED_MD_20vars.csv, read-only, monthly 1959:03 to 2019:12, industrial
 % production, the unemployment rate, PCE inflation and the federal funds rate, 13
-% lags, the first 24 months as initial conditions. Each chain keeps 3000 draws
+% lags, the first 24 months as initial conditions. IP and PCE inflation are
+% multiplied by 100 to convert them to percent. Each chain keeps 3000 draws
 % after 500 burn-in.
 %
 % See:
@@ -46,6 +47,7 @@ pr = preset();
 clear guard
 
 data = load(fullfile(pkg, 'legacy', pr.data_file));   % never written to; legacy is frozen
+data(:, [4 12]) = 100*data(:, [4 12]);                % IP and PCE inflation in percent, as in ex06
 var_id = pr.var_id1;                                  % [4 6 12 13], as in ex06
 vnames = ["IP" "unemployment" "PCE inflation" "fed funds"];
 p = pr.p; n0 = pr.n0; n = numel(var_id);

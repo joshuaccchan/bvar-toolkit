@@ -4,8 +4,9 @@
 % below, then run the script. It estimates both models with the variables in the
 % order given and in the reverse order, prints how much each model's correlations
 % change when the order is reversed, and plots the correlation that changes most
-% under the Cholesky model. The defaults use the four FRED-MD series of ex06 with
-% short chains; Chan, Koop and Yu (2024) use 30,000 draws after 5,000 burn-in.
+% under the Cholesky model. The defaults use the four FRED-MD series of the
+% tutorial with short chains; Chan, Koop and Yu (2024) use 30,000 draws after
+% 5,000 burn-in.
 %
 % The file is read with readmatrix, so it may have a header row, and the column
 % numbers count every column of the file. The selected columns must be stationary,
