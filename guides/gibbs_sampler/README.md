@@ -150,7 +150,11 @@ $`\boldsymbol{\beta}`$ becomes $`\boldsymbol{\Sigma}^{-1} \otimes \mathbf{V}_{\m
 which depends on $`\boldsymbol{\Sigma}`$, and the prior of the coefficients enters the draw of
 $`\boldsymbol{\Sigma}`$,
 
-$$(\boldsymbol{\Sigma} \mid \mathbf{y}, \boldsymbol{\beta}) \sim \mathcal{IW}(\nu_0 + T + k, \mathbf{S}_0 + \mathbf{U}'\mathbf{U} + \mathbf{A}'\mathbf{V}_{\mathbf{A}}^{-1}\mathbf{A}).$$
+<div align="center">
+
+$`(\boldsymbol{\Sigma} \mid \mathbf{y}, \boldsymbol{\beta}) \sim \mathcal{IW}(\nu_0 + T + k, \mathbf{S}_0 + \mathbf{U}'\mathbf{U} + \mathbf{A}'\mathbf{V}_{\mathbf{A}}^{-1}\mathbf{A}).`$
+
+</div>
 
 The posterior is normal-inverse-Wishart in closed form, with
 $`E(\mathbf{A} \mid \mathbf{y}) = \hat{\mathbf{A}} = \mathbf{K}_{\mathbf{A}}^{-1}\mathbf{Z}'\mathbf{Y}`$,
