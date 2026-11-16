@@ -13,6 +13,9 @@
 %
 % Distinct from ksc_rw_h0: different initial condition, hence different draws.
 %
+% When all seven mixture densities of a period underflow, its indicator probabilities are
+% computed in logs.
+%
 % See:
 % Kim, S., Shephard, N. and Chib, S. (1998). Stochastic Volatility: Likelihood
 % Inference and Comparison with ARCH Models, Review of Economic Studies, 65(3):
@@ -36,6 +39,11 @@ sigmai = sqrt(sigma2i);
 temprand = rand(T,1);
 q = repmat(pi,T,1).*normpdf(repmat(ystar,1,7),repmat(h,1,7) ...
     +repmat(mui,T,1),repmat(sigmai,T,1));
+bad = ~(sum(q,2) > 0);    % all seven densities underflow: weigh them in logs
+if any(bad)
+    lq = log(pi) - log(sigmai) - .5*((ystar(bad) - h(bad) - mui)./sigmai).^2;
+    q(bad,:) = exp(lq - max(lq, [], 2));
+end
 q = q./repmat(sum(q,2),1,7);
 S = 7 - sum(repmat(temprand,1,7)<cumsum(q,2),2)+1;
 
