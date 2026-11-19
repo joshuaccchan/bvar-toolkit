@@ -84,7 +84,13 @@ blocks of length 1 and 2 and with the path as one block match a grid posterior, 
 constants), `bvar.samplers.var_coef_joint` (all VAR coefficients in one draw under an independent
 normal prior, with a weight per period; `test_var_coef_joint` checks the mean and covariance of
 its draws against dense algebra) and `bvar.models.mfvar_csv` (the sampler of ex14;
-`test_mfvar_csv` also pins its prior variances). None of these is retrofitted into a legacy body:
+`test_mfvar_csv` also pins its prior variances). The structural summaries of 2026-11-19 are
+`bvar.structural.fevd` (the forecast error variance decomposition, from the responses that
+`irf_redu` returns; `test_fevd` checks it against the forecast error covariances of the reduced
+form and, at long horizons, against the stationary variances) and `bvar.structural.hist_decomp`
+(the historical decomposition; `test_hist_decomp` checks that the pieces add up to the data and
+equal sums of responses times shocks, also with one impact matrix per period). None of these is
+retrofitted into a legacy body:
 they exist for new code, and the legacy spellings they generalize stay as they are.
 
 Edits made during extraction, in full: provenance header prepended; function renamed where
