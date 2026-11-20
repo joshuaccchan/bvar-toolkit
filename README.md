@@ -8,19 +8,48 @@ marginal likelihoods and forecasting. The repository archives fourteen replicati
 machinery into the library, where unit tests check it against the published code. The
 [how-to guides](guides/), [examples](examples/) and [tutorials](tutorials/) show how to use it.
 
+A Python version, [bvar-toolkit-python](https://github.com/joshuaccchan/bvar-toolkit-python), has
+the same functions under the same names, each tested against its MATLAB twin, and the tutorials
+and how-to guides with Python code.
+
+## Installation
+
+Download the repository as a ZIP file (the Code button, then Download ZIP) and unzip it, or clone
+it with git. The latest release is also on
+[File Exchange](https://www.mathworks.com/matlabcentral/fileexchange/184885-bvar-toolkit-large-bayesian-vars).
+In MATLAB, go to the folder that contains `setup.m` and run it:
+
 ```matlab
 run setup.m                 % adds core/ and third_party/ to the path
-cd examples
-ex03_minnesota_bvar         % a small BVAR, start to finish
 ```
 
 The code needs MATLAB with the Statistics and Machine Learning Toolbox. `setup.m` also checks
 for the Optimization and System Identification Toolboxes, which a few functions and drivers
-use, and names what each missing one would break.
+use, and names what each missing one would break. The library and the examples are tested on
+MATLAB R2025b, on Windows and, in the repository's continuous integration, on Linux.
 
-A Python version, [bvar-toolkit-python](https://github.com/joshuaccchan/bvar-toolkit-python), has
-the same functions under the same names, each tested against its MATLAB twin, and the tutorials
-and how-to guides with Python code.
+## A First Example
+
+The asymmetric conjugate prior of Chan (2022) shrinks the coefficients on a variable's own lags
+and on other variables' lags by different amounts, and its marginal likelihood is available in
+closed form. For a VAR of GDP growth, PCE inflation and the 3-month Treasury bill rate with
+four lags, the two hyperparameters that maximize it take one call:
+
+```matlab
+data = readmatrix('replications/chan2019wp_acp/legacy/macrodata_Q_2018Q4.csv');
+data = data(1:238, [1 95 145]);
+p = 4;
+Y0 = data(1:8, :);                          % initial conditions
+Y = data(9:end, :);                         % the estimation sample
+[~, Z] = bvar.util.build_lags([Y0(end-p+1:end, :); Y], p);
+[lml, kappa] = bvar.priors.acp_opt_kappa(Y0, Y, Z, p, [.04 .04], 'stru');
+```
+
+Here `kappa(1)` and `kappa(2)` are the own-lag and other-lag hyperparameters, 0.542 and
+0.0128, and `lml` is the maximized log marginal likelihood, -1237.5. The
+[shrinkage tutorial](tutorials/shrinkage/) takes the same steps for 21 variables. For a small
+BVAR from start to finish, run [`ex03_minnesota_bvar`](examples/ex03_minnesota_bvar.m) in
+`examples/`.
 
 ## Learn the Methods
 
