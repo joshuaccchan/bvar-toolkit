@@ -1,10 +1,9 @@
 # How to Trace a Foreign Shock through a Small Open Economy
 
-*Code: [`guide.m`](guide.m), with
+*Code: [`guide.m`](guide.m), with [`bvar.models.var_soe`](../../core/+bvar/+models/var_soe.m),
 [`bvar.structural.irf_redu`](../../core/+bvar/+structural/irf_redu.m),
-[`bvar.structural.fevd`](../../core/+bvar/+structural/fevd.m),
-[`bvar.util.shaded_band`](../../core/+bvar/+util/shaded_band.m) and
-[`bvar.priors.resid_var_ar4`](../../core/+bvar/+priors/resid_var_ar4.m). Method:
+[`bvar.structural.fevd`](../../core/+bvar/+structural/fevd.m) and
+[`bvar.util.shaded_band`](../../core/+bvar/+util/shaded_band.m). Method:
 [Gilchrist and Zakrajšek (2012)](../../CITING.md#gilchrist-and-zakrajšek-2012),
 [Cushman and Zha (1997)](../../CITING.md#cushman-and-zha-1997),
 [Zha (1999)](../../CITING.md#zha-1999) and [Chan (2027)](../../CITING.md#chan-2027). Data:
@@ -97,12 +96,20 @@ dollar. The responses of the two interest rates and the premium stay in percenta
 ## Step 2: Compute the Responses for Every Draw
 
 Each draw of the reduced form gives one set of responses, so the 10,000 draws of the estimation
-guide give their posterior. As in that guide, the marginal likelihood of the sample is largest at
-$`c_1 = 0.070`$.
+guide give their posterior. [`bvar.models.var_soe`](../../core/+bvar/+models/var_soe.m) takes them
+in one call, with the steps of that guide:
+
+```matlab
+res = bvar.models.var_soe(Yfull(1:q0, :), Yfull(q0+1:end, :), p, nus, 'lev', lev, 'c3', c3, ...
+    'nsim', R);
+```
+
+As in that guide, the marginal likelihood of the sample is largest at $`c_1 = 0.070`$. Each row
+of `res.A` and of `res.Sig` contains one draw:
 
 ```matlab
 for r = 1:R
-    resp = responses(A_d(:, :, r), Sig_d(:, :, r), ord, H);
+    resp = responses(reshape(res.A(r, :), k, n), squeeze(res.Sig(r, :, :)), ord, H);
     irf_d(:, :, r) = level(squeeze(resp(:, js, :)), ig);
     share = bvar.structural.fevd(resp);
     fev_d(:, r) = share(:, js, 8);                      % the premium shock, 8 quarters ahead
@@ -218,6 +225,8 @@ model. Its band runs from a fall of 1.23 percent to a rise of 0.01 percent.
 
 ## Next
 
+[How to Forecast a Small Open Economy under a Foreign Scenario](../soe_conditional_forecast/)
+forecasts the Australian variables given a path for the US variables.
 [Can I Use Many Sign Restrictions in My Large VAR?](../../tutorials/sign_restrictions/) identifies
 shocks by the signs of their effects, with no assumption about their order.
 

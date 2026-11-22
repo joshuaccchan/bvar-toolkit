@@ -89,8 +89,15 @@ its draws against dense algebra) and `bvar.models.mfvar_csv` (the sampler of ex1
 `irf_redu` returns; `test_fevd` checks it against the forecast error covariances of the reduced
 form and, at long horizons, against the stationary variances) and `bvar.structural.hist_decomp`
 (the historical decomposition; `test_hist_decomp` checks that the pieces add up to the data and
-equal sums of responses times shocks, also with one impact matrix per period). None of these is
-retrofitted into a legacy body:
+equal sums of responses times shocks, also with one impact matrix per period). The functions of
+2026-11-21 are `bvar.ml.ncp` (the closed-form marginal likelihood and posterior of a multivariate
+regression under the natural conjugate prior, with an optional prior mean),
+`bvar.models.var_soe` (independent draws of a VAR with block exogeneity, one block at a time,
+with the shrinkage chosen by the marginal likelihood) and `bvar.util.soe_reduced_form` (the
+reduced form of the two blocks). They were local functions of eight guides, whose printed
+numbers and figures they leave unchanged; `test_ncp` and `test_var_soe` pin them, bitwise and
+draw for draw, to frozen copies of those local functions. None of these is retrofitted into a
+legacy body:
 they exist for new code, and the legacy spellings they generalize stay as they are.
 
 Edits made during extraction, in full: provenance header prepended; function renamed where

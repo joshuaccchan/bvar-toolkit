@@ -1,10 +1,7 @@
 %% guide - the code of guides/var_forecast/README.md: forecasts of the next 20 quarters from a
-% VAR(4) estimated under the natural conjugate prior on 240 quarters simulated from the true model
-% of guides/var_simulation. Independent draws of the parameters from their posterior, one
-% simulated path per draw, and the forecasts read off the paths; the same forecasts from the true
-% parameters and from the posterior means of the parameters; the checks; then the probability of
-% a recession. Sections 2 to 4 and the function ncp_lml at the end are the code to adapt. Saves
-% fig_fan.png and fig_widths.png next to this file.
+% BVAR estimated on a sample from the true model of guides/var_simulation, one simulated path per
+% posterior draw. Sections 2 to 4 are the code to adapt. Saves fig_fan.png and fig_widths.png
+% next to this file.
 
 here = fileparts(mfilename('fullpath'));
 run(fullfile(fileparts(fileparts(here)), 'setup.m'));
@@ -27,9 +24,9 @@ s2 = bvar.priors.resid_var_ar4(data(1:4, :), Y);  % AR(4) residual variances
 nu0 = n + 2; S0 = diag(s2);                       % Sig ~ IW(nu0, S0)
 c3 = 10^2;                                        % the intercepts
 VA = @(c1) [c3; kron(1./(1:p)'.^2, c1./s2)];      % the diagonal of V_A
-lc = fminbnd(@(lc) -ncp_lml(Y, Z, VA(exp(lc)), nu0, S0), log(1e-3), log(10));
+lc = fminbnd(@(lc) -bvar.ml.ncp(Y, Z, VA(exp(lc)), nu0, S0), log(1e-3), log(10));
 c1 = exp(lc);                                     % the shrinkage chosen by the marginal likelihood
-[~, Ahat, KA, Shat] = ncp_lml(Y, Z, VA(c1), nu0, S0);
+[~, Ahat, KA, Shat] = bvar.ml.ncp(Y, Z, VA(c1), nu0, S0);
 nuhat = nu0 + T;
 R = 10000;
 LK = chol(KA, 'lower');                           % KA = LK*LK'
@@ -69,7 +66,7 @@ fprintf('\nVAR(%d) of %d variables on %d simulated quarters, T = %d\n', p, n, si
 fprintf('last four quarters of the sample:\n'); disp(ylast);
 fprintf(['c1 chosen by the marginal likelihood: %.4f (sqrt %.3f); log ML %.2f, ' ...
     'at c1 = 0.04 %.2f\n'], ...
-    c1, sqrt(c1), ncp_lml(Y, Z, VA(c1), nu0, S0), ncp_lml(Y, Z, VA(.04), nu0, S0));
+    c1, sqrt(c1), bvar.ml.ncp(Y, Z, VA(c1), nu0, S0), bvar.ml.ncp(Y, Z, VA(.04), nu0, S0));
 Ols = Z\Y;
 fprintf('first own lags: true %s, least squares %s, posterior mean %s\n', ...
     mat2str(diag(Atrue(2:n+1, :))', 3), mat2str(diag(Ols(2:n+1, :))', 3), ...
@@ -199,20 +196,6 @@ lg = legend([hb hp ht], {'BVAR', 'Plug-in', 'True model'}, 'Orientation', 'horiz
     'Box', 'off');
 lg.Layout.Tile = 'south';
 exportgraphics(fig, fullfile(here, 'fig_widths.png'), 'Resolution', 150); close(fig);
-
-function [lml, Ahat, KA, Shat] = ncp_lml(Y, Z, VA, nu0, S0)
-% the log marginal likelihood under vec(A) | Sig ~ N(0, Sig kron diag(VA)) and Sig ~ IW(nu0, S0),
-% with the posterior quantities Ahat, KA and Shat
-[T, n] = size(Y);
-KA = diag(1./VA) + Z'*Z;
-Ahat = KA\(Z'*Y);
-E = Y - Z*Ahat;                        % the residuals at the posterior mean
-Shat = S0 + E'*E + Ahat'*(Ahat./VA);   % S0 + Y'*Y - Ahat'*KA*Ahat, without the cancellation
-Shat = (Shat + Shat')/2;
-lml = -n*T/2*log(pi) - n/2*(sum(log(VA)) + bvar.util.ldet(KA)) ...
-    + nu0/2*bvar.util.ldet(S0) - (nu0 + T)/2*bvar.util.ldet(Shat) ...
-    + bvar.util.mgammaln(n, (nu0 + T)/2) - bvar.util.mgammaln(n, nu0/2);
-end
 
 function [m, s] = stationary(B, S)
 % the means and standard deviations of the stationary distribution of the VAR with coefficients

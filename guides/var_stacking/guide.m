@@ -1,10 +1,6 @@
-%% guide - the code of guides/var_stacking/README.md: a VAR(2) of three variables on
-% generated data, written as Y = Z*A + U and as y = X*beta + eps; their likelihoods,
-% least squares by equation against generalized least squares on the system, and the
-% Kronecker form of X'*(I_T kron inv(Sig))*X; then one equation with fewer regressors. The
-% sections called "the code to adapt" contain everything a sampler uses. The sections called
-% "the checks" form dense matrices, which is practical only for a small example.
-% Saves fig_forms.png next to this file.
+%% guide - the code of guides/var_stacking/README.md: a VAR(2) of three variables on generated
+% data, written as Y = Z*A + U and as y = X*beta + eps. The sections called "the code to adapt"
+% contain everything a sampler uses. Saves fig_forms.png next to this file.
 
 here = fileparts(mfilename('fullpath'));
 run(fullfile(fileparts(fileparts(here)), 'setup.m'));

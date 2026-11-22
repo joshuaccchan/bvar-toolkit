@@ -1,8 +1,10 @@
 # How to Estimate a VAR for a Small Open Economy
 
-*Code: [`guide.m`](guide.m), with [`bvar.util.build_lags`](../../core/+bvar/+util/build_lags.m),
-[`bvar.util.simulate_var`](../../core/+bvar/+util/simulate_var.m) and
-[`bvar.priors.resid_var_ar4`](../../core/+bvar/+priors/resid_var_ar4.m). Method:
+*Code: [`guide.m`](guide.m), with [`bvar.models.var_soe`](../../core/+bvar/+models/var_soe.m),
+[`bvar.ml.ncp`](../../core/+bvar/+ml/ncp.m),
+[`bvar.util.soe_reduced_form`](../../core/+bvar/+util/soe_reduced_form.m),
+[`bvar.util.build_lags`](../../core/+bvar/+util/build_lags.m) and
+[`bvar.util.simulate_var`](../../core/+bvar/+util/simulate_var.m). Method:
 [Cushman and Zha (1997)](../../CITING.md#cushman-and-zha-1997),
 [Zha (1999)](../../CITING.md#zha-1999) and [Chan (2027)](../../CITING.md#chan-2027). Data:
 [`soe_Q.csv`](../data/).*
@@ -94,7 +96,7 @@ $`\mathbf{a}^d = \mathbf{c} + \mathbf{G}_0\mathbf{a}^f`$, and its error covarian
 ```
 
 where $`\boldsymbol{\Sigma}^f`$ is the error covariance matrix of the US block. The function
-`reduced_form` at the end of `guide.m` computes both.
+[`bvar.util.soe_reduced_form`](../../core/+bvar/+util/soe_reduced_form.m) computes both.
 
 ## Step 2: Set the Prior of Each Block
 
@@ -141,7 +143,7 @@ converse also holds: the three distributions give back the prior of $`\boldsymbo
 sets the prior of the two blocks:
 
 ```matlab
-[VA, B0] = soe_prior(p, n, lev, c1, c3, s2);   % the prior variances and means on x_t
+VA = res.VA; B0 = res.B0;                 % the prior variances and means on x_t
 VAus = VA(ius); B0us = B0(ius, us);       % the US block
 VAau = [VA; 1./s2(us)];                   % Australia: the current US variables, not shrunk
 B0au = [B0(:, au); zeros(nus, nau)];
@@ -149,9 +151,9 @@ nu0us = nus + 2; S0us = diag(s2(us));     % Sig_us ~ IW(nu0us, S0us)
 nu0au = n + 2; S0au = diag(s2(au));       % Omega ~ IW(nu0au, S0au)
 ```
 
-Here `lev` indexes the three variables in levels, and the function `soe_prior` returns the prior
-variances and means of the coefficients on the intercept and the lags. The posterior of each
-block has the same form as the prior:
+Here `res` is the output of [`bvar.models.var_soe`](../../core/+bvar/+models/var_soe.m) in Step 4.
+Its fields `VA` and `B0` contain the prior variances and means of the coefficients on the
+intercept and the lags. The posterior of each block has the same form as the prior:
 
 ```math
 (\boldsymbol{\Sigma} \mid \mathbf{Y}) \sim \mathcal{IW}(\nu_0 + T, \hat{\mathbf{S}}), \qquad (\mathrm{vec}(\mathbf{B}) \mid \boldsymbol{\Sigma}, \mathbf{Y}) \sim \mathcal{N}(\mathrm{vec}(\hat{\mathbf{B}}), \boldsymbol{\Sigma} \otimes \mathbf{K}^{-1}),
@@ -164,27 +166,38 @@ $`\hat{\mathbf{B}} = \mathbf{K}^{-1}(\mathbf{V}^{-1}\mathbf{B}_0 + \mathbf{X}'\m
 \hat{\mathbf{S}} = \mathbf{S}_0 + (\mathbf{Y} - \mathbf{X}\hat{\mathbf{B}})'(\mathbf{Y} - \mathbf{X}\hat{\mathbf{B}}) + (\hat{\mathbf{B}} - \mathbf{B}_0)'\mathbf{V}^{-1}(\hat{\mathbf{B}} - \mathbf{B}_0).
 ```
 
-The function `ncp_post` returns $`\hat{\mathbf{B}}`$, $`\mathbf{K}`$ and $`\hat{\mathbf{S}}`$. Zha
-(1999) derives this form under a diffuse prior; the natural conjugate prior keeps it. The marginal
-likelihood of each block also has a closed form, which the function `ncp_lml` computes as in the
-natural conjugate guide. The prior and the likelihood both split into the two blocks. The log
-marginal likelihood of the VAR is therefore the sum of those of the blocks, which the function
-`soe_lml` returns.
+The function [`bvar.ml.ncp`](../../core/+bvar/+ml/ncp.m) returns $`\hat{\mathbf{B}}`$,
+$`\mathbf{K}`$ and $`\hat{\mathbf{S}}`$ of each block:
+
+```matlab
+[~, Bhat_us, K_us, Shat_us] = bvar.ml.ncp(Ys(:, us), Zs(:, ius), VAus, nu0us, S0us, B0us);
+[~, Bhat_au, K_au, Shat_au] = bvar.ml.ncp(Ys(:, au), [Zs, Ys(:, us)], VAau, nu0au, S0au, B0au);
+```
+
+Zha (1999) derives this form under a diffuse prior; the natural conjugate prior keeps it. The
+marginal likelihood of each block also has the closed form of the natural conjugate guide, which
+is the first output of `bvar.ml.ncp`. The prior and the likelihood both split into the two
+blocks. The log marginal likelihood of the VAR is therefore the sum of those of the blocks, which
+`bvar.models.var_soe` returns.
 
 ## Step 3: Choose the Lag Length and the Shrinkage, and Fit the True Model
 
 We choose the lag length and $`c_1`$ by the marginal likelihood, with the AR(4) variances of the
-data. For each lag length from one to six, `fminbnd` maximizes the log marginal likelihood over
-$`\log c_1`$. Every lag length uses the same 138 quarters:
+data. For each lag length from one to six, `bvar.models.var_soe` maximizes the log marginal
+likelihood over $`c_1`$. With `'nsim', 0`, it returns the chosen $`c_1`$ and the maximum without
+drawing from the posterior. The first six quarters are the presample for every lag length, so
+every lag length uses the same 138 quarters:
 
 ```matlab
-for q = 1:pmax                            % the lag length and the shrinkage
-    [Yq, Zq] = bvar.util.build_lags(data(pmax-q+1:end, :), q);   % the same quarters for every q
-    [lc, f] = fminbnd(@(lc) -soe_lml(Yq, Zq, us, au, lev, exp(lc), c3, s2d), log(1e-3), log(10));
-    c1q(q) = exp(lc); lml(q) = -f;        % the chosen c1 and its log marginal likelihood
+for q = 1:pmax                            % the lag length and the shrinkage, on the same quarters
+    rq = bvar.models.var_soe(data(1:pmax, :), data(pmax+1:end, :), q, nus, 'lev', lev, ...
+        'c3', c3, 'nsim', 0);
+    c1q(q) = rq.c1; lml(q) = rq.lml;      % the chosen c1 and its log marginal likelihood
 end
 [~, p] = max(lml);
 ```
+
+Here `lev` indexes the three variables in levels, whose own first lag has a prior mean of one.
 
 | Lags | 1 | 2 | 3 | 4 | 5 | 6 |
 |---|---|---|---|---|---|---|
@@ -202,7 +215,7 @@ Bus = Xus\Y(:, us);                       % least squares, block by block
 Bau = Xau\Y(:, au);
 Uus = Y(:, us) - Xus*Bus;  Sus = Uus'*Uus/(T - size(Xus, 2));
 Uau = Y(:, au) - Xau*Bau;  Om = Uau'*Uau/(T - size(Xau, 2));
-[Atrue, Sigtrue] = reduced_form(Bus, Bau, Sus, Om, ius, k);   % the reduced form
+[Atrue, Sigtrue] = bvar.util.soe_reduced_form(Bus, Bau, Sus, Om);   % the reduced form
 ```
 
 Each covariance matrix divides the residual cross products by the degrees of freedom of its block:
@@ -231,9 +244,9 @@ of the AR(4) fits of the prior.
 The sample gets its own shrinkage, chosen as in Step 3:
 
 ```matlab
-s2 = bvar.priors.resid_var_ar4(Yfull(1:q0, :), Ys);     % AR(4) variances of the sample
-lc = fminbnd(@(lc) -soe_lml(Ys, Zs, us, au, lev, exp(lc), c3, s2), log(1e-3), log(10));
-c1 = exp(lc);                             % the shrinkage chosen by the marginal likelihood
+res = bvar.models.var_soe(Yfull(1:q0, :), Ys, p, nus, 'lev', lev, 'c3', c3, 'nsim', 0);
+c1 = res.c1;                              % the shrinkage chosen by the marginal likelihood
+s2 = res.s2;                              % AR(4) variances of the sample
 ```
 
 The marginal likelihood is largest at $`c_1 = 0.070`$, 3.43 log points above its value at
@@ -246,13 +259,15 @@ for r = 1:R
     Bus_d(:, :, r) = Bhat_us + (Cus'\randn(numel(ius), nus))*chol(Sus_d(:, :, r), 'lower')';
     Om_d(:, :, r) = iwishrnd(Shat_au, nu0au + T);       % Australia, independent of the US block
     Bau_d(:, :, r) = Bhat_au + (Cau'\randn(k + nus, nau))*chol(Om_d(:, :, r), 'lower')';
-    A_d(:, :, r) = reduced_form(Bus_d(:, :, r), Bau_d(:, :, r), Sus_d(:, :, r), ...
-        Om_d(:, :, r), ius, k);
+    A_d(:, :, r) = bvar.util.soe_reduced_form(Bus_d(:, :, r), Bau_d(:, :, r), Sus_d(:, :, r), ...
+        Om_d(:, :, r));
 end
 ```
 
 Here `Cus` and `Cau` are the lower Cholesky factors of $`\mathbf{K}`$ for the two blocks. The
-draws are independent, so no burn-in is needed. `guide.m` takes 10,000 of them.
+draws are independent, so no burn-in is needed. `guide.m` takes 10,000 of them. Called with
+`'nsim', R`, `bvar.models.var_soe` takes the same draws in one call, and the guides that follow
+use it.
 
 ## Step 5: Compare with an Unrestricted VAR
 
@@ -296,7 +311,8 @@ return that covariance matrix to within 1e-11.
 
 The means of the draws of each block match $`\hat{\mathbf{B}}`$ to within 0.027 posterior standard
 deviations. The means of the covariance draws match the posterior means
-$`\hat{\mathbf{S}}/(\nu_0 + T - 5)`$ to within 0.2 percent.
+$`\hat{\mathbf{S}}/(\nu_0 + T - 5)`$ to within 0.2 percent. Started from the same state of the
+random number generator, `bvar.models.var_soe` returns the same draws exactly.
 
 The prior of the two blocks implies the inverse-Wishart prior of $`\boldsymbol{\Sigma}`$ in
 Step 2. `guide.m` evaluates the log density of that prior at the true $`\boldsymbol{\Sigma}`$. It
@@ -316,7 +332,7 @@ change when the blocks have other sizes?
 
 Only the data columns, the variable names, the block sizes `nus` and `nau` and the index `lev` of
 the variables in levels, all in Section 1. The index `ius`, the regressors, the prior and
-`reduced_form` all follow from them. With $`n_f`$ foreign variables, each foreign equation has
+the reduced form all follow from them. With $`n_f`$ foreign variables, each foreign equation has
 $`1 + n_f p`$ coefficients. The Australian equations have $`1 + np + n_f`$, where $`n`$ is the
 total number of variables.
 

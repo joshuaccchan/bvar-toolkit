@@ -1,6 +1,6 @@
 # How to Forecast with a Bayesian VAR
 
-*Code: [`guide.m`](guide.m), with
+*Code: [`guide.m`](guide.m), with [`bvar.ml.ncp`](../../core/+bvar/+ml/ncp.m),
 [`bvar.util.simulate_var`](../../core/+bvar/+util/simulate_var.m),
 [`bvar.forecast.predictive`](../../core/+bvar/+forecast/predictive.m) and
 [`bvar.forecast.mixquantile`](../../core/+bvar/+forecast/mixquantile.m). Method:
@@ -49,10 +49,10 @@ $`\hat{\nu} = \nu_0 + T`$ are as given there.
 
 A draw of the parameters takes two steps: $`\boldsymbol{\Sigma}`$ from its inverse-Wishart
 posterior, then $`\mathbf{A}`$ given $`\boldsymbol{\Sigma}`$ from its Gaussian posterior. The
-draws are independent, so no Markov chain is needed. The function `ncp_lml` of the natural
-conjugate guide returns $`\hat{\mathbf{A}}`$, $`\mathbf{K}_{\mathbf{A}}`$ and $`\hat{\mathbf{S}}`$
-with the log marginal likelihood. As in that guide, we choose the shrinkage hyperparameter $`c_1`$
-by maximizing it:
+draws are independent, so no Markov chain is needed. The function
+[`bvar.ml.ncp`](../../core/+bvar/+ml/ncp.m) of the natural conjugate guide returns
+$`\hat{\mathbf{A}}`$, $`\mathbf{K}_{\mathbf{A}}`$ and $`\hat{\mathbf{S}}`$ with the log marginal
+likelihood. As in that guide, we choose the shrinkage hyperparameter $`c_1`$ by maximizing it:
 
 ```matlab
 [Y, Z] = bvar.util.build_lags(data, p);           % the first four quarters are initial values
@@ -61,9 +61,9 @@ s2 = bvar.priors.resid_var_ar4(data(1:4, :), Y);  % AR(4) residual variances
 nu0 = n + 2; S0 = diag(s2);                       % Sig ~ IW(nu0, S0)
 c3 = 10^2;                                        % the intercepts
 VA = @(c1) [c3; kron(1./(1:p)'.^2, c1./s2)];      % the diagonal of V_A
-lc = fminbnd(@(lc) -ncp_lml(Y, Z, VA(exp(lc)), nu0, S0), log(1e-3), log(10));
+lc = fminbnd(@(lc) -bvar.ml.ncp(Y, Z, VA(exp(lc)), nu0, S0), log(1e-3), log(10));
 c1 = exp(lc);                                     % the shrinkage chosen by the marginal likelihood
-[~, Ahat, KA, Shat] = ncp_lml(Y, Z, VA(c1), nu0, S0);
+[~, Ahat, KA, Shat] = bvar.ml.ncp(Y, Z, VA(c1), nu0, S0);
 nuhat = nu0 + T;
 R = 10000;
 LK = chol(KA, 'lower');                           % KA = LK*LK'

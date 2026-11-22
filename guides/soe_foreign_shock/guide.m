@@ -1,12 +1,6 @@
-%% guide - the code of guides/soe_foreign_shock/README.md: the responses of a small open economy,
-% Australia with a US block, to a shock to the US excess bond premium, in the VAR with block
-% exogeneity of guides/soe_var. The shock is identified recursively in the US block, with the
-% premium after GDP growth and inflation and before the federal funds rate, as in Gilchrist and
-% Zakrajsek (2012). The guide computes the responses and the shares of the forecast error
-% variances for every draw from the posterior of the two blocks and compares them with those of
-% the true model. The checks compare the responses with a simulation of the VAR, with the other
-% order of the premium and the funds rate, and confirm that no Australian shock moves a US
-% variable. Section 4 and the function responses at the end are the code to adapt. Saves
+%% guide - the code of guides/soe_foreign_shock/README.md: the responses of the VAR of
+% guides/soe_var to a shock to the US excess bond premium, identified recursively in the US
+% block. Section 4 and the function responses at the end are the code to adapt. Saves
 % fig_responses.png next to this file.
 
 here = fileparts(mfilename('fullpath'));
@@ -30,7 +24,7 @@ Bus = Xus\Y(:, us);                       % least squares, block by block
 Bau = Xau\Y(:, au);
 Uus = Y(:, us) - Xus*Bus;  Sus = Uus'*Uus/(T - size(Xus, 2));
 Uau = Y(:, au) - Xau*Bau;  Om = Uau'*Uau/(T - size(Xau, 2));
-[Atrue, Sigtrue] = reduced_form(Bus, Bau, Sus, Om, ius, k);
+[Atrue, Sigtrue] = bvar.util.soe_reduced_form(Bus, Bau, Sus, Om);
 
 %% 2. the sample of guides/soe_var
 q0 = max(p, 4);                           % presample quarters: p lags, four for the AR(4) fits
@@ -38,7 +32,8 @@ Yfull = bvar.util.simulate_var(Atrue, Sigtrue, T + q0);     % the presample, the
 
 %% 3. draws from the posterior of the two blocks, as in guides/soe_var
 R = 10000;
-[A_d, Sig_d, c1] = block_draws(Yfull, p, us, au, lev, c3, R);
+res = bvar.models.var_soe(Yfull(1:q0, :), Yfull(q0+1:end, :), p, nus, 'lev', lev, 'c3', c3, ...
+    'nsim', R);
 
 %% 4. the responses to a shock to the excess bond premium: the code to adapt
 H = 21;                                   % horizons 0 to 20
@@ -51,7 +46,7 @@ share = bvar.structural.fevd(resp_true);                 % variance shares at ev
 fev_true = share(:, js, 8);                              % the premium shock, 8 quarters ahead
 irf_d = zeros(n, H, R); fev_d = zeros(n, R); us_au = 0;
 for r = 1:R
-    resp = responses(A_d(:, :, r), Sig_d(:, :, r), ord, H);
+    resp = responses(reshape(res.A(r, :), k, n), squeeze(res.Sig(r, :, :)), ord, H);
     irf_d(:, :, r) = level(squeeze(resp(:, js, :)), ig);
     share = bvar.structural.fevd(resp);
     fev_d(:, r) = share(:, js, 8);                      % the premium shock, 8 quarters ahead
@@ -68,7 +63,7 @@ irf_pp_true = irf_true/irf_true(4, 1);
 %% the results
 show = [1 5 9 21];
 fprintf(['\nthe sample: c1 = %.3f; a shock of one standard deviation raises the premium by ' ...
-    '%.2f\n'], c1, irf_true(4, 1));
+    '%.2f\n'], res.c1, irf_true(4, 1));
 fprintf(['responses after 0, 4, 8 and 20 quarters: true | posterior median (90%% band); GDP, ' ...
     'CPI and the dollar in percent of the level\n']);
 for i = 1:n
@@ -151,80 +146,4 @@ function x = level(x, ig)
 % the responses of the variables in rows ig, which are 400 times log differences, as responses
 % of the level in log points times 100
 x(ig, :) = cumsum(x(ig, :), 2)/4;
-end
-
-function [A_d, Sig_d, c1] = block_draws(Yfull, p, us, au, lev, c3, R)
-% R draws of the reduced form from the posterior of the two blocks, as in guides/soe_var, from a
-% sample whose first max(p, 4) rows are the presample; c1 maximizes the marginal likelihood
-nus = numel(us); nau = numel(au); n = nus + nau;
-q0 = max(p, 4);
-[Ys, Zs] = bvar.util.build_lags(Yfull(q0-p+1:end, :), p);
-[T, k] = size(Zs);
-ius = [1, reshape(1 + us' + (0:p-1)*n, 1, [])];
-s2 = bvar.priors.resid_var_ar4(Yfull(1:q0, :), Ys);
-lc = fminbnd(@(lc) -soe_lml(Ys, Zs, us, au, lev, exp(lc), c3, s2), log(1e-3), log(10));
-c1 = exp(lc);
-[VA, B0] = soe_prior(p, n, lev, c1, c3, s2);
-[Bh_us, K_us, Sh_us] = ncp_post(Ys(:, us), Zs(:, ius), B0(ius, us), VA(ius), diag(s2(us)));
-[Bh_au, K_au, Sh_au] = ncp_post(Ys(:, au), [Zs, Ys(:, us)], [B0(:, au); zeros(nus, nau)], ...
-    [VA; 1./s2(us)], diag(s2(au)));
-Cus = chol(K_us, 'lower'); Cau = chol(K_au, 'lower');
-A_d = zeros(k, n, R); Sig_d = zeros(n, n, R);
-for r = 1:R
-    Sus = iwishrnd(Sh_us, nus + 2 + T);                 % the US block
-    Bus = Bh_us + (Cus'\randn(numel(ius), nus))*chol(Sus, 'lower')';
-    Om = iwishrnd(Sh_au, n + 2 + T);                    % Australia, independent of the US block
-    Bau = Bh_au + (Cau'\randn(k + nus, nau))*chol(Om, 'lower')';
-    [A_d(:, :, r), Sig_d(:, :, r)] = reduced_form(Bus, Bau, Sus, Om, ius, k);
-end
-end
-
-function [VA, B0] = soe_prior(p, n, lev, c1, c3, s2)
-% the prior of the coefficients on x_t = (1, y_{t-1}', ..., y_{t-p}')': their variances VA, and
-% their means B0, one on the own first lag of the variables lev, in levels, and zero elsewhere
-VA = [c3; kron(1./(1:p)'.^2, c1./s2)];
-B0 = zeros(1 + n*p, n);
-B0(sub2ind(size(B0), 1 + lev, lev)) = 1;
-end
-
-function lml = soe_lml(Y, Z, us, au, lev, c1, c3, s2)
-% the log marginal likelihood of the VAR with block exogeneity: the sum over the two blocks
-n = size(Y, 2); p = (size(Z, 2) - 1)/n; nus = numel(us); nau = numel(au);
-ius = [1, reshape(1 + us' + (0:p-1)*n, 1, [])];
-[VA, B0] = soe_prior(p, n, lev, c1, c3, s2);
-lml = ncp_lml(Y(:, us), Z(:, ius), B0(ius, us), VA(ius), nus + 2, diag(s2(us))) ...
-    + ncp_lml(Y(:, au), [Z, Y(:, us)], [B0(:, au); zeros(nus, nau)], [VA; 1./s2(us)], ...
-    n + 2, diag(s2(au)));
-end
-
-function [B, K, Shat] = ncp_post(Y, X, B0, VA, S0)
-% the posterior of the multivariate regression Y = X*B + E under vec(B) | Sig ~ N(vec(B0), Sig
-% kron diag(VA)) and Sig ~ IW(nu0, S0): vec(B) | Sig, Y ~ N(vec(B), Sig kron inv(K)) and
-% Sig | Y ~ IW(nu0 + T, Shat)
-K = diag(1./VA) + X'*X;
-B = K\(B0./VA + X'*Y);
-E = Y - X*B; D = B - B0;
-Shat = S0 + E'*E + D'*(D./VA);           % S0 + Y'*Y + B0'*(B0./VA) - B'*K*B, computed stably
-Shat = (Shat + Shat')/2;
-end
-
-function lml = ncp_lml(Y, X, B0, VA, nu0, S0)
-% the log marginal likelihood of the multivariate regression Y = X*B + E under the prior of
-% ncp_post, in closed form, as in guides/natural_conjugate_ml
-[T, m] = size(Y);
-[~, K, Shat] = ncp_post(Y, X, B0, VA, S0);
-lml = -m*T/2*log(pi) - m/2*(sum(log(VA)) + bvar.util.ldet(K)) ...
-    + nu0/2*bvar.util.ldet(S0) - (nu0 + T)/2*bvar.util.ldet(Shat) ...
-    + bvar.util.mgammaln(m, (nu0 + T)/2) - bvar.util.mgammaln(m, nu0/2);
-end
-
-function [A, Sig] = reduced_form(Bus, Bau, Sus, Om, ius, k)
-% the reduced form of the two blocks: the US block yf_t' = x_t(ius)'*Bus + uf_t', and Australia
-% yd_t' = (x_t', yf_t')*Bau + e_t', with e_t independent of uf_t
-nus = size(Bus, 2);
-G0 = Bau(k+1:end, :)';                   % the current US coefficients
-A = zeros(k, nus + size(Bau, 2));
-A(ius, 1:nus) = Bus;                     % zeros for the Australian lags
-A(:, nus+1:end) = Bau(1:k, :) + A(:, 1:nus)*G0';
-Sig = [Sus, Sus*G0'; G0*Sus, G0*Sus*G0' + Om];
 end

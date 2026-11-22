@@ -13,6 +13,7 @@ lists implementations of the same models in R and Python.
 |---|---|---|
 | The precision sampler for state space models | `replications/chan_jeliazkov2009_statespace`, `bvar.util.diffmat`; ex01 | [Chan and Jeliazkov (2009)](#chan-and-jeliazkov-2009) |
 | Stochastic volatility by the auxiliary mixture sampler | `bvar.sv.ksc_rw_h0`, `ksc_rw_diffuse`, `ksc_ar1_mean`; ex02 | [Kim, Shephard and Chib (1998)](#kim-shephard-and-chib-1998) for the mixture approximation; [Chan and Jeliazkov (2009)](#chan-and-jeliazkov-2009) for drawing the log-volatility path in one block from its banded precision |
+| The natural conjugate prior and its closed-form marginal likelihood | `bvar.ml.ncp`; guides/natural_conjugate_ml | [Chan (2027)](#chan-2027) |
 | The Minnesota prior and its scaling | `bvar.priors.minn`, `minnesota_C`, `resid_var_ar4`, `vtheta`; ex03 | [Doan, Litterman and Sims (1984)](#doan-litterman-and-sims-1984); [Litterman (1986)](#litterman-1986) |
 | Minnesota-type adaptive hierarchical priors | `replications/chan2021_ijf_mahp`, `bvar.samplers.gig_shrinkage`, `nu_psi_ng`, `eq_gauss`; ex10 | [Chan (2021)](#chan-2021) |
 | The asymmetric conjugate prior, its closed-form marginal likelihood and optimal hyperparameters | `replications/chan2022_qe_acp`, `replications/chan2019wp_acp`, `bvar.priors.acp_stru`, `acp_redu`, `acp_opt_kappa`, `bvar.samplers.acp_theta_sig`, `bvar.ml.acp`; ex11, ex12 | [Chan (2022)](#chan-2022) |
@@ -27,8 +28,9 @@ lists implementations of the same models in R and Python.
 | Sign restrictions | `bvar.structural.qr_sign`, `sign_restrict`, `irf_redu`, `reduced_form`; ex11, ex12 | [Rubio-Ramírez, Waggoner and Zha (2010)](#rubio-ramírez-waggoner-and-zha-2010) |
 | Sign and ranking restrictions in large structural VARs | `replications/chan_matthes_yu2026_qe_svarsign`, `bvar.structural.sign_assign`; ex11, ex12, tutorials/sign_restrictions | [Chan, Matthes and Yu (2026)](#chan-matthes-and-yu-2026) |
 | Sign restrictions over several horizons | ex12 | [Uhlig (2005)](#uhlig-2005) |
-| Block exogeneity for a small open economy, estimated block by block | guides/soe_var, guides/soe_exogeneity_test, guides/soe_foreign_shock | [Cushman and Zha (1997)](#cushman-and-zha-1997) for the model; [Zha (1999)](#zha-1999) for the estimation block by block |
+| Block exogeneity for a small open economy, estimated block by block | `bvar.models.var_soe`, `bvar.util.soe_reduced_form`; guides/soe_var, guides/soe_exogeneity_test, guides/soe_foreign_shock, guides/soe_conditional_forecast | [Cushman and Zha (1997)](#cushman-and-zha-1997) for the model; [Zha (1999)](#zha-1999) for the estimation block by block |
 | A shock to the US excess bond premium, identified recursively | guides/soe_foreign_shock | [Gilchrist and Zakrajšek (2012)](#gilchrist-and-zakrajšek-2012) |
+| Forecasts conditional on a path for some of the variables | guides/soe_conditional_forecast | [Waggoner and Zha (1999)](#waggoner-and-zha-1999) |
 | Missing data and mixed frequencies: the missing values of a VAR drawn in one block, under restrictions that tie them to observed quarterly values | `bvar.models.mfvar_csv`, `bvar.samplers.missing_var`, `var_coef_joint`, `bvar.util.select_obs`, `mm_constraint`, `dlog_gaps`; ex14, tutorials/mixed_frequency | [Chan, Poon and Zhu (2023)](#chan-poon-and-zhu-2023); [Schorfheide and Song (2015)](#schorfheide-and-song-2015) for the mixed-frequency VAR; [Mariano and Murasawa (2003)](#mariano-and-murasawa-2003) for the aggregation of monthly growth rates into quarterly ones; [Chan (2020a)](#chan-2020a) for the draws of the common stochastic volatility and its parameters |
 | Sensitivity of forecasts to prior hyperparameters | `replications/cjz2018_ad_var` | [Chan, Jacobi and Zhu (2019)](#chan-jacobi-and-zhu-2019) |
 | Hyperparameter selection by automatic differentiation | `replications/cjz2019_ad_opthyper`, `bvar.priors.niw(..., 'opthyper_ncp')` | [Chan, Jacobi and Zhu (2020)](#chan-jacobi-and-zhu-2020) |
@@ -862,6 +864,30 @@ two-component normal approximation to the absolute-normal density, both used by
 }
 ```
 
+### Waggoner and Zha (1999)
+
+Waggoner, D. F. and Zha, T. (1999). Conditional Forecasts in Dynamic Multivariate Models.
+*Review of Economics and Statistics* 81(4): 639-651.
+[Journal version](https://doi.org/10.1162/003465399558508)
+
+The distribution of forecasts conditional on a path for some of the variables of a VAR. The
+parameters are drawn given both the data and the path. guides/soe_conditional_forecast computes
+this distribution under block exogeneity, given a path for all the foreign variables, where draws
+given the data alone suffice.
+
+```bibtex
+@article{WZ99,
+  author  = {Waggoner, D. F. and Zha, T.},
+  title   = {Conditional Forecasts in Dynamic Multivariate Models},
+  journal = {Review of Economics and Statistics},
+  year    = {1999},
+  volume  = {81},
+  number  = {4},
+  pages   = {639--651},
+  doi     = {10.1162/003465399558508}
+}
+```
+
 ### Waggoner and Zha (2003)
 
 Waggoner, D. F. and Zha, T. (2003). A Gibbs Sampler for Structural Vector Autoregressions.
@@ -881,25 +907,6 @@ The algorithm that draws the rows of an unrestricted impact matrix one at a time
   number  = {2},
   pages   = {349--366},
   doi     = {10.1016/S0165-1889(02)00168-9}
-}
-```
-
-## The toolkit
-
-Chan, J. C. C. (2026). *bvar-toolkit: MATLAB code for large Bayesian VARs*. Zenodo.
-https://doi.org/10.5281/zenodo.22804032
-
-The DOI resolves to the latest release. `CITATION.cff` holds the same record in machine-readable
-form, which GitHub's "Cite this repository" button reads.
-
-```bibtex
-@misc{chan26bvartoolkit,
-  author       = {Chan, J. C. C.},
-  title        = {bvar-toolkit: {MATLAB} Code for Large {B}ayesian {VAR}s},
-  year         = {2026},
-  howpublished = {Zenodo},
-  doi          = {10.5281/zenodo.22804032},
-  url          = {https://github.com/joshuaccchan/bvar-toolkit}
 }
 ```
 
@@ -923,5 +930,24 @@ posterior is drawn block by block.
   number  = {2},
   pages   = {291--316},
   doi     = {10.1016/S0304-4076(98)00045-1}
+}
+```
+
+## The toolkit
+
+Chan, J. C. C. (2026). *bvar-toolkit: MATLAB code for large Bayesian VARs*. Zenodo.
+https://doi.org/10.5281/zenodo.22804032
+
+The DOI resolves to the latest release. `CITATION.cff` holds the same record in machine-readable
+form, which GitHub's "Cite this repository" button reads.
+
+```bibtex
+@misc{chan26bvartoolkit,
+  author       = {Chan, J. C. C.},
+  title        = {bvar-toolkit: {MATLAB} Code for Large {B}ayesian {VAR}s},
+  year         = {2026},
+  howpublished = {Zenodo},
+  doi          = {10.5281/zenodo.22804032},
+  url          = {https://github.com/joshuaccchan/bvar-toolkit}
 }
 ```

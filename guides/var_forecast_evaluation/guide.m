@@ -1,10 +1,7 @@
-%% guide - the code of guides/var_forecast_evaluation/README.md: the BVAR of guides/var_forecast and
-% an AR(4) for each variable, re-estimated at the end of each quarter from 120 to 239 of the sample
-% of guides/var_simulation on the data up to that quarter only, and forecasting one to four
-% quarters ahead; the forecasts scored against the outcomes by the root mean squared forecast
-% error, the log predictive likelihood and the coverage of the 90% intervals, together with the
-% forecasts of the true model; the checks. Section 2 and the functions ncp_forecast and ncp_lml at
-% the end are the code to adapt. Saves fig_scores.png next to this file.
+%% guide - the code of guides/var_forecast_evaluation/README.md: the BVAR of guides/var_forecast
+% and an AR(4), re-estimated at each quarter and scored out of sample. Section 2 and the
+% function ncp_forecast at the end are the code to adapt. Saves fig_scores.png next to this
+% file.
 
 here = fileparts(mfilename('fullpath'));
 run(fullfile(fileparts(fileparts(here)), 'setup.m'));
@@ -140,8 +137,8 @@ function [m, lp, pit] = ncp_forecast(Yt, yout, p, H, R)
 [T, n] = size(Y); k = size(Z, 2);
 s2 = bvar.priors.resid_var_ar4(Yt(1:4, :), Y);     % AR(4) residual variances, from Yt only
 VA = @(c1) [10^2; kron(1./(1:p)'.^2, c1./s2)];
-lc = fminbnd(@(lc) -ncp_lml(Y, Z, VA(exp(lc)), n + 2, diag(s2)), log(1e-3), log(10));
-[~, Ahat, KA, Shat] = ncp_lml(Y, Z, VA(exp(lc)), n + 2, diag(s2));
+lc = fminbnd(@(lc) -bvar.ml.ncp(Y, Z, VA(exp(lc)), n + 2, diag(s2)), log(1e-3), log(10));
+[~, Ahat, KA, Shat] = bvar.ml.ncp(Y, Z, VA(exp(lc)), n + 2, diag(s2));
 LK = chol(KA, 'lower');
 Ad = zeros(R, k*n); Sd = zeros(R, n, n);
 for r = 1:R
@@ -163,8 +160,8 @@ function [lp, pit] = ncp_onestep(Yt, y1, p)
 [T, n] = size(Y);
 s2 = bvar.priors.resid_var_ar4(Yt(1:4, :), Y);
 VA = @(c1) [10^2; kron(1./(1:p)'.^2, c1./s2)];
-lc = fminbnd(@(lc) -ncp_lml(Y, Z, VA(exp(lc)), n + 2, diag(s2)), log(1e-3), log(10));
-[~, Ahat, KA, Shat] = ncp_lml(Y, Z, VA(exp(lc)), n + 2, diag(s2));
+lc = fminbnd(@(lc) -bvar.ml.ncp(Y, Z, VA(exp(lc)), n + 2, diag(s2)), log(1e-3), log(10));
+[~, Ahat, KA, Shat] = bvar.ml.ncp(Y, Z, VA(exp(lc)), n + 2, diag(s2));
 x = [1, reshape(Yt(end:-1:end-p+1, :)', 1, [])];
 df = T + 3;                                        % nuhat - n + 1, with nuhat = n + 2 + T
 scl = sqrt(diag(Shat)'*(1 + x*(KA\x'))/df);
@@ -181,18 +178,4 @@ m = reshape(mu, n, H); sd = reshape(sd, n, H);
 z = (yout' - m)./sd;
 lp = -log(sd) - z.^2/2 - log(2*pi)/2;
 pit = normcdf(z);
-end
-
-function [lml, Ahat, KA, Shat] = ncp_lml(Y, Z, VA, nu0, S0)
-% the log marginal likelihood under vec(A) | Sig ~ N(0, Sig kron diag(VA)) and Sig ~ IW(nu0, S0),
-% with the posterior quantities Ahat, KA and Shat
-[T, n] = size(Y);
-KA = diag(1./VA) + Z'*Z;
-Ahat = KA\(Z'*Y);
-E = Y - Z*Ahat;                        % the residuals at the posterior mean
-Shat = S0 + E'*E + Ahat'*(Ahat./VA);   % S0 + Y'*Y - Ahat'*KA*Ahat, without the cancellation
-Shat = (Shat + Shat')/2;
-lml = -n*T/2*log(pi) - n/2*(sum(log(VA)) + bvar.util.ldet(KA)) ...
-    + nu0/2*bvar.util.ldet(S0) - (nu0 + T)/2*bvar.util.ldet(Shat) ...
-    + bvar.util.mgammaln(n, (nu0 + T)/2) - bvar.util.mgammaln(n, nu0/2);
 end

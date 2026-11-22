@@ -1,7 +1,6 @@
 # How to Choose the Shrinkage of a VAR by the Marginal Likelihood
 
-*Code: [`guide.m`](guide.m), with [`bvar.util.ldet`](../../core/+bvar/+util/ldet.m),
-[`bvar.util.mgammaln`](../../core/+bvar/+util/mgammaln.m) and
+*Code: [`guide.m`](guide.m), with [`bvar.ml.ncp`](../../core/+bvar/+ml/ncp.m) and
 [`bvar.ml.kron_bvar`](../../core/+bvar/+ml/kron_bvar.m). Method:
 [Chan (2027)](../../CITING.md#chan-2027) and
 [Chan, Jacobi and Zhu (2020)](../../CITING.md#chan-jacobi-and-zhu-2020).*
@@ -82,25 +81,24 @@ $`\mathbf{K}_{\mathbf{A}} = \mathbf{V}_{\mathbf{A}}^{-1} + \mathbf{Z}'\mathbf{Z}
 $`\hat{\mathbf{A}} = \mathbf{K}_{\mathbf{A}}^{-1}\mathbf{Z}'\mathbf{Y}`$,
 $`\hat{\mathbf{S}} = \mathbf{S}_0 + \mathbf{Y}'\mathbf{Y} - \hat{\mathbf{A}}'\mathbf{K}_{\mathbf{A}}\hat{\mathbf{A}}`$
 and $`\hat{\nu} = \nu_0 + T`$ are the parameters of the normal-inverse-Wishart posterior that the
-third guide uses in its check. The function `ncp_lml` evaluates the formula in logs, which avoids
-underflow and overflow, with [`bvar.util.ldet`](../../core/+bvar/+util/ldet.m) for the log
-determinants, from Cholesky factors, and [`bvar.util.mgammaln`](../../core/+bvar/+util/mgammaln.m)
-for $`\log\Gamma_n`$:
+third guide uses in its check. The function [`bvar.ml.ncp`](../../core/+bvar/+ml/ncp.m) evaluates
+the formula in logs, which avoids underflow and overflow. It uses
+[`bvar.util.ldet`](../../core/+bvar/+util/ldet.m) for the log determinants, from Cholesky
+factors, and [`bvar.util.mgammaln`](../../core/+bvar/+util/mgammaln.m) for $`\log\Gamma_n`$.
+It applies to any multivariate regression $`\mathbf{Y} = \mathbf{X}\mathbf{B} + \mathbf{E}`$,
+here with $`\mathbf{X} = \mathbf{Z}`$ and $`\mathbf{B} = \mathbf{A}`$. It also takes an optional
+prior mean `B0`, which is zero by default. These lines of the function compute the formula, with
+`Bhat` for $`\hat{\mathbf{A}}`$ and `K` for $`\mathbf{K}_{\mathbf{A}}`$:
 
 ```matlab
-function [lml, Ahat, KA, Shat] = ncp_lml(Y, Z, VA, nu0, S0)
-% the log marginal likelihood under vec(A) | Sig ~ N(0, Sig kron diag(VA)) and Sig ~ IW(nu0, S0),
-% with the posterior quantities Ahat, KA and Shat
-[T, n] = size(Y);
-KA = diag(1./VA) + Z'*Z;
-Ahat = KA\(Z'*Y);
-E = Y - Z*Ahat;                        % the residuals at the posterior mean
-Shat = S0 + E'*E + Ahat'*(Ahat./VA);   % S0 + Y'*Y - Ahat'*KA*Ahat, without the cancellation
+K = diag(1./VA) + X'*X;
+Bhat = K\(B0./VA + X'*Y);
+E = Y - X*Bhat; D = Bhat - B0;
+Shat = S0 + E'*E + D'*(D./VA);           % S0 + Y'*Y + B0'*(B0./VA) - Bhat'*K*Bhat, computed stably
 Shat = (Shat + Shat')/2;
-lml = -n*T/2*log(pi) - n/2*(sum(log(VA)) + bvar.util.ldet(KA)) ...
+lml = -n*T/2*log(pi) - n/2*(sum(log(VA)) + bvar.util.ldet(K)) ...
     + nu0/2*bvar.util.ldet(S0) - (nu0 + T)/2*bvar.util.ldet(Shat) ...
     + bvar.util.mgammaln(n, (nu0 + T)/2) - bvar.util.mgammaln(n, nu0/2);
-end
 ```
 
 The function computes $`\hat{\mathbf{S}}`$ in the equivalent form
@@ -122,7 +120,7 @@ Since $`c_1`$ is positive, we maximize over $`\log c_1`$ with MATLAB's `fminbnd`
 between $`10^{-3}`$ and 10, the range of the grid in Figure 1:
 
 ```matlab
-lml = @(c1) ncp_lml(Y, Z, VA(c1), nu0, S0);
+lml = @(c1) bvar.ml.ncp(Y, Z, VA(c1), nu0, S0);
 lc = fminbnd(@(lc) -lml(exp(lc)), log(1e-3), log(10));   % maximize over log(c1)
 c1hat = exp(lc);
 ```
@@ -180,7 +178,7 @@ where the prior and the posterior densities are normal-inverse-Wishart. If $`\ha
 $`\mathbf{K}_{\mathbf{A}}`$ or $`\hat{\mathbf{S}}`$ were wrong, the right side would change with
 the point. [`bvar.ml.kron_bvar`](../../core/+bvar/+ml/kron_bvar.m) evaluates the right side at
 $`\mathbf{A} = \hat{\mathbf{A}}`$ and $`\boldsymbol{\Sigma} = \hat{\mathbf{S}}/\hat{\nu}`$, and
-over the grid of Figure 1 it agrees with `ncp_lml` to within 4.5e-13. At the true values of
+over the grid of Figure 1 it agrees with `bvar.ml.ncp` to within 4.5e-13. At the true values of
 $`\mathbf{A}`$ and $`\boldsymbol{\Sigma}`$ and the chosen $`c_1`$, the right side is −817.731707,
 equal to the closed form to machine precision.
 
@@ -206,7 +204,7 @@ for q = 1:pmax
     [Yq, Zq] = bvar.util.build_lags(Yfull(5-q:end, :), q);   % the same T rows of Y for every q
     assert(isequal(Yq, Y), 'the lag lengths explain different observations');
     VAq = @(c1) [c3; kron(1./(1:q)'.^2, c1./s2)];
-    [lcq, f] = fminbnd(@(lc) -ncp_lml(Yq, Zq, VAq(exp(lc)), nu0, S0), log(1e-3), log(10));
+    [lcq, f] = fminbnd(@(lc) -bvar.ml.ncp(Yq, Zq, VAq(exp(lc)), nu0, S0), log(1e-3), log(10));
     c1p(q) = exp(lcq); lmlp(q) = -f;
 end
 ```

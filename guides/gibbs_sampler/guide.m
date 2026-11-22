@@ -1,10 +1,6 @@
-%% guide - the code of guides/gibbs_sampler/README.md: the VAR(2) of three variables of
-% guides/var_stacking under the independent normal and inverse-Wishart prior, with the Minnesota
-% variances of guides/coefficient_draw; a Gibbs sampler that draws the coefficients given Sig and
-% Sig given the coefficients; the checks of the chain by bvar.diag; the same loop under the
-% natural conjugate prior, whose posterior is known in closed form; then a forecast from the
-% draws. The section called "the code to adapt" contains the sampler. Saves fig_chain.png next to
-% this file.
+%% guide - the code of guides/gibbs_sampler/README.md: a Gibbs sampler for the VAR of
+% guides/var_stacking under the independent normal and inverse-Wishart prior. The section called
+% "the code to adapt" contains the sampler. Saves fig_chain.png next to this file.
 
 here = fileparts(mfilename('fullpath'));
 run(fullfile(fileparts(fileparts(here)), 'setup.m'));

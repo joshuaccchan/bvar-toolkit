@@ -1,12 +1,6 @@
 %% guide - the code of guides/var_lag_shrinkage/README.md: the lag length and the shrinkage of the
-% BVAR of guides/var_forecast chosen by the marginal likelihood at the end of each quarter from 120
-% to 239 of the sample of guides/var_simulation, against 24 alternatives: a fixed lag length from
-% one to eight, with c1 chosen by the marginal likelihood, c1 = 0.2^2 or c1 = 10, a nearly flat
-% prior.
-% The one-quarter-ahead forecasts are scored by the joint log predictive likelihood, with all the
-% data up to each origin and with its last 80 quarters. Then the checks, and forecasts averaged
-% over c1. Section 2 and the functions at the end are the code to adapt. Saves fig_choice.png next
-% to this file.
+% BVAR of guides/var_forecast, chosen by the marginal likelihood at each forecast origin. Section
+% 2 and the functions at the end are the code to adapt. Saves fig_choice.png next to this file.
 
 here = fileparts(mfilename('fullpath'));
 run(fullfile(fileparts(fileparts(here)), 'setup.m'));
@@ -88,15 +82,15 @@ for t = 1:T
     if t == 1                                     % the prior predictive of the first observation
         Ahat = zeros(size(Z, 2), n); KA = diag(1./VA); Shat = S0;
     else
-        [~, Ahat, KA, Shat] = ncp_lml(Y(1:t-1, :), Z(1:t-1, :), VA, nu0, S0);
+        [~, Ahat, KA, Shat] = bvar.ml.ncp(Y(1:t-1, :), Z(1:t-1, :), VA, nu0, S0);
     end
     df = nu0 + t - 1 - n + 1;
     x = Z(t, :);
     lsum = lsum + mvt_logpdf(Y(t, :), x*Ahat, (1 + x*(KA\x'))*Shat/df, df);
 end
-gapml = lsum - ncp_lml(Y, Z, VA, nu0, S0);
+gapml = lsum - bvar.ml.ncp(Y, Z, VA, nu0, S0);
 fprintf(['\nfirst origin, p = 4: log ML %.6f, sum of %d one-step log predictive densities ' ...
-    '%.6f, gap %.1e\n'], ncp_lml(Y, Z, VA, nu0, S0), T, lsum, gapml);
+    '%.6f, gap %.1e\n'], bvar.ml.ncp(Y, Z, VA, nu0, S0), T, lsum, gapml);
 assert(abs(gapml) < 1e-8, ...
     'the marginal likelihood is not the product of the one-step predictive densities');
 
@@ -147,12 +141,12 @@ s2 = bvar.priors.resid_var_ar4(W(pmax-3:pmax, :), W(pmax+1:end, :));   % AR(4) v
 for p = 1:pmax
     [Y, Z] = bvar.util.build_lags(W(pmax-p+1:end, :), p);    % the same Y for every p
     VA = @(c) [10^2; kron(1./(1:p)'.^2, c./s2)];
-    [lc, f] = fminbnd(@(lc) -ncp_lml(Y, Z, VA(exp(lc)), n + 2, diag(s2)), log(1e-3), log(10));
+    [lc, f] = fminbnd(@(lc) -bvar.ml.ncp(Y, Z, VA(exp(lc)), n + 2, diag(s2)), log(1e-3), log(10));
     lml(p) = -f; c1(p) = exp(lc);
     x = [1, reshape(W(end:-1:end-p+1, :)', 1, [])];          % x_{t+1}
     cs = [c1(p), c1fix];
     for s = 1:ns
-        [~, Ahat, KA, Shat] = ncp_lml(Y, Z, VA(cs(s)), n + 2, diag(s2));
+        [~, Ahat, KA, Shat] = bvar.ml.ncp(Y, Z, VA(cs(s)), n + 2, diag(s2));
         df = size(Y, 1) + 3;                                  % nuhat - n + 1
         m = x*Ahat; Psi = (1 + x*(KA\x'))*Shat/df;            % the Student-t forecast
         ls(p, s) = mvt_logpdf(y1, m, Psi, df);
@@ -174,26 +168,12 @@ x = [1, reshape(W(end:-1:end-p+1, :)', 1, [])];
 lw = zeros(size(grid)); lp = lw;
 for g = 1:numel(grid)
     VA = [10^2; kron(1./(1:p)'.^2, grid(g)./s2)];
-    [lw(g), Ahat, KA, Shat] = ncp_lml(Y, Z, VA, n + 2, diag(s2));
+    [lw(g), Ahat, KA, Shat] = bvar.ml.ncp(Y, Z, VA, n + 2, diag(s2));
     df = size(Y, 1) + 3;
     lp(g) = mvt_logpdf(y1, x*Ahat, (1 + x*(KA\x'))*Shat/df, df);
 end
 lw = lw + lpri; lw = lw - bvar.util.logsumexp(lw(:));   % the posterior probabilities of the grid
 ls = bvar.util.logsumexp(lw(:) + lp(:));          % the log of the averaged predictive density
-end
-
-function [lml, Ahat, KA, Shat] = ncp_lml(Y, Z, VA, nu0, S0)
-% the log marginal likelihood under vec(A) | Sig ~ N(0, Sig kron diag(VA)) and Sig ~ IW(nu0, S0),
-% with the posterior quantities Ahat, KA and Shat
-[T, n] = size(Y);
-KA = diag(1./VA) + Z'*Z;
-Ahat = KA\(Z'*Y);
-E = Y - Z*Ahat;                        % the residuals at the posterior mean
-Shat = S0 + E'*E + Ahat'*(Ahat./VA);   % S0 + Y'*Y - Ahat'*KA*Ahat, without the cancellation
-Shat = (Shat + Shat')/2;
-lml = -n*T/2*log(pi) - n/2*(sum(log(VA)) + bvar.util.ldet(KA)) ...
-    + nu0/2*bvar.util.ldet(S0) - (nu0 + T)/2*bvar.util.ldet(Shat) ...
-    + bvar.util.mgammaln(n, (nu0 + T)/2) - bvar.util.mgammaln(n, nu0/2);
 end
 
 function lp = mvt_logpdf(y, m, Psi, df)

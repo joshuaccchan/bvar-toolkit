@@ -1,11 +1,6 @@
-%% guide - the code of guides/natural_conjugate_ml/README.md: the VAR(2) of three variables of
-% guides/var_stacking under the natural conjugate prior, whose prior variances follow the
-% Minnesota prior with one hyperparameter c1 for all lag coefficients; the log marginal likelihood
-% in closed form, its maximum over c1, and the posterior means at the chosen value; the same
-% choice on 200 additional datasets; the checks against bvar.ml.kron_bvar; the choice of the lag
-% length; and the two hyperparameters of the asymmetric conjugate prior of tutorials/shrinkage.
-% Section 2 and the function ncp_lml at the end are the code to adapt. Saves fig_marglik.png next
-% to this file.
+%% guide - the code of guides/natural_conjugate_ml/README.md: the shrinkage of the VAR of
+% guides/var_stacking chosen by the closed-form marginal likelihood under the natural conjugate
+% prior. Section 2 is the code to adapt. Saves fig_marglik.png next to this file.
 
 here = fileparts(mfilename('fullpath'));
 run(fullfile(fileparts(fileparts(here)), 'setup.m'));
@@ -34,7 +29,7 @@ Atrue = A; Sigtrue = Sig;
 nu0 = n + 2; S0 = diag(s2);                    % Sig ~ IW(nu0, S0)
 c3 = 10^2;                                     % the intercepts
 VA = @(c1) [c3; kron(1./(1:p)'.^2, c1./s2)];   % the diagonal of V_A
-lml = @(c1) ncp_lml(Y, Z, VA(c1), nu0, S0);
+lml = @(c1) bvar.ml.ncp(Y, Z, VA(c1), nu0, S0);
 lc = fminbnd(@(lc) -lml(exp(lc)), log(1e-3), log(10));   % maximize over log(c1)
 c1hat = exp(lc);
 
@@ -75,9 +70,9 @@ for r = 1:R
     [Yr1, Zr] = bvar.util.build_lags(Yr(3:end, :), p);
     [~, ~, s2r] = bvar.priors.minn(p, .2^2, .1^2, 10^2, Yr(1:4, :), Yr1, 4);
     VAr = @(c1) [c3; kron(1./(1:p)'.^2, c1./s2r)];
-    lcr = fminbnd(@(lc) -ncp_lml(Yr1, Zr, VAr(exp(lc)), nu0, diag(s2r)), log(1e-3), log(10));
-    [~, Bhat] = ncp_lml(Yr1, Zr, VAr(exp(lcr)), nu0, diag(s2r));
-    [~, Bstd] = ncp_lml(Yr1, Zr, VAr(.04), nu0, diag(s2r));
+    lcr = fminbnd(@(lc) -bvar.ml.ncp(Yr1, Zr, VAr(exp(lc)), nu0, diag(s2r)), log(1e-3), log(10));
+    [~, Bhat] = bvar.ml.ncp(Yr1, Zr, VAr(exp(lcr)), nu0, diag(s2r));
+    [~, Bstd] = bvar.ml.ncp(Yr1, Zr, VAr(.04), nu0, diag(s2r));
     mc(r, :) = [exp(lcr), mae((Zr'*Zr)\(Zr'*Yr1)), mae(Bhat), mae(Bstd)];
 end
 fprintf('\n%d additional datasets: chosen c1 median %.3f, quartiles %.3f and %.3f\n', R, ...
@@ -89,12 +84,12 @@ fprintf('  chosen c1 more accurate than least squares in %d, than c1 = 0.04 in %
 %% 5. the checks: the identity of the marginal likelihood
 gap = zeros(size(c1grid));
 for j = 1:numel(c1grid)
-    [l, Aj, KA, Shat] = ncp_lml(Y, Z, VA(c1grid(j)), nu0, S0);
+    [l, Aj, KA, Shat] = bvar.ml.ncp(Y, Z, VA(c1grid(j)), nu0, S0);
     pri = struct('A0', zeros(k, n), 'VA0', VA(c1grid(j)), 'nu0', nu0, 'S0', S0);
     est = struct('Ahat', Aj, 'Shat', Shat, 'KA', KA);
     gap(j) = l - bvar.ml.kron_bvar(Y, Z, pri, est);
 end
-[l, ~, KA, Shat] = ncp_lml(Y, Z, VA(c1hat), nu0, S0);
+[l, ~, KA, Shat] = bvar.ml.ncp(Y, Z, VA(c1hat), nu0, S0);
 CS = chol(Sigtrue, 'lower');
 E = (Y - Z*Atrue)/CS';
 llike = -T*n/2*log(2*pi) - T*sum(log(diag(CS))) - .5*sum(E(:).^2);   % log p(Y | A, Sig)
@@ -114,7 +109,7 @@ for q = 1:pmax
     [Yq, Zq] = bvar.util.build_lags(Yfull(5-q:end, :), q);   % the same T rows of Y for every q
     assert(isequal(Yq, Y), 'the lag lengths explain different observations');
     VAq = @(c1) [c3; kron(1./(1:q)'.^2, c1./s2)];
-    [lcq, f] = fminbnd(@(lc) -ncp_lml(Yq, Zq, VAq(exp(lc)), nu0, S0), log(1e-3), log(10));
+    [lcq, f] = fminbnd(@(lc) -bvar.ml.ncp(Yq, Zq, VAq(exp(lc)), nu0, S0), log(1e-3), log(10));
     c1p(q) = exp(lcq); lmlp(q) = -f;
 end
 fprintf('\nlag length: chosen c1 %s, log ML %s\n', mat2str(c1p', 3), mat2str(lmlp', 5));
@@ -140,20 +135,6 @@ semilogx(c1grid, paths(own(:), :), 'k');
 xline(c1hat, 'k--'); xline(.04, 'k:'); xlim(c1grid([1 end]));
 xlabel('c_1'); title('Posterior means', 'FontWeight', 'normal');
 exportgraphics(fig, fullfile(here, 'fig_marglik.png'), 'Resolution', 150); close(fig);
-
-function [lml, Ahat, KA, Shat] = ncp_lml(Y, Z, VA, nu0, S0)
-% the log marginal likelihood under vec(A) | Sig ~ N(0, Sig kron diag(VA)) and Sig ~ IW(nu0, S0),
-% with the posterior quantities Ahat, KA and Shat
-[T, n] = size(Y);
-KA = diag(1./VA) + Z'*Z;
-Ahat = KA\(Z'*Y);
-E = Y - Z*Ahat;                        % the residuals at the posterior mean
-Shat = S0 + E'*E + Ahat'*(Ahat./VA);   % S0 + Y'*Y - Ahat'*KA*Ahat, without the cancellation
-Shat = (Shat + Shat')/2;
-lml = -n*T/2*log(pi) - n/2*(sum(log(VA)) + bvar.util.ldet(KA)) ...
-    + nu0/2*bvar.util.ldet(S0) - (nu0 + T)/2*bvar.util.ldet(Shat) ...
-    + bvar.util.mgammaln(n, (nu0 + T)/2) - bvar.util.mgammaln(n, nu0/2);
-end
 
 function Yfull = simulate_var(a, A1, A2, C, burn, T)
 % the data of section 1 from the current state of the generator, with the same presample rows

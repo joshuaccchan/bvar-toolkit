@@ -1,6 +1,6 @@
 # How to Evaluate Forecasts Out of Sample
 
-*Code: [`guide.m`](guide.m), with
+*Code: [`guide.m`](guide.m), with [`bvar.ml.ncp`](../../core/+bvar/+ml/ncp.m),
 [`bvar.forecast.predictive`](../../core/+bvar/+forecast/predictive.m) and
 [`bvar.util.logsumexp`](../../core/+bvar/+util/logsumexp.m). Method:
 [Chan (2027)](../../CITING.md#chan-2027).*

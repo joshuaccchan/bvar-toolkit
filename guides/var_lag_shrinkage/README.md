@@ -1,8 +1,7 @@
 # How to Choose the Lag Length and the Shrinkage for Forecasting
 
-*Code: [`guide.m`](guide.m), with [`bvar.util.build_lags`](../../core/+bvar/+util/build_lags.m),
-[`bvar.util.ldet`](../../core/+bvar/+util/ldet.m) and
-[`bvar.util.mgammaln`](../../core/+bvar/+util/mgammaln.m). Method:
+*Code: [`guide.m`](guide.m), with [`bvar.ml.ncp`](../../core/+bvar/+ml/ncp.m) and
+[`bvar.util.build_lags`](../../core/+bvar/+util/build_lags.m). Method:
 [Chan (2027)](../../CITING.md#chan-2027).*
 
 Forecasting with a BVAR requires two settings: the lag length $`p`$ and the shrinkage
@@ -58,7 +57,7 @@ where both sides condition on the initial values.
 
 At each origin and in each window, the function `choose_and_forecast` at the end of `guide.m`
 maximizes the log marginal likelihood over $`c_1`$ for every lag length and computes the
-forecasts. It uses the function `ncp_lml` of
+forecasts. It uses the function [`bvar.ml.ncp`](../../core/+bvar/+ml/ncp.m) of
 [How to Choose the Shrinkage of a VAR by the Marginal Likelihood](../natural_conjugate_ml/):
 
 ```matlab
@@ -70,12 +69,12 @@ s2 = bvar.priors.resid_var_ar4(W(pmax-3:pmax, :), W(pmax+1:end, :));   % AR(4) v
 for p = 1:pmax
     [Y, Z] = bvar.util.build_lags(W(pmax-p+1:end, :), p);    % the same Y for every p
     VA = @(c) [10^2; kron(1./(1:p)'.^2, c./s2)];
-    [lc, f] = fminbnd(@(lc) -ncp_lml(Y, Z, VA(exp(lc)), n + 2, diag(s2)), log(1e-3), log(10));
+    [lc, f] = fminbnd(@(lc) -bvar.ml.ncp(Y, Z, VA(exp(lc)), n + 2, diag(s2)), log(1e-3), log(10));
     lml(p) = -f; c1(p) = exp(lc);
     x = [1, reshape(W(end:-1:end-p+1, :)', 1, [])];          % x_{t+1}
     cs = [c1(p), c1fix];
     for s = 1:ns
-        [~, Ahat, KA, Shat] = ncp_lml(Y, Z, VA(cs(s)), n + 2, diag(s2));
+        [~, Ahat, KA, Shat] = bvar.ml.ncp(Y, Z, VA(cs(s)), n + 2, diag(s2));
         df = size(Y, 1) + 3;                                  % nuhat - n + 1
         m = x*Ahat; Psi = (1 + x*(KA\x'))*Shat/df;            % the Student-t forecast
         ls(p, s) = mvt_logpdf(y1, m, Psi, df);

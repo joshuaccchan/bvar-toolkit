@@ -1,7 +1,7 @@
 # How to Test Block Exogeneity by the Marginal Likelihood
 
-*Code: [`guide.m`](guide.m), with [`bvar.util.ldet`](../../core/+bvar/+util/ldet.m),
-[`bvar.util.mgammaln`](../../core/+bvar/+util/mgammaln.m) and
+*Code: [`guide.m`](guide.m), with [`bvar.models.var_soe`](../../core/+bvar/+models/var_soe.m),
+[`bvar.ml.ncp`](../../core/+bvar/+ml/ncp.m) and
 [`bvar.ml.lniwpdf`](../../core/+bvar/+ml/lniwpdf.m). Method:
 [Cushman and Zha (1997)](../../CITING.md#cushman-and-zha-1997),
 [Zha (1999)](../../CITING.md#zha-1999) and [Chan (2027)](../../CITING.md#chan-2027). Data:
@@ -109,20 +109,22 @@ predictions.
 
 Each marginal likelihood has the closed form of
 [How to Choose the Shrinkage of a VAR by the Marginal Likelihood](../natural_conjugate_ml/), which
-the function `ncp_lml` at the end of `guide.m` computes. The two calls differ only in the
-regressors and in their prior means and variances:
+the function [`bvar.ml.ncp`](../../core/+bvar/+ml/ncp.m) computes. The two calls differ only in
+the regressors and in their prior means and variances:
 
 ```matlab
-[VA, B0] = soe_prior(p, n, lev, c1, c3, s2);   % the prior variances and means on x_t
+VA = res.VA; B0 = res.B0;                 % the prior variances and means on x_t
 nu0 = nus + 2; S0 = diag(s2(us));         % Sig_us ~ IW(nu0, S0) in both models
-lml_r = ncp_lml(Ys(:, us), Zs(:, ius), B0(ius, us), VA(ius), nu0, S0);   % block exogeneity
-lml_u = ncp_lml(Ys(:, us), Zs, B0(:, us), VA, nu0, S0);     % with the Australian lags
+lml_r = bvar.ml.ncp(Ys(:, us), Zs(:, ius), VA(ius), nu0, S0, B0(ius, us));   % block exogeneity
+lml_u = bvar.ml.ncp(Ys(:, us), Zs, VA, nu0, S0, B0(:, us));     % with the Australian lags
 lbf = lml_r - lml_u;                      % the log Bayes factor for block exogeneity
 ```
 
-Here `Zs` contains the intercept and all lags, and `ius` indexes the intercept and the US lags, as
-in the estimation guide. On the simulated sample of that guide, the log marginal likelihood of the
-US block is -688.77 with block exogeneity and -706.43 without it. The log Bayes factor is 17.66.
+Here `res` is the output of [`bvar.models.var_soe`](../../core/+bvar/+models/var_soe.m) with
+`'nsim', 0`, which sets the prior and chooses $`c_1`$ as in the estimation guide. As in that
+guide, `Zs` contains the intercept and all lags, and `ius` indexes the intercept and the US lags.
+On the simulated sample of that guide, the log marginal likelihood of the US block is -688.77 with
+block exogeneity and -706.43 without it. The log Bayes factor is 17.66.
 
 The data also favor block exogeneity. The same computation on the 144 quarters of
 [`soe_Q.csv`](../data/) gives a log Bayes factor of 9.62.
@@ -176,7 +178,7 @@ $`\log m^f(M) = \sum_{t=1}^{T} \log p(\mathbf{y}^f_t \mid \mathbf{x}_t, \boldsym
 
 where the prior and the posterior densities are normal-inverse-Wishart. `guide.m` evaluates the
 right side at the true values with [`bvar.ml.lniwpdf`](../../core/+bvar/+ml/lniwpdf.m). It agrees
-with `ncp_lml` to within 5e-12 for both models.
+with `bvar.ml.ncp` to within 5e-12 for both models.
 
 [How to Estimate a VAR for a Small Open Economy](../soe_var/) compares its estimates with an
 unrestricted VAR. That VAR has one natural conjugate prior for all eight equations, with 10
@@ -201,7 +203,7 @@ the variable under test:
 lbf_j = zeros(1, nau);
 for j = 1:nau
     keep = setdiff(1:k, 1 + au(j) + (0:p-1)*n);         % x_t without the lags of variable j
-    lbf_j(j) = ncp_lml(Ys(:, us), Zs(:, keep), B0(keep, us), VA(keep), nu0, S0) - lml_u;
+    lbf_j(j) = bvar.ml.ncp(Ys(:, us), Zs(:, keep), VA(keep), nu0, S0, B0(keep, us)) - lml_u;
 end
 ```
 

@@ -1,10 +1,7 @@
-%% guide - the code of guides/var_simulation/README.md: a VAR(4) fitted by least squares to US real
-% GDP growth, PCE inflation and the unemployment rate, 1960Q1-2019Q4 (guides/data/macro3_Q.csv),
-% which is the true model of the series Forecasting with a VAR; its stability and stationary
-% distribution; a sample of 240 quarters simulated from it with bvar.util.simulate_var, and its
-% moments against those of the data; the lag lengths at which AIC and BIC are smallest; the
-% moments of 1,000 additional samples; the checks; then 20 quarters simulated from the data of
-% 2019. Sections 1 to 3 are the code to adapt. Saves fig_simulated.png next to this file.
+%% guide - the code of guides/var_simulation/README.md: a VAR(4) fitted to US GDP growth, PCE
+% inflation and the unemployment rate, the true model of the series Forecasting with a VAR, and
+% samples simulated from it. Sections 1 to 3 are the code to adapt. Saves fig_simulated.png next
+% to this file.
 
 here = fileparts(mfilename('fullpath'));
 run(fullfile(fileparts(fileparts(here)), 'setup.m'));

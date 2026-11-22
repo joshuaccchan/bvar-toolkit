@@ -1,10 +1,7 @@
-%% guide - the code of guides/coefficient_draw/README.md: the Minnesota prior for the VAR(2) of
-% three variables of guides/var_stacking, with Sig replaced by the residual variances of
-% univariate AR(4) regressions; the posterior mean and a draw of the coefficients from one
-% Cholesky factor; the posterior mean against least squares; then a prior mean of one on the
-% first own lags. The sections called "the code to adapt" contain everything a sampler uses. The
-% sections called "the checks" form dense matrices, which is practical only for a small example.
-% Saves fig_shrinkage.png next to this file.
+%% guide - the code of guides/coefficient_draw/README.md: the posterior mean and a draw of the
+% coefficients of the VAR of guides/var_stacking under the Minnesota prior. The sections called
+% "the code to adapt" contain everything a sampler uses. Saves fig_shrinkage.png next to this
+% file.
 
 here = fileparts(mfilename('fullpath'));
 run(fullfile(fileparts(fileparts(here)), 'setup.m'));
