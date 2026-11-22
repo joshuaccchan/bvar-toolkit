@@ -11,7 +11,8 @@ least squares to US real GDP growth, PCE inflation and the unemployment rate fro
 check that it is stable, compute its stationary distribution, simulate a sample with
 [`bvar.util.simulate_var`](../../core/+bvar/+util/simulate_var.m), and compare it with the data.
 
-To print the numbers and draw the figure first, run from the root of the repository:
+To reproduce the numbers and the figure, run the following command from the root of the
+repository:
 
 ```matlab
 run guides/var_simulation/guide.m

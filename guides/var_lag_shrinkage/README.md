@@ -24,7 +24,8 @@ the best of the alternatives. With $`c_1`$ chosen by the marginal likelihood, la
 fourth change the scores little. With $`c_1 = 10`$, these lags lower the scores, most of all with
 80 quarters.
 
-To print the numbers and draw the figure first, run from the root of the repository:
+To reproduce the numbers and the figure, run the following command from the root of the
+repository:
 
 ```matlab
 run guides/var_lag_shrinkage/guide.m
