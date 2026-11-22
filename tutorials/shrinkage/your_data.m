@@ -179,18 +179,36 @@ L = zeros(size(K2));
 for i = 1:numel(K2)
     L(i) = bvar.ml.acp(p, Y, Z, bvar.priors.acp_stru(n, p, [K2(i), K3(i), 1, 100], sig2, nonstationary));
 end
-figure; hold on; box off
-contour(K2, K3, exp(L - max(L(:))), 0.1:0.1:0.9, 'LineWidth', 1);
-set(gca, 'XScale', 'log', 'YScale', 'log');
+    % bands of the log marginal likelihood minus its maximum, at the edges the grid reaches
+d = L - max(L(:));
+lev = [-500 -200 -50 -10 -2];
+lev = lev(lev > min(d(:)));
+nb = numel(lev) + 1;
+figure('Color', 'w'); hold on; box off
+if nb > 1
+    edges = [min(d(:)) - 1, lev, 1];                  % the bands, lowest first
+    u = edges(1) + (1:4096)*(edges(end) - edges(1))/4096;   % a step colormap, one color per band
+    cols = interp1([0; 1], [0.97 0.97 0.98; 0.16 0.33 0.58], linspace(0, 1, nb)');
+    contourf(K2, K3, d, edges(1:end-1), 'LineStyle', 'none');
+    colormap(gca, cols(discretize(u, edges), :));
+    clim(edges([1 end]));
+    cl = lev;
+    if isscalar(cl), cl = [cl cl]; end                % one level, not a number of levels
+    [C, hc] = contour(K2, K3, d, cl, 'LineColor', [0.35 0.35 0.35], 'LineWidth', 0.6);
+    if any(lev < -2), clabel(C, hc, lev(lev < -2), 'FontSize', 9, 'LabelSpacing', 500); end
+end
+h = [plot(ka(1), ka(2), 'p', 'MarkerSize', 13, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', 'k'), ...
+     plot(ks(1), ks(2), 'o', 'MarkerSize', 7, 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'w'), ...
+     plot(.04, .0016, 's', 'MarkerSize', 7, 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'w')];
+hl = {'asymmetric prior (maximum)', 'best symmetric prior', 'subjective prior'};
 lo = max(g2(1), g3(1));  hi = min(g2(end), g3(end));
-if lo < hi, plot([lo hi], [lo hi], 'k--'); end
-h = [plot(ka(1), ka(2), 'kp', 'MarkerFaceColor', 'w', 'MarkerSize', 11), ...
-     plot(ks(1), ks(2), 'ko', 'MarkerFaceColor', 'k'), ...
-     plot(.04, .0016, 'ks', 'MarkerFaceColor', 'k')];
+if lo < hi, h(end+1) = plot([lo hi], [lo hi], 'k--'); hl{end+1} = '\kappa_2 = \kappa_3'; end
+set(gca, 'XScale', 'log', 'YScale', 'log', 'TickDir', 'out', 'Layer', 'top');
 xlim(r2); ylim(r3);
-legend(h, {'asymmetric prior', 'symmetric prior', 'subjective prior'}, 'Location', 'best', 'Box', 'off');
-xlabel('\kappa_2 (own lags), smaller is tighter'); ylabel('\kappa_3 (other lags), smaller is tighter');
-title(sprintf('Marginal likelihood relative to its maximum, p = %d', p));
+xticklabels(compose('%g', xticks)); yticklabels(compose('%g', yticks));
+legend(h, hl, 'Location', 'southoutside', 'Orientation', 'horizontal', 'Box', 'off');
+xlabel('\kappa_2, own lags (smaller is tighter)'); ylabel('\kappa_3, other lags (smaller is tighter)');
+title(sprintf('Log marginal likelihood minus its maximum, p = %d', p));
 
 %% ---- the report ----
 % One row per prior at p lags and per lag length in the scan, the forecasts in

@@ -92,36 +92,51 @@ fprintf('grid approximations on that support: kappa2 mean %.3f, 90%% interval [%
 fprintf('mass at the edges of the grid: kappa2 %.2g, kappa3 %.2g\n', m2(1) + m2(end), m3(1) + m3(end));
 
     % the figure spans all three priors, which a linear grid around the optimum
-    % leaves out, so it uses a logarithmic one
-f2 = logspace(log10(min([k_asym(1)/10, k_sym(1), k_subj(1)])/1.5), log10(k_asym(1)*4), 61);
-f3 = logspace(log10(min([k_asym(2)/10, k_subj(2)])/1.5), log10(max([k_asym(2)*10, k_sym(2)])*1.5), 61);
+    % leaves out, so it uses a logarithmic one; it shows the log marginal likelihood
+    % minus its maximum in bands, so that the far priors sit on the surface
+f2 = logspace(log10(0.02), log10(2), 101);
+f3 = logspace(log10(0.0005), log10(0.2), 101);
 [F2, F3] = meshgrid(f2, f3);
 lf = zeros(size(F2));
 for i = 1:numel(F2)
     lf(i) = bvar.ml.acp(p, Y, Z, bvar.priors.acp_stru(n, p, [F2(i), F3(i), 1, 100], sig2));
 end
-fig = figure('Color', 'w', 'Position', [100 100 640 520]);
-hold on; box off
-contour(F2, F3, exp(lf - max(lf(:))), 0.1:0.1:0.9, 'LineWidth', 1);
-set(gca, 'XScale', 'log', 'YScale', 'log', 'FontSize', 10);
-dlo = max(f2(1), f3(1));  dhi = min(f2(end), f3(end));
-plot([dlo dhi], [dlo dhi], 'k--');
-text(dhi, dhi, ' \kappa_2 = \kappa_3', 'VerticalAlignment', 'top', 'FontSize', 10);
-kmark = [k_asym(1:2); k_sym(1:2); k_subj(1:2)];
-mk = {'kp', 'ko', 'ks'};  fc = {'w', 'k', 'k'};  ms = [12 6 7];
-lab = {'asymmetric', 'symmetric', 'subjective'};
-off = [1.9 1.15 1.15];                         % the asymmetric label clears its contours
-for j = 1:3
-    plot(kmark(j,1), kmark(j,2), mk{j}, 'MarkerFaceColor', fc{j}, 'MarkerSize', ms(j));
-    text(kmark(j,1)*off(j), kmark(j,2), lab{j}, 'FontSize', 10);
-end
-xlim([f2(1) f2(end)]); ylim([f3(1) f3(end)]);
-xlabel('$\kappa_2$ (own lags), smaller is tighter', 'Interpreter', 'latex');
-ylabel('$\kappa_3$ (other lags), smaller is tighter', 'Interpreter', 'latex');
-title('Marginal likelihood relative to its maximum')
-colormap(parula)
-exportgraphics(fig, fullfile(tdir, 'fig_contour.png'), 'Resolution', 150);
+d = lf - ml_asym;                              % log marginal likelihood minus its maximum
+lev = [-500 -200 -50 -10 -2];                  % the band edges
+assert(min(d(:)) < lev(1) && max(d(:)) <= 1e-6, 'the grid must span every band, below the maximum');
+nb = numel(lev) + 1;
+edges = [min(d(:)) - 1, lev, 1];               % the bands, lowest first
+    % a step colormap, one color per band: each entry takes the band of its upper end
+u = edges(1) + (1:4096)*(edges(end) - edges(1))/4096;
+cols = interp1([0; 1], [0.97 0.97 0.98; 0.16 0.33 0.58], linspace(0, 1, nb)');
+fig = figure('Color', 'w', 'Position', [100 100 760 560]);
+ax = axes(fig);
+hold(ax, 'on');
+contourf(ax, F2, F3, d, edges(1:end-1), 'LineStyle', 'none');
+colormap(ax, cols(discretize(u, edges), :));
+clim(ax, edges([1 end]));
+[C, hc] = contour(ax, F2, F3, d, lev, 'LineColor', [0.35 0.35 0.35], 'LineWidth', 0.6);
+clabel(C, hc, lev(lev < -2), 'FontSize', 10, 'Color', [0.15 0.15 0.15], 'LabelSpacing', 500);
+dl = [max(f2(1), f3(1)), min(f2(end), f3(end))];
+hm = [plot(ax, k_asym(1), k_asym(2), 'p', 'MarkerSize', 16, 'MarkerFaceColor', 'w', ...
+          'MarkerEdgeColor', 'k', 'LineWidth', 1), ...
+      plot(ax, k_sym(1), k_sym(2), 'o', 'MarkerSize', 9, 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'w'), ...
+      plot(ax, k_subj(1), k_subj(2), 's', 'MarkerSize', 9, 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'w'), ...
+      plot(ax, dl, dl, 'k--', 'LineWidth', 1)];
+xt = [0.05 0.1 0.2 0.5 1 2];  yt = [0.001 0.003 0.01 0.03 0.1];
+set(ax, 'XScale', 'log', 'YScale', 'log', 'FontSize', 12, 'TickDir', 'out', 'Layer', 'top', ...
+    'XTick', xt, 'XTickLabel', compose('%g', xt), 'YTick', yt, 'YTickLabel', compose('%g', yt), ...
+    'XMinorTick', 'off', 'YMinorTick', 'off');
+xlim(ax, f2([1 end]));  ylim(ax, f3([1 end]));
+xlabel(ax, '\kappa_2, own lags (smaller is tighter)', 'FontSize', 13);
+ylabel(ax, '\kappa_3, other lags (smaller is tighter)', 'FontSize', 13);
+box(ax, 'off');
+legend(hm, {'asymmetric prior (maximum)', 'best symmetric prior', 'subjective prior', '\kappa_2 = \kappa_3'}, ...
+    'Location', 'southoutside', 'Orientation', 'horizontal', 'Box', 'off', 'FontSize', 11);
+exportgraphics(fig, fullfile(tdir, 'fig_contour.png'), 'Resolution', 200);
 close(fig)
+fprintf('Figure 1: the symmetric prior is %.1f and the subjective prior %.1f below the maximum\n', ...
+    ml_sym - ml_asym, ml_subj - ml_asym);
 
     % the same comparison in the 15-variable application of the published version
 pkg22 = fullfile(repo, 'replications', 'chan2022_qe_acp');

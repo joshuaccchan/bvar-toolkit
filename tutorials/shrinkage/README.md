@@ -34,12 +34,10 @@ workflow needs MATLAB with the Statistics and Machine Learning Toolbox; the othe
 
 ![Marginal likelihood over the two hyperparameters](fig_contour.png)
 
-*Figure 1: Marginal likelihood of the 21-variable VAR under the asymmetric conjugate prior, as a
-function of the own-lag hyperparameter $`\kappa_2`$ and the other-lag hyperparameter $`\kappa_3`$,
-on logarithmic axes, normalized so that its maximum equals one. Smaller values mean stronger
-shrinkage. The contours are at 0.1, 0.2, ..., 0.9; the star marks the maximum, the circle the best
-symmetric prior and the square the subjective prior, and the dashed line is the restriction
-$`\kappa_2 = \kappa_3`$.*
+*Figure 1: Log marginal likelihood of the 21-variable VAR under the asymmetric conjugate prior
+minus its maximum, as a function of the own-lag hyperparameter $`\kappa_2`$ and the other-lag
+hyperparameter $`\kappa_3`$, on logarithmic axes. Smaller values mean stronger shrinkage. The
+contours are at -2, -10, -50, -200 and -500.*
 
 ## The Shrinkage Problem
 
@@ -145,8 +143,9 @@ that follow are grid approximations on the grid of Chan (2019), $`\kappa_2`$ fro
 $`\kappa_3`$ from 0.002 to 0.02: under a flat prior, 90% of the mass of $`\kappa_2`$ lies between
 0.32 and 0.56 and that of $`\kappa_3`$ between 0.0074 and 0.0114, with 0.3% of the $`\kappa_2`$
 mass and $`6 \times 10^{-11}`$ of the $`\kappa_3`$ mass at the edges of that support. Both
-benchmark priors lie outside it, and in Figure 1 they lie well outside the lowest contour. The
-published version of Chan (2022) applies the prior to a 15-variable VAR over 1985–2019, where
+benchmark priors lie outside it. In Figure 1, the symmetric prior lies beyond the contour at -200,
+and the subjective prior between the contours at -200 and -50. The published version of Chan
+(2022) applies the prior to a 15-variable VAR over 1985–2019, where
 relaxing the restriction $`\kappa_2 = \kappa_3`$ raises the log marginal likelihood by 8.3.
 
 ## What the Choice Changes
