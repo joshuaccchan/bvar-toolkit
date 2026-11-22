@@ -28,6 +28,17 @@ unemployment rate, 1960Q1 to 2019Q4.
 | [How to Evaluate Forecasts Out of Sample](var_forecast_evaluation/) | Score forecasts made at each quarter with the data of the time | `bvar.forecast.predictive`, `bvar.util.logsumexp` |
 | [How to Choose the Lag Length and the Shrinkage for Forecasting](var_lag_shrinkage/) | Choose the lag length and the shrinkage by the marginal likelihood at each forecast origin | `bvar.util.build_lags`, `bvar.util.ldet`, `bvar.util.mgammaln` |
 
+## VARs for a Small Open Economy
+
+The guides use data simulated from a VAR(3) fitted to US and Australian data, 1984Q1 to 2019Q4,
+in which the Australian variables do not enter the US equations.
+
+| Guide | What it shows | Core functions |
+|---|---|---|
+| [How to Estimate a VAR for a Small Open Economy](soe_var/) | Estimate a VAR with block exogeneity one block at a time | `bvar.util.build_lags`, `bvar.util.simulate_var`, `bvar.priors.resid_var_ar4` |
+| [How to Test Block Exogeneity by the Marginal Likelihood](soe_exogeneity_test/) | Compare the VAR with and without block exogeneity by their marginal likelihoods | `bvar.util.ldet`, `bvar.util.mgammaln`, `bvar.ml.lniwpdf` |
+| [How to Trace a Foreign Shock through a Small Open Economy](soe_foreign_shock/) | Compute the responses to a foreign shock and their credible bands | `bvar.structural.irf_redu`, `bvar.structural.fevd`, `bvar.util.shaded_band`, `bvar.priors.resid_var_ar4` |
+
 The [examples](../examples/) run the core functions on additional models, with real and generated
 data, and the [tutorials](../tutorials/) answer empirical questions with the settings of published
 papers.

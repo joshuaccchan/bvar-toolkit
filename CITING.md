@@ -27,6 +27,8 @@ lists implementations of the same models in R and Python.
 | Sign restrictions | `bvar.structural.qr_sign`, `sign_restrict`, `irf_redu`, `reduced_form`; ex11, ex12 | [Rubio-Ramírez, Waggoner and Zha (2010)](#rubio-ramírez-waggoner-and-zha-2010) |
 | Sign and ranking restrictions in large structural VARs | `replications/chan_matthes_yu2026_qe_svarsign`, `bvar.structural.sign_assign`; ex11, ex12, tutorials/sign_restrictions | [Chan, Matthes and Yu (2026)](#chan-matthes-and-yu-2026) |
 | Sign restrictions over several horizons | ex12 | [Uhlig (2005)](#uhlig-2005) |
+| Block exogeneity for a small open economy, estimated block by block | guides/soe_var, guides/soe_exogeneity_test, guides/soe_foreign_shock | [Cushman and Zha (1997)](#cushman-and-zha-1997) for the model; [Zha (1999)](#zha-1999) for the estimation block by block |
+| A shock to the US excess bond premium, identified recursively | guides/soe_foreign_shock | [Gilchrist and Zakrajšek (2012)](#gilchrist-and-zakrajšek-2012) |
 | Missing data and mixed frequencies: the missing values of a VAR drawn in one block, under restrictions that tie them to observed quarterly values | `bvar.models.mfvar_csv`, `bvar.samplers.missing_var`, `var_coef_joint`, `bvar.util.select_obs`, `mm_constraint`, `dlog_gaps`; ex14, tutorials/mixed_frequency | [Chan, Poon and Zhu (2023)](#chan-poon-and-zhu-2023); [Schorfheide and Song (2015)](#schorfheide-and-song-2015) for the mixed-frequency VAR; [Mariano and Murasawa (2003)](#mariano-and-murasawa-2003) for the aggregation of monthly growth rates into quarterly ones; [Chan (2020a)](#chan-2020a) for the draws of the common stochastic volatility and its parameters |
 | Sensitivity of forecasts to prior hyperparameters | `replications/cjz2018_ad_var` | [Chan, Jacobi and Zhu (2019)](#chan-jacobi-and-zhu-2019) |
 | Hyperparameter selection by automatic differentiation | `replications/cjz2019_ad_opthyper`, `bvar.priors.niw(..., 'opthyper_ncp')` | [Chan, Jacobi and Zhu (2020)](#chan-jacobi-and-zhu-2020) |
@@ -526,6 +528,28 @@ and ex06 estimate.
 }
 ```
 
+### Cushman and Zha (1997)
+
+Cushman, D. O. and Zha, T. (1997). Identifying Monetary Policy in a Small Open Economy under
+Flexible Exchange Rates. *Journal of Monetary Economics* 39(3): 433-448.
+[Journal version](https://doi.org/10.1016/S0304-3932(97)00029-9)
+
+A structural VAR for Canada in which the Canadian variables do not enter the equations of the US
+and world variables, within the period or with a lag: block exogeneity.
+
+```bibtex
+@article{CZ97,
+  author  = {Cushman, D. O. and Zha, T.},
+  title   = {Identifying Monetary Policy in a Small Open Economy under Flexible Exchange Rates},
+  journal = {Journal of Monetary Economics},
+  year    = {1997},
+  volume  = {39},
+  number  = {3},
+  pages   = {433--448},
+  doi     = {10.1016/S0304-3932(97)00029-9}
+}
+```
+
 ### Doan, Litterman and Sims (1984)
 
 Doan, T., Litterman, R. B. and Sims, C. A. (1984). Forecasting and Conditional Projection Using
@@ -569,6 +593,29 @@ segment of a chain.
   year      = {1992},
   pages     = {169--193},
   doi       = {10.1093/oso/9780198522669.003.0010}
+}
+```
+
+### Gilchrist and Zakrajšek (2012)
+
+Gilchrist, S. and Zakrajšek, E. (2012). Credit Spreads and Business Cycle Fluctuations. *American
+Economic Review* 102(4): 1692-1720.
+[Journal version](https://doi.org/10.1257/aer.102.4.1692)
+
+The excess bond premium: the part of a corporate bond spread that expected defaults do not
+explain. A shock to it is identified recursively, with the premium after activity and inflation
+and before the interest rates.
+
+```bibtex
+@article{GZ12,
+  author  = {Gilchrist, S. and Zakraj{\v{s}}ek, E.},
+  title   = {Credit Spreads and Business Cycle Fluctuations},
+  journal = {American Economic Review},
+  year    = {2012},
+  volume  = {102},
+  number  = {4},
+  pages   = {1692--1720},
+  doi     = {10.1257/aer.102.4.1692}
 }
 ```
 
@@ -853,5 +900,28 @@ form, which GitHub's "Cite this repository" button reads.
   howpublished = {Zenodo},
   doi          = {10.5281/zenodo.22804032},
   url          = {https://github.com/joshuaccchan/bvar-toolkit}
+}
+```
+
+### Zha (1999)
+
+Zha, T. (1999). Block Recursion and Structural Vector Autoregressions. *Journal of Econometrics*
+90(2): 291-316.
+[Journal version](https://doi.org/10.1016/S0304-4076(98)00045-1)
+
+Inference for structural VARs whose contemporaneous coefficient matrix is block recursive, with
+restrictions on the lags such as block exogeneity: the likelihood splits into blocks, and the
+posterior is drawn block by block.
+
+```bibtex
+@article{Zha99,
+  author  = {Zha, T.},
+  title   = {Block Recursion and Structural Vector Autoregressions},
+  journal = {Journal of Econometrics},
+  year    = {1999},
+  volume  = {90},
+  number  = {2},
+  pages   = {291--316},
+  doi     = {10.1016/S0304-4076(98)00045-1}
 }
 ```
