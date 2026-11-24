@@ -21,9 +21,10 @@ quarterly series from 1959 to 2026.
 
 Monthly GDP falls by 7.92 percent in April 2020, with a 90% credible band from −13.3 to −2.8
 percent, and grows by 4.22 percent in June (Table 1). Over 1960 to 2026 the estimated monthly
-growth rates have a correlation of 0.93 with the Brave-Butters-Kelley series, which comes from a
-collapsed dynamic factor model (Figure 1). The same draw fills in the values that were never
-published: the unemployment rate for October 2025 is estimated at 4.43 percent.
+growth rates have a correlation of 0.93 with the Brave-Butters-Kelley series (Figure 1). That
+series is another monthly estimate tied to the same quarterly GDP, so the correlation measures
+agreement between the two. The same draw fills in the values that were never published: the
+unemployment rate for October 2025 is estimated at 4.43 percent.
 
 ## Try It Now
 
@@ -156,10 +157,14 @@ widest in May and June: for GDP in May they run from −6.2 to 8.5 percent.
 the log change, 2019:07–2021:06: posterior means and 68% credible bands.*
 
 Over the 798 months from 1960:01 to 2026:06, the correlation between the monthly GDP estimates and
-the Brave-Butters-Kelley series is 0.93, and 0.91 without 2020. The root mean squared difference
-is 0.19 percentage points, and 0.14 without 2020. The two differ most in the pandemic months: the
-Brave-Butters-Kelley series falls by 6.00 percent in April 2020 and grows by 2.77 percent in June,
-against 7.92 and 4.22 percent here.
+the Brave-Butters-Kelley series is 0.93, and 0.91 without 2020. That series comes from a collapsed
+dynamic factor model of monthly indicators and quarterly real GDP growth (Brave, Butters and
+Kelley, 2019). Its Mariano-Murasawa aggregates match the quarterly GDP growth of our data, with a
+largest gap of 0.0023 percentage points over 265 quarters. The correlation therefore measures
+agreement between two monthly estimates of the same quarterly data. The root mean squared
+difference is 0.19 percentage points, and 0.14 without 2020. The two differ most in the pandemic
+months: the Brave-Butters-Kelley series falls by 6.00 percent in April 2020 and grows by 2.77
+percent in June, against 7.92 and 4.22 percent here.
 
 ## Months Without Data
 
@@ -177,14 +182,28 @@ the monthly series.
 The script [`your_data.m`](your_data.m) in this folder runs the same model on any file with one
 row per month. Its settings block sets the file, the date column and its format, the columns,
 their names, which of them are quarterly, how each is transformed, the sample, the lag length and
-the chain length. A quarterly series holds its level in the last month of each quarter and enters
-as 100 times its quarterly log change. A monthly series enters in 100 times log changes or in
-levels, and may have missing values anywhere; when one of its levels is missing inside the sample,
-the growth rates around it keep their known sum. The script prints the monthly estimates of each
-quarterly series over the last twelve months, plots the first of them with its 68% credible band,
-and writes the monthly estimates to a csv and a mat file in `outdir`, which defaults to `tempdir`.
-With its default settings, which use the data of this tutorial from 1990 and chains of 1,000
-draws, it runs in about a minute.
+the chain length. The file of this tutorial, [`mf_data.csv`](mf_data.csv), has the layout the
+script reads, shown here for August to December 2025:
+
+```
+date,INDPRO,CPIAUCSL,UNRATE,PAYEMS,AWHMAN,GDPC1,FPIx
+2025-08,101.6247,323.291,4.3,158472,41,,
+2025-09,101.668,324.245,4.4,158548,41,24026.834,4389.3125
+2025-10,101.2195,,,158408,41.1,,
+2025-11,101.0344,325.063,4.5,158449,41.3,,
+2025-12,101.4941,326.031,4.4,158432,41.1,24055.749,4405.6735
+```
+
+A quarterly series holds its level in the last month of each quarter and nothing in the other
+months. It enters as 100 times its quarterly log change and may start late or end early. The
+script stops with an error if a quarter is missing between its first and last values in the file.
+A monthly series enters in 100 times log changes or in levels. It may have missing values
+anywhere, as the CPI and the unemployment rate do in October 2025. When one of its levels is
+missing inside the sample, the growth rates around it keep their known sum. The script prints the
+monthly estimates of each quarterly series over the last twelve months, plots the first of them
+with its 68% credible band, and writes the monthly estimates to a csv and a mat file in `outdir`,
+which defaults to `tempdir`. With its default settings, which use the data of this tutorial from
+1990 and chains of 1,000 draws, it runs in about a minute.
 
 The model is estimated by the function `bvar.models.mfvar_csv`:
 
@@ -222,6 +241,10 @@ the figures in the same folder as this page. The build takes 24.6 minutes using 
 computer with an Intel Core Ultra 7 255U processor and 32 GB of RAM.
 
 ## References
+
+Brave, S. A., Butters, R. A. and Kelley, D. (2019). A New 'Big Data' Index of U.S. Economic
+Activity. *Economic Perspectives*, Federal Reserve Bank of Chicago, 43(1).
+[doi:10.21033/ep-2019-1](https://doi.org/10.21033/ep-2019-1)
 
 Carriero, A., Clark, T. E. and Marcellino, M. (2016). Common Drifting Volatility in Large Bayesian
 VARs. *Journal of Business and Economic Statistics*, 34(3): 375-390.

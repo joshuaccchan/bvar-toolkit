@@ -40,6 +40,28 @@ lists implementations of the same models in R and Python.
 
 ## References
 
+### Brave, Butters and Kelley (2019)
+
+Brave, S. A., Butters, R. A. and Kelley, D. (2019). A New 'Big Data' Index of U.S. Economic
+Activity. *Economic Perspectives, Federal Reserve Bank of Chicago* 43(1).
+[Journal version](https://doi.org/10.21033/ep-2019-1)
+
+The collapsed dynamic factor model behind the monthly GDP series that the mixed-frequency
+tutorial compares its estimates with. The model combines a large panel of monthly indicators with
+quarterly real GDP growth.
+
+```bibtex
+@article{BBK19,
+  author  = {Brave, S. A. and Butters, R. A. and Kelley, D.},
+  title   = {A New `Big Data' Index of {U.S.} Economic Activity},
+  journal = {Economic Perspectives, Federal Reserve Bank of Chicago},
+  year    = {2019},
+  volume  = {43},
+  number  = {1},
+  doi     = {10.21033/ep-2019-1}
+}
+```
+
 ### Carriero, Chan, Clark and Marcellino (2022)
 
 Carriero, A., Chan, J. C. C., Clark, T. E. and Marcellino, M. (2022). Corrigendum to: Large

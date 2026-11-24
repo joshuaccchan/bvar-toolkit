@@ -11,13 +11,14 @@
 %
 % The file is read with readtable and has one row per month, with the dates in datecol
 % in the format datefmt, such as 2026-07 for yyyy-MM. A quarterly series holds its level
-% in the last month of each quarter and nothing in the other months. 'dlog' turns a
-% series into 100 times its log change, quarter on quarter for a quarterly series, so
-% that its monthly values are monthly growth rates tied to it by the aggregation of
-% Mariano and Murasawa (2003); 'level' uses a monthly series as it is, after multiplying
-% by scale. A monthly series may have missing values anywhere, and when one in levels is
-% missing inside the sample, the growth rates around it keep their known sum. The first
-% p months serve as initial conditions.
+% in the last month of each quarter and nothing in the other months. It may start late
+% or end early. The script stops if a quarter is missing between its first and last
+% values in the file. 'dlog' turns a series into 100 times its log change, quarter on
+% quarter for a quarterly series, so that its monthly values are monthly growth rates
+% tied to it by the aggregation of Mariano and Murasawa (2003); 'level' uses a monthly
+% series as it is, after multiplying by scale. A monthly series may have missing values
+% anywhere, and when one in levels is missing inside the sample, the growth rates around
+% it keep their known sum. The first p months serve as initial conditions.
 
 repo = fileparts(fileparts(fileparts(mfilename('fullpath'))));
 run(fullfile(repo, 'setup.m'))
@@ -55,10 +56,20 @@ assert(all(Lv(:, transform == "dlog") > 0 | isnan(Lv(:, transform == "dlog")), '
     'a series in log changes must be positive');
 
 % the window, with one month before it for the first growth rate
+span = sprintf('the file runs from %s to %s', string(dates(1), 'yyyy-MM'), string(dates(end), 'yyyy-MM'));
 lo = 2;  hi = numel(dates);
-if strlength(first) > 0, lo = find(dates >= datetime(first, 'InputFormat', datefmt), 1); end
-if strlength(last) > 0, hi = find(dates <= datetime(last, 'InputFormat', datefmt), 1, 'last'); end
-assert(~isempty(lo) && ~isempty(hi) && lo >= 2 && hi - lo > p + 12, 'the sample is too short or out of the file');
+if strlength(first) > 0
+    lo = find(dates >= datetime(first, 'InputFormat', datefmt), 1);
+    assert(~isempty(lo), 'first = %s is after the last month in the file; %s', first, span);
+end
+if strlength(last) > 0
+    hi = find(dates <= datetime(last, 'InputFormat', datefmt), 1, 'last');
+    assert(~isempty(hi), 'last = %s is before the first month in the file; %s', last, span);
+end
+assert(lo >= 2, 'first must be %s or later, since the first growth rate needs the month before it; %s', ...
+    string(dates(2), 'yyyy-MM'), span);
+assert(hi - lo > p + 12, 'the sample from %s to %s is too short for %d lags; %s', ...
+    string(dates(lo), 'yyyy-MM'), string(dates(hi), 'yyyy-MM'), p, span);
 w = lo-1:hi;
 d = dates(lo:hi);
 T = numel(d);
@@ -69,7 +80,9 @@ for j = find(quarterly)
     iobs = find(~isnan(Lv(:,j)));
     assert(all(mod(month(dates(iobs)), 3) == 0), ...
         'series %s must hold its values in the last month of each quarter', names(j));
-    assert(all(diff(iobs) == 3), 'series %s has a quarter missing inside its sample', names(j));
+    k = find(diff(iobs) ~= 3, 1);
+    assert(isempty(k), 'series %s has no value for %s, between its first and last values in the file', ...
+        names(j), string(dates(iobs(k)) + calmonths(3), 'yyyy-MM'));
     g = nan(size(Lv,1), 1);
     g(iobs(2:end)) = 100*diff(log(Lv(iobs,j)));
     X(:,j) = g(lo:hi);
