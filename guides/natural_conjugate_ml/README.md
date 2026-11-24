@@ -16,8 +16,8 @@ form. We use this prior for the data of the earlier guides, compute its log marg
 maximize it over the single hyperparameter, and see how the chosen shrinkage changes the
 estimates.
 
-To reproduce the numbers and the figure, run the following command from the root of the
-repository:
+To reproduce the numbers and the figure, open guide.m and click Run, or type in the Command Window
+from the root of the repository:
 
 ```matlab
 run guides/natural_conjugate_ml/guide.m

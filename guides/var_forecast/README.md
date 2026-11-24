@@ -16,8 +16,8 @@ simulated, we can compare these forecasts with those of the true model, made wit
 parameters. We also compare them with plug-in forecasts, which fix the parameters at their
 posterior means.
 
-To reproduce the numbers and the figures, run the following command from the root of the
-repository:
+To reproduce the numbers and the figures, open guide.m and click Run, or type in the Command
+Window from the root of the repository:
 
 ```matlab
 run guides/var_forecast/guide.m

@@ -25,8 +25,8 @@ for the change in the forecast mean and predictive bands for future outcomes. In
 fixing the US path narrows the 90 percent predictive bands for the Australian variables by 4 to 29
 percent at the horizons reported.
 
-To reproduce the numbers and the figure, run the following command from the root of the
-repository:
+To reproduce the numbers and the figure, open guide.m and click Run, or type in the Command Window
+from the root of the repository:
 
 ```matlab
 run guides/soe_conditional_forecast/guide.m

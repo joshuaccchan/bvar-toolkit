@@ -26,7 +26,8 @@ Bayes factor is 1.41 when these variances are a hundredth of those in the estima
 favors block exogeneity in any sample. This is the Bartlett-Lindley paradox (Lindley, 1957;
 Bartlett, 1957). The prior variances should therefore be defensible and not too extreme.
 
-To reproduce the numbers, run the following command from the root of the repository:
+To reproduce the numbers, open guide.m and click Run, or type in the Command Window from the root
+of the repository:
 
 ```matlab
 run guides/soe_exogeneity_test/guide.m

@@ -27,8 +27,8 @@ simulate a sample from it and draw from the posterior of each block. We then com
 with those from an unrestricted VAR. In this sample, imposing block exogeneity lowers the mean
 absolute error from 0.180 to 0.160, over the US coefficients that both VARs estimate.
 
-To reproduce the numbers and the figure, run the following command from the root of the
-repository:
+To reproduce the numbers and the figure, open guide.m and click Run, or type in the Command Window
+from the root of the repository:
 
 ```matlab
 run guides/soe_var/guide.m

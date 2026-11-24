@@ -16,8 +16,8 @@ of the true model, made with the true parameters. One quarter ahead, the forecas
 more accurate than those of the AR(4) for all three variables. Four quarters ahead, they are more
 accurate for unemployment.
 
-To reproduce the numbers and the figure, run the following command from the root of the
-repository:
+To reproduce the numbers and the figure, open guide.m and click Run, or type in the Command Window
+from the root of the repository:
 
 ```matlab
 run guides/var_forecast_evaluation/guide.m

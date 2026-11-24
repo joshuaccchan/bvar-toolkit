@@ -18,8 +18,8 @@ guide, and $`\boldsymbol{\Sigma}`$ given the coefficients. We run it on the VAR(
 guides, check the chain with the diagnostics of `bvar.diag`, and verify the sampler under the
 natural conjugate prior, whose posterior is known in closed form.
 
-To reproduce the numbers and the figure, run the following command from the root of the
-repository:
+To reproduce the numbers and the figure, open guide.m and click Run, or type in the Command Window
+from the root of the repository:
 
 ```matlab
 run guides/gibbs_sampler/guide.m

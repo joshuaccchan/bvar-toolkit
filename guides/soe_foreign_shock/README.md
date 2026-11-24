@@ -29,8 +29,8 @@ the posterior bands contain the true responses of four of the eight variables at
 The posterior median overstates the depreciation of the Australian dollar after a year, 3.54
 percent against the true 1.58.
 
-To reproduce the numbers and the figure, run the following command from the root of the
-repository:
+To reproduce the numbers and the figure, open guide.m and click Run, or type in the Command Window
+from the root of the repository:
 
 ```matlab
 run guides/soe_foreign_shock/guide.m

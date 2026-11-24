@@ -16,8 +16,8 @@ mean and a draw. In this guide we set the prior for the VAR(2) of
 against the exact posterior, and measure how far the prior moves the estimates from least squares.
 Then we center the prior on a random walk.
 
-To reproduce the numbers and the figure, run the following command from the root of the
-repository:
+To reproduce the numbers and the figure, open guide.m and click Run, or type in the Command Window
+from the root of the repository:
 
 ```matlab
 run guides/coefficient_draw/guide.m
