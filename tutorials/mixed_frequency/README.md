@@ -27,7 +27,8 @@ published: the unemployment rate for October 2025 is estimated at 4.43 percent.
 
 ## Try It Now
 
-Two commands, from the root of the repository:
+Open a script in MATLAB and click Run, or type its command in the Command Window from the root of
+the repository:
 
 | Command | What it produces | Time |
 |---|---|---|
@@ -205,7 +206,8 @@ draw of the missing values against dense Gaussian conditioning on generated data
 
 ## Reproducing the Results
 
-To reproduce all results on this page, run the build script from the root of the repository:
+To reproduce all results on this page, open the build script and click Run, or type in the Command
+Window from the root of the repository:
 
 ```matlab
 run tutorials/mixed_frequency/build.m

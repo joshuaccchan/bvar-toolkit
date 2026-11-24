@@ -24,7 +24,8 @@ in calm years and far too narrow in a crisis.
 
 ## Try It Now
 
-Five commands, from the root of the repository:
+Open a script in MATLAB and click Run, or type its command in the Command Window from the root of
+the repository:
 
 | Command | What it produces | Time |
 |---|---|---|
@@ -327,7 +328,8 @@ it. The script writes the scores to `outdir`, which defaults to `tempdir`.
 
 ## Reproducing the Results
 
-To reproduce the forecast comparison, run the build script from the root of the repository:
+To reproduce the forecast comparison, open the build script and click Run, or type in the Command
+Window from the root of the repository:
 
 ```matlab
 run tutorials/forecasting/build.m
