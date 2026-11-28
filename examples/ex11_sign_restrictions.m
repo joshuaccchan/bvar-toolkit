@@ -69,10 +69,11 @@ m = size(S, 2);
 shocks = ["supply" "demand" "monetary" "investment" "financial"];
 
     % Row inequalities: a linear combination of the impact responses required to
-    % be negative. Here they rank the interest-rate response against the
-    % investment response for three of the shocks. The two functions index them
-    % differently - by COLUMN for sign_restrict, by SHOCK for sign_assign -
-    % which is the same information written two ways.
+    % be negative. Here they rank the investment response against the GDP
+    % response, a restriction on the ratio of investment to output: it falls
+    % after a demand shock and rises after investment and financial shocks. The
+    % two functions index them differently - by COLUMN for sign_restrict, by
+    % SHOCK for sign_assign - which is the same information written two ways.
 Rineq_bycol = [-1,0,0,1,0,0; 1,0,0,-1,0,0; 1,0,0,-1,0,0];
 Ridx        = [2, 4, 5];
 Rineq_byshock = zeros(m, n);
