@@ -96,8 +96,9 @@ regression under the natural conjugate prior, with an optional prior mean),
 with the shrinkage chosen by the marginal likelihood) and `bvar.util.soe_reduced_form` (the
 reduced form of the two blocks). They were local functions of eight guides, whose printed
 numbers and figures they leave unchanged; `test_ncp` and `test_var_soe` pin them, bitwise and
-draw for draw, to frozen copies of those local functions. None of these is retrofitted into a
-legacy body:
+draw for draw, to frozen copies of those local functions. `bvar.models.var_ncp` (2026-11-22)
+contains the draw loop of guides/var_forecast for a VAR without blocks, and `test_var_ncp` pins
+it to that loop draw for draw. None of these is retrofitted into a legacy body:
 they exist for new code, and the legacy spellings they generalize stay as they are.
 
 Edits made during extraction, in full: provenance header prepended; function renamed where

@@ -13,7 +13,7 @@ lists implementations of the same models in R and Python.
 |---|---|---|
 | The precision sampler for state space models | `replications/chan_jeliazkov2009_statespace`, `bvar.util.diffmat`; ex01 | [Chan and Jeliazkov (2009)](#chan-and-jeliazkov-2009) |
 | Stochastic volatility by the auxiliary mixture sampler | `bvar.sv.ksc_rw_h0`, `ksc_rw_diffuse`, `ksc_ar1_mean`; ex02 | [Kim, Shephard and Chib (1998)](#kim-shephard-and-chib-1998) for the mixture approximation; [Chan and Jeliazkov (2009)](#chan-and-jeliazkov-2009) for drawing the log-volatility path in one block from its banded precision |
-| The natural conjugate prior and its closed-form marginal likelihood | `bvar.ml.ncp`; guides/natural_conjugate_ml | [Chan (2027)](#chan-2027) |
+| The natural conjugate prior and its closed-form marginal likelihood | `bvar.ml.ncp`, `bvar.models.var_ncp`; guides/natural_conjugate_ml | [Chan (2027)](#chan-2027) |
 | The Minnesota prior and its scaling | `bvar.priors.minn`, `minnesota_C`, `resid_var_ar4`, `vtheta`; ex03 | [Doan, Litterman and Sims (1984)](#doan-litterman-and-sims-1984); [Litterman (1986)](#litterman-1986) |
 | Minnesota-type adaptive hierarchical priors | `replications/chan2021_ijf_mahp`, `bvar.samplers.gig_shrinkage`, `nu_psi_ng`, `eq_gauss`; ex10 | [Chan (2021)](#chan-2021) |
 | The asymmetric conjugate prior, its closed-form marginal likelihood and optimal hyperparameters | `replications/chan2022_qe_acp`, `replications/chan2019wp_acp`, `bvar.priors.acp_stru`, `acp_redu`, `acp_opt_kappa`, `bvar.samplers.acp_theta_sig`, `bvar.ml.acp`; ex11, ex12 | [Chan (2022)](#chan-2022) |

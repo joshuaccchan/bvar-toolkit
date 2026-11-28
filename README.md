@@ -73,6 +73,16 @@ out of sample, and chooses the lag length and the shrinkage:
 - [How to Evaluate Forecasts Out of Sample](guides/var_forecast_evaluation/)
 - [How to Choose the Lag Length and the Shrinkage for Forecasting](guides/var_lag_shrinkage/)
 
+The third series, VARs for a Small Open Economy, works with data simulated from a VAR fitted to
+US and Australian data, in which the Australian variables do not enter the US equations. It
+estimates the VAR block by block, tests this restriction, traces a US shock through the Australian
+economy, and forecasts Australia under a US scenario:
+
+- [How to Estimate a VAR for a Small Open Economy](guides/soe_var/)
+- [How to Test Block Exogeneity by the Marginal Likelihood](guides/soe_exogeneity_test/)
+- [How to Trace a Foreign Shock through a Small Open Economy](guides/soe_foreign_shock/)
+- [How to Forecast a Small Open Economy under a Foreign Scenario](guides/soe_conditional_forecast/)
+
 The [tutorials](tutorials/) each answer one research question with the settings of a paper, on
 the data of its replication package, of the book or of FRED, and can be read without MATLAB.
 Each comes with a script that runs the same analysis on your own data.
@@ -166,7 +176,7 @@ copy the nearest `run_all.m` as a template.
 | `bvar.ml` | Marginal likelihoods: Chib's method for the models of Chan (2020, JBES) (`kron_bvar*`), adaptive importance sampling for those of Chan (2023, JoE) (`mlvarsv_*`), importance sampling for the time-varying, constant-coefficient and regime-switching VARs of Chan and Eisenstat (2018, JAE) (`mltvpsv_*`), the closed forms under the natural conjugate prior (`ncp`) and the asymmetric conjugate prior (`acp`), and the integrated likelihoods and log densities they share. |
 | `bvar.forecast` | Forecasts from a chain: `iterate` runs one draw forward and scores it, `predictive` returns the mean and standard deviation of the h-step predictive distribution of every draw and `simulate` does the same by simulation when the error covariance varies over time, `tables` accumulates RMSFEs and log predictive likelihoods, and `realtime_loaddata` assembles a real-time data vintage. |
 | `bvar.diag` | Diagnostics for MCMC output: inefficiency factors (`inefficiency_factor`), Monte Carlo standard errors (`mcse`) and Geweke's convergence diagnostic (`geweke`), each from the long-run variance that `specvar0` estimates. |
-| `bvar.models` | Complete samplers: `var_sv`, a VAR with Cholesky or order-invariant stochastic volatility under the prior of Chan, Koop and Yu (2024), `var_csv`, a VAR with one common volatility factor, and `mfvar_csv`, the same model with missing data and mixed frequencies under the priors of Chan, Poon and Zhu (2023). Each can also return its draws. `var_soe` takes independent draws of a VAR for a small open economy with block exogeneity, one block at a time. |
+| `bvar.models` | Complete samplers: `var_sv`, a VAR with Cholesky or order-invariant stochastic volatility under the prior of Chan, Koop and Yu (2024), `var_csv`, a VAR with one common volatility factor, and `mfvar_csv`, the same model with missing data and mixed frequencies under the priors of Chan, Poon and Zhu (2023). Each can also return its draws. `var_ncp` takes independent draws of a VAR under the natural conjugate prior, with the shrinkage chosen by the marginal likelihood, and `var_soe` those of a VAR for a small open economy with block exogeneity, one block at a time. |
 | `bvar.util` | Shared pieces: the lag matrix (`build_lags`), data simulated from a VAR (`simulate_var`), the reduced form of a VAR with block exogeneity (`soe_reduced_form`), the difference matrix of the precision samplers (`diffmat`), sparse expansions (`surform`, `surform2`), credible bands for figures (`shaded_band`), the selection matrices of a missing data pattern (`select_obs`), the restrictions that tie quarterly growth rates to monthly ones (`mm_constraint`) and growth rates across a gap in a series to the change over it (`dlog_gaps`), the csv and mat files a script writes at the end (`report`) and small numerical helpers. |
 
 Where two legacy versions of a step differ numerically, both survive under separate names.
